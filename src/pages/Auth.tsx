@@ -101,7 +101,6 @@ export default function Auth() {
             <div className="w-24 h-24 flex items-center justify-center mx-auto mb-4">
               <img src="/logo.png" alt="VOY Logo" className="w-full h-full object-contain" />
             </div>
-            <h1 className="text-3xl font-bold text-foreground">VOY</h1>
             <p className="text-lg font-medium text-primary mt-1">
               A porta de entrada para o seu futuro
             </p>

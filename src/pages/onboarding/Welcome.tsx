@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
-import { Leaf } from 'lucide-react';
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -14,11 +13,6 @@ export default function Welcome() {
         <div className="w-32 h-32 flex items-center justify-center mb-6">
           <img src="/logo.png" alt="VOY Logo" className="w-full h-full object-contain" />
         </div>
-
-        {/* Title */}
-        <h1 className="text-5xl font-bold text-foreground mb-4 tracking-tight">
-          VOY
-        </h1>
 
         {/* Subtitle */}
         <p className="text-lg text-muted-foreground text-balance leading-relaxed">
