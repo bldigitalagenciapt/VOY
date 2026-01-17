@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 
-interface Profile {
+export interface Profile {
   id: string;
   user_id: string;
   language: string;
@@ -16,66 +16,70 @@ interface Profile {
   notifications_enabled: boolean;
   biometric_enabled: boolean;
   theme: string;
+  display_name?: string | null;
+  avatar_url?: string | null;
 }
 
 export function useProfile() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchProfile = useCallback(async () => {
-    if (!user) {
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
+  const { data: profile, isLoading: loading, refetch } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
 
-    try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
-      setProfile(data);
-    } catch (error) {
-      logger.error('Error fetching profile');
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+      if (error) {
+        logger.error('Error fetching profile', { error });
+        throw error;
+      }
+      return data as Profile;
+    },
+    enabled: !!user,
+  });
 
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates: Partial<Profile>) => {
+      if (!user) throw new Error('Not authenticated');
 
-  const updateProfile = async (updates: Partial<Profile>) => {
-    if (!user) return { error: new Error('Not authenticated') };
-
-    try {
       const { error } = await supabase
         .from('profiles')
         .update(updates)
         .eq('user_id', user.id);
 
       if (error) throw error;
-
-      setProfile(prev => prev ? { ...prev, ...updates } : null);
-      
+      return updates;
+    },
+    onSuccess: (updates) => {
+      queryClient.setQueryData(['profile', user?.id], (old: Profile | null) =>
+        old ? { ...old, ...updates } : null
+      );
       toast({
         title: "Salvo com sucesso!",
         description: "Suas informações foram atualizadas.",
       });
-
-      return { error: null };
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Error updating profile:', error);
       toast({
         variant: "destructive",
         title: "Erro ao salvar",
         description: "Tente novamente.",
       });
+    }
+  });
+
+  const updateProfile = async (updates: Partial<Profile>) => {
+    try {
+      await updateProfileMutation.mutateAsync(updates);
+      return { error: null };
+    } catch (error) {
       return { error };
     }
   };
@@ -89,6 +93,8 @@ export function useProfile() {
     loading,
     updateProfile,
     updateNumber,
-    refetch: fetchProfile,
+    refetch,
+    isUpdating: updateProfileMutation.isPending,
   };
 }
+

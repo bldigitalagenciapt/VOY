@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 
 export interface CustomCategory {
   id: string;
+  user_id: string;
   label: string;
   icon?: string;
   color?: string;
@@ -15,39 +16,31 @@ export interface CustomCategory {
 
 export function useCategories() {
   const { user } = useAuth();
-  const [categories, setCategories] = useState<CustomCategory[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchCategories = useCallback(async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+  const { data: categories = [], isLoading: loading, refetch } = useQuery({
+    queryKey: ['custom_categories', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
 
-    try {
       const { data, error } = await supabase
         .from('custom_categories')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
-      logger.error('Error fetching categories');
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+      if (error) {
+        logger.error('Error fetching categories', { error });
+        throw error;
+      }
+      return data as CustomCategory[];
+    },
+    enabled: !!user,
+  });
 
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
-  const addCategory = async (label: string): Promise<{ data?: CustomCategory; error?: Error }> => {
-    if (!user) return { error: new Error('No user') };
-
-    try {
+  const addCategoryMutation = useMutation({
+    mutationFn: async (label: string) => {
+      if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('custom_categories')
         .insert({
@@ -56,90 +49,93 @@ export function useCategories() {
         })
         .select()
         .single();
-
       if (error) throw error;
-
-      setCategories(prev => [...prev, data]);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['custom_categories', user?.id], (old: CustomCategory[] | undefined) =>
+        old ? [...old, data] : [data]
+      );
       toast({
         title: "Categoria criada!",
-        description: `A categoria "${label}" foi adicionada.`,
+        description: `A categoria "${data.label}" foi adicionada.`,
       });
-      return { data };
-    } catch (error) {
+    },
+    onError: () => {
       logger.error('Error adding category');
       toast({
         variant: "destructive",
         title: "Erro",
         description: "Não foi possível criar a categoria.",
       });
-      return { error: error as Error };
     }
-  };
+  });
 
-  const updateCategory = async (id: string, label: string): Promise<{ error?: Error }> => {
-    if (!user) return { error: new Error('No user') };
-
-    try {
+  const updateCategoryMutation = useMutation({
+    mutationFn: async ({ id, label }: { id: string; label: string }) => {
+      if (!user) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('custom_categories')
         .update({ label: label.trim() })
         .eq('id', id)
         .eq('user_id', user.id);
-
       if (error) throw error;
-
-      setCategories(prev => prev.map(cat => 
-        cat.id === id ? { ...cat, label: label.trim() } : cat
-      ));
+      return { id, label: label.trim() };
+    },
+    onSuccess: ({ id, label }) => {
+      queryClient.setQueryData(['custom_categories', user?.id], (old: CustomCategory[] | undefined) =>
+        old?.map(cat => cat.id === id ? { ...cat, label } : cat)
+      );
       toast({
         title: "Categoria atualizada!",
       });
-      return {};
-    } catch (error) {
+    },
+    onError: () => {
       logger.error('Error updating category');
       toast({
         variant: "destructive",
         title: "Erro",
         description: "Não foi possível atualizar a categoria.",
       });
-      return { error: error as Error };
     }
-  };
+  });
 
-  const deleteCategory = async (id: string): Promise<{ error?: Error }> => {
-    if (!user) return { error: new Error('No user') };
-
-    try {
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('custom_categories')
         .delete()
         .eq('id', id)
         .eq('user_id', user.id);
-
       if (error) throw error;
-
-      setCategories(prev => prev.filter(cat => cat.id !== id));
+      return id;
+    },
+    onSuccess: (id) => {
+      queryClient.setQueryData(['custom_categories', user?.id], (old: CustomCategory[] | undefined) =>
+        old?.filter(cat => cat.id !== id)
+      );
       toast({
         title: "Categoria excluída",
       });
-      return {};
-    } catch (error) {
+    },
+    onError: () => {
       logger.error('Error deleting category');
       toast({
         variant: "destructive",
         title: "Erro",
         description: "Não foi possível excluir a categoria.",
       });
-      return { error: error as Error };
     }
-  };
+  });
 
   return {
     categories,
     loading,
-    addCategory,
-    updateCategory,
-    deleteCategory,
-    refetch: fetchCategories,
+    addCategory: (label: string) => addCategoryMutation.mutateAsync(label),
+    updateCategory: (id: string, label: string) => updateCategoryMutation.mutateAsync({ id, label }),
+    deleteCategory: deleteCategoryMutation.mutateAsync,
+    refetch,
   };
 }
+

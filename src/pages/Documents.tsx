@@ -10,10 +10,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useDocuments } from '@/hooks/useDocuments';
 import { DocumentViewer } from '@/components/documents/DocumentViewer';
+import { useCategories } from '@/hooks/useCategories';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
 
-const categories = [
+const defaultCategories = [
   { id: 'immigration' as const, icon: FileText, label: 'Imigração', color: 'bg-primary/15 text-primary' },
   { id: 'work' as const, icon: Briefcase, label: 'Trabalho', color: 'bg-info/15 text-info' },
   { id: 'health' as const, icon: Heart, label: 'Saúde', color: 'bg-success/15 text-success' },
@@ -34,7 +35,8 @@ const getFileTypeInfo = (fileType: string | null) => {
 };
 
 export default function Documents() {
-  const { documents, loading, addDocument, updateDocument, deleteDocument } = useDocuments();
+  const { documents, loading: docsLoading, addDocument, updateDocument, deleteDocument } = useDocuments();
+  const { categories: customCategories, loading: catsLoading } = useCategories();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('immigration');
   const [documentName, setDocumentName] = useState('');
@@ -117,6 +119,18 @@ export default function Documents() {
     return matchesCategory && matchesSearch;
   });
 
+  const loading = docsLoading || catsLoading;
+
+  const allCategories = [
+    ...defaultCategories,
+    ...customCategories.map(cat => ({
+      id: cat.id,
+      label: cat.label,
+      icon: FileText,
+      color: 'bg-muted text-muted-foreground'
+    }))
+  ];
+
   if (loading) {
     return (
       <MobileLayout>
@@ -174,7 +188,7 @@ export default function Documents() {
           >
             Todos
           </button>
-          {categories.map((cat) => (
+          {allCategories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setFilterCategory(cat.id)}
@@ -206,7 +220,7 @@ export default function Documents() {
         ) : (
           <div className="space-y-3">
             {filteredDocuments.map((doc) => {
-              const category = categories.find((c) => c.id === doc.category);
+              const category = allCategories.find((c) => c.id === doc.category);
               const Icon = category?.icon || FileText;
               const fileInfo = getFileTypeInfo(doc.file_type);
 
@@ -374,8 +388,8 @@ export default function Documents() {
             {/* Category Selection */}
             <div className="space-y-2">
               <Label>Categoria</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {categories.map((cat) => {
+              <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
+                {allCategories.map((cat) => {
                   const Icon = cat.icon;
                   return (
                     <button

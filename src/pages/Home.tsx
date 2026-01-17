@@ -6,12 +6,14 @@ import { MobileLayout } from '@/components/layout/MobileLayout';
 import { AlertBanner } from '@/components/ui/AlertBanner';
 import { QuickAccessCard } from '@/components/ui/QuickAccessCard';
 import { ActionCard } from '@/components/ui/ActionCard';
-import { FileText, Globe, MessageCircle, Settings, StickyNote, Loader2 } from 'lucide-react';
+import { FileText, Globe, MessageCircle, Settings, StickyNote, Loader2, Star } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotes } from '@/hooks/useNotes';
+import { useDocuments } from '@/hooks/useDocuments';
 import { SkeletonList, SkeletonCard } from '@/components/ui/skeleton-card';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
@@ -23,6 +25,8 @@ export default function Home() {
   const { user } = useAuth();
   const { profile, updateNumber, loading: profileLoading } = useProfile();
   const { process: aimaProcess } = useAimaProcess();
+  const { notes } = useNotes();
+  const { documents } = useDocuments();
   const [showNumberDialog, setShowNumberDialog] = useState<NumberField | null>(null);
   const [tempNumber, setTempNumber] = useState('');
   const [saving, setSaving] = useState(false);
@@ -80,27 +84,45 @@ export default function Home() {
     });
   }
 
+  // Notification for deadlines (24h before)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+  const noteDeadlines = notes.filter(n => n.reminder_date?.startsWith(tomorrowStr));
+  const aimaDeadlines = aimaProcess?.important_dates?.filter(d => d.date === tomorrowStr) || [];
+
+  if (noteDeadlines.length > 0 || aimaDeadlines.length > 0) {
+    alerts.push({
+      message: `Você tem ${noteDeadlines.length + aimaDeadlines.length} prazos chegando em 24h!`,
+      variant: 'warning' as const,
+      action: 'Ver',
+      onAction: () => navigate(noteDeadlines.length > 0 ? '/notes' : '/aima'),
+    });
+  }
+
+  const starredNotes = notes.filter(n => n.is_important);
+
+
   if (profileLoading) {
     return (
       <MobileLayout>
-        <MobileLayout>
-          <div className="px-5 py-6 safe-area-top space-y-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="space-y-2">
-                <div className="h-8 w-32 bg-muted animate-pulse rounded" />
-                <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-              </div>
-              <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+        <div className="px-5 py-6 safe-area-top space-y-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="space-y-2">
+              <div className="h-8 w-32 bg-muted animate-pulse rounded" />
+              <div className="h-4 w-24 bg-muted animate-pulse rounded" />
             </div>
-            <div className="space-y-4">
-              <div className="h-4 w-32 bg-muted animate-pulse rounded" />
-              <div className="flex gap-3 overflow-hidden">
-                <SkeletonCard count={2} className="w-[140px] h-[100px]" />
-              </div>
-            </div>
-            <SkeletonList count={4} />
+            <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
           </div>
-        </MobileLayout>
+          <div className="space-y-4">
+            <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+            <div className="flex gap-3 overflow-hidden">
+              <SkeletonCard count={2} className="w-[140px] h-[100px]" />
+            </div>
+          </div>
+          <SkeletonList count={4} />
+        </div>
       </MobileLayout>
     );
   }
@@ -201,6 +223,31 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Starred Notes Section */}
+        {starredNotes.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Notas Favoritas
+            </h2>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5">
+              {starredNotes.map((note) => (
+                <div
+                  key={note.id}
+                  onClick={() => navigate('/notes')}
+                  className="min-w-[160px] max-w-[200px] bg-card border rounded-2xl p-4 shadow-sm space-y-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <StickyNote className="w-4 h-4 text-primary" />
+                    <Star className="w-4 h-4 fill-[#FFD700] text-[#FFD700]" />
+                  </div>
+                  <h3 className="font-semibold text-sm truncate">{note.title}</h3>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{note.content}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Quick Access Numbers */}
         <div className="mb-8">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
@@ -233,6 +280,7 @@ export default function Home() {
             />
           </div>
         </div>
+
 
         {/* Main Actions */}
         <div className="space-y-3">

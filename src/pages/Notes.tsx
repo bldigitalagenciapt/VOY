@@ -42,7 +42,7 @@ export default function Notes() {
   const handleSaveNote = async () => {
     if (formData.title) {
       setSaving(true);
-      
+
       if (editingNoteId) {
         await updateNote(editingNoteId, {
           title: formData.title,
@@ -60,7 +60,7 @@ export default function Notes() {
           reminder_date: formData.hasReminder ? formData.reminder_date : undefined,
         });
       }
-      
+
       setSaving(false);
       resetForm();
       setShowAddDialog(false);
@@ -157,7 +157,7 @@ export default function Notes() {
                       className={cn(
                         'w-5 h-5 transition-colors',
                         note.is_important
-                          ? 'fill-accent text-accent'
+                          ? 'fill-[#FFD700] text-[#FFD700]'
                           : 'text-muted-foreground'
                       )}
                     />
@@ -257,7 +257,7 @@ export default function Notes() {
 
             <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
               <div className="flex items-center gap-3">
-                <Star className="w-5 h-5 text-accent" />
+                <Star className="w-5 h-5 text-[#FFD700]" />
                 <span className="font-medium">Marcar como importante</span>
               </div>
               <Switch

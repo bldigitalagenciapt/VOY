@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 
-interface Document {
+export interface Document {
   id: string;
   user_id: string;
   name: string;
@@ -17,48 +17,40 @@ interface Document {
 
 export function useDocuments() {
   const { user } = useAuth();
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchDocuments = useCallback(async () => {
-    if (!user) {
-      setDocuments([]);
-      setLoading(false);
-      return;
-    }
+  const { data: documents = [], isLoading: loading, refetch } = useQuery({
+    queryKey: ['documents', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
 
-    try {
       const { data, error } = await supabase
         .from('documents')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setDocuments(data || []);
-    } catch (error) {
-      logger.error('Error fetching documents');
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+      if (error) {
+        logger.error('Error fetching documents', { error });
+        throw error;
+      }
+      return data as Document[];
+    },
+    enabled: !!user,
+  });
 
-  useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
+  const addDocumentMutation = useMutation({
+    mutationFn: async ({ name, category, file }: { name: string; category: string; file?: File }) => {
+      if (!user) throw new Error('Not authenticated');
 
-  const addDocument = async (name: string, category: string, file?: File) => {
-    if (!user) return { error: new Error('Not authenticated') };
-
-    try {
       let fileUrl = null;
       let fileType = null;
 
       if (file) {
         const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-        
-        // Determine content type - use file.type or infer from extension
+
+        // Determine content type
         let contentType = file.type;
         if (!contentType || contentType === 'application/octet-stream') {
           const mimeTypes: Record<string, string> = {
@@ -74,7 +66,7 @@ export function useDocuments() {
           };
           contentType = mimeTypes[fileExt] || 'application/octet-stream';
         }
-        
+
         const { error: uploadError } = await supabase.storage
           .from('documents')
           .upload(fileName, file, {
@@ -82,10 +74,7 @@ export function useDocuments() {
             upsert: false,
           });
 
-        if (uploadError) {
-          logger.error('Storage upload failed');
-          throw uploadError;
-        }
+        if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
           .from('documents')
@@ -108,30 +97,31 @@ export function useDocuments() {
         .single();
 
       if (error) throw error;
-
-      setDocuments(prev => [data, ...prev]);
-      
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['documents', user?.id], (old: Document[] | undefined) =>
+        old ? [data, ...old] : [data]
+      );
       toast({
         title: "Documento salvo!",
         description: "Seu documento foi adicionado com sucesso.",
       });
-
-      return { error: null, data };
-    } catch (error) {
+    },
+    onError: () => {
       logger.error('Error adding document');
       toast({
         variant: "destructive",
         title: "Erro ao salvar",
         description: "Não foi possível fazer upload. Verifique sua conexão.",
       });
-      return { error };
     }
-  };
+  });
 
-  const updateDocument = async (id: string, updates: { name?: string; category?: string }) => {
-    if (!user) return { error: new Error('Not authenticated') };
+  const updateDocumentMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string, updates: { name?: string; category?: string } }) => {
+      if (!user) throw new Error('Not authenticated');
 
-    try {
       const { error } = await supabase
         .from('documents')
         .update(updates)
@@ -139,32 +129,31 @@ export function useDocuments() {
         .eq('user_id', user.id);
 
       if (error) throw error;
-
-      setDocuments(prev => 
-        prev.map(doc => doc.id === id ? { ...doc, ...updates } : doc)
+      return { id, updates };
+    },
+    onSuccess: ({ id, updates }) => {
+      queryClient.setQueryData(['documents', user?.id], (old: Document[] | undefined) =>
+        old?.map(doc => doc.id === id ? { ...doc, ...updates } : doc)
       );
-      
       toast({
         title: "Documento atualizado!",
         description: "As alterações foram salvas.",
       });
-
-      return { error: null };
-    } catch (error) {
+    },
+    onError: () => {
       logger.error('Error updating document');
       toast({
         variant: "destructive",
         title: "Erro ao atualizar",
         description: "Tente novamente.",
       });
-      return { error };
     }
-  };
+  });
 
-  const deleteDocument = async (id: string) => {
-    if (!user) return { error: new Error('Not authenticated') };
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user) throw new Error('Not authenticated');
 
-    try {
       const { error } = await supabase
         .from('documents')
         .delete()
@@ -172,32 +161,34 @@ export function useDocuments() {
         .eq('user_id', user.id);
 
       if (error) throw error;
-
-      setDocuments(prev => prev.filter(doc => doc.id !== id));
-      
+      return id;
+    },
+    onSuccess: (id) => {
+      queryClient.setQueryData(['documents', user?.id], (old: Document[] | undefined) =>
+        old?.filter(doc => doc.id !== id)
+      );
       toast({
         title: "Documento excluído",
         description: "O documento foi removido.",
       });
-
-      return { error: null };
-    } catch (error) {
+    },
+    onError: () => {
       logger.error('Error deleting document');
       toast({
         variant: "destructive",
         title: "Erro ao excluir",
         description: "Tente novamente.",
       });
-      return { error };
     }
-  };
+  });
 
   return {
     documents,
     loading,
-    addDocument,
-    updateDocument,
-    deleteDocument,
-    refetch: fetchDocuments,
+    addDocument: (name: string, category: string, file?: File) => addDocumentMutation.mutateAsync({ name, category, file }),
+    updateDocument: (id: string, updates: { name?: string; category?: string }) => updateDocumentMutation.mutateAsync({ id, updates }),
+    deleteDocument: deleteDocumentMutation.mutateAsync,
+    refetch,
   };
 }
+

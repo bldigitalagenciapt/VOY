@@ -1,19 +1,19 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
 
-interface ImportantDate {
+export interface ImportantDate {
   label: string;
   date: string;
 }
 
-interface AimaProcess {
+export interface AimaProcess {
   id: string;
   user_id: string;
-  process_type: string | null;
+  process_type: 'cplp' | 'manifestation' | 'renewal' | 'visa' | null;
   completed_steps: string[];
   important_dates: ImportantDate[];
   protocols: string[];
@@ -25,8 +25,7 @@ interface AimaProcess {
 
 export function useAimaProcess() {
   const { user } = useAuth();
-  const [process, setProcess] = useState<AimaProcess | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   const parseImportantDates = (data: Json | null): ImportantDate[] => {
     if (!data || !Array.isArray(data)) return [];
@@ -38,57 +37,42 @@ export function useAimaProcess() {
     }).filter(d => d.label && d.date);
   };
 
-  const fetchProcess = useCallback(async () => {
-    if (!user) {
-      setProcess(null);
-      setLoading(false);
-      return;
-    }
+  const { data: process = null, isLoading: loading, refetch } = useQuery({
+    queryKey: ['aima_process', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
 
-    try {
       const { data, error } = await supabase
         .from('aima_processes')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Error fetching AIMA process', { error });
+        throw error;
+      }
 
       if (data) {
-        setProcess({
+        return {
           ...data,
           completed_steps: data.completed_steps || [],
           important_dates: parseImportantDates(data.important_dates),
           protocols: data.protocols || [],
           step: (data.completed_steps?.length || 0) + 1,
-        });
-      } else {
-        setProcess(null);
+        } as AimaProcess;
       }
-    } catch (error) {
-      logger.error('Error fetching AIMA process');
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+      return null;
+    },
+    enabled: !!user,
+  });
 
-  useEffect(() => {
-    fetchProcess();
-  }, [fetchProcess]);
-
-  // Helper to calculate step locally for optimistic updates
   const calculateStep = (completedHelper: string[]) => (completedHelper?.length || 0) + 1;
 
-  const createOrUpdateProcess = async (updates: {
-    process_type?: string | null;
-    completed_steps?: string[];
-    important_dates?: ImportantDate[];
-    protocols?: string[];
-    notes?: string | null;
-  }) => {
-    if (!user) return { error: new Error('Not authenticated') };
+  const mutation = useMutation({
+    mutationFn: async (updates: Partial<AimaProcess>) => {
+      if (!user) throw new Error('Not authenticated');
 
-    try {
       const dbUpdates = {
         process_type: updates.process_type,
         completed_steps: updates.completed_steps,
@@ -105,22 +89,12 @@ export function useAimaProcess() {
       });
 
       if (process) {
-        // Update existing
         const { error } = await supabase
           .from('aima_processes')
           .update(dbUpdates)
           .eq('user_id', user.id);
-
         if (error) throw error;
-
-        setProcess(prev => prev ? {
-          ...prev,
-          ...updates,
-          important_dates: updates.important_dates || prev.important_dates,
-          step: calculateStep(updates.completed_steps || prev.completed_steps),
-        } : null);
       } else {
-        // Create new
         const { data, error } = await supabase
           .from('aima_processes')
           .insert({
@@ -133,38 +107,31 @@ export function useAimaProcess() {
           })
           .select()
           .single();
-
         if (error) throw error;
-
-        setProcess({
-          ...data,
-          completed_steps: data.completed_steps || [],
-          important_dates: parseImportantDates(data.important_dates),
-          protocols: data.protocols || [],
-          step: calculateStep(data.completed_steps || []),
-        });
+        return data;
       }
-
+      return updates;
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['aima_process', user?.id] });
       toast({
         title: "Informações salvas!",
         description: "Seu processo foi atualizado com sucesso.",
       });
-
-      return { error: null };
-    } catch (error) {
+    },
+    onError: () => {
       logger.error('Error updating AIMA process');
       toast({
         variant: "destructive",
         title: "Erro ao salvar",
         description: "Tente novamente.",
       });
-      return { error };
     }
-  };
+  });
 
   const selectProcessType = async (type: string) => {
-    return createOrUpdateProcess({
-      process_type: type,
+    return mutation.mutateAsync({
+      process_type: type as any,
       completed_steps: [],
       important_dates: [],
       protocols: [],
@@ -172,32 +139,28 @@ export function useAimaProcess() {
   };
 
   const toggleStep = async (stepId: string) => {
-    if (!process) return { error: new Error('No process found') };
-
+    if (!process) return;
     const currentSteps = process.completed_steps || [];
     const newSteps = currentSteps.includes(stepId)
       ? currentSteps.filter(s => s !== stepId)
       : [...currentSteps, stepId];
-
-    return createOrUpdateProcess({ completed_steps: newSteps });
+    return mutation.mutateAsync({ completed_steps: newSteps });
   };
 
   const addDate = async (date: ImportantDate) => {
-    if (!process) return { error: new Error('No process found') };
-
+    if (!process) return;
     const newDates = [...(process.important_dates || []), date];
-    return createOrUpdateProcess({ important_dates: newDates });
+    return mutation.mutateAsync({ important_dates: newDates });
   };
 
   const addProtocol = async (protocol: string) => {
-    if (!process) return { error: new Error('No process found') };
-
+    if (!process) return;
     const newProtocols = [...(process.protocols || []), protocol];
-    return createOrUpdateProcess({ protocols: newProtocols });
+    return mutation.mutateAsync({ protocols: newProtocols });
   };
 
   const clearProcess = async () => {
-    return createOrUpdateProcess({
+    return mutation.mutateAsync({
       process_type: null,
       completed_steps: [],
       important_dates: [],
@@ -213,7 +176,8 @@ export function useAimaProcess() {
     addDate,
     addProtocol,
     clearProcess,
-    updateProcess: createOrUpdateProcess,
-    refetch: fetchProcess,
+    updateProcess: (updates: Partial<AimaProcess>) => mutation.mutateAsync(updates),
+    refetch,
   };
 }
+

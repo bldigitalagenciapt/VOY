@@ -595,27 +595,6 @@ export default function Aima() {
           )}
         </div>
 
-        {/* Visa Section Link */}
-        <div className="border-t border-border pt-6">
-          <button
-            onClick={() => setShowVisaSection(true)}
-            className="w-full flex items-center gap-4 p-4 rounded-2xl border border-info/30 bg-info/5 hover:border-info transition-all"
-          >
-            <div className="w-10 h-10 rounded-xl bg-info/15 flex items-center justify-center">
-              <Plane className="w-5 h-5 text-info" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="font-semibold">Tipos de Vistos</p>
-              <p className="text-sm text-muted-foreground">
-                {savedVisa
-                  ? `Seu visto: ${visaTypes.find(v => v.id === savedVisa)?.name}`
-                  : 'Conheça os tipos disponíveis'
-                }
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
       </div>
 
       {/* Add Date Dialog */}
