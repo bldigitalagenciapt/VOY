@@ -49,7 +49,7 @@ export default function Auth() {
         return false;
       }
     }
-    
+
     setPasswordErrors([]);
     return true;
   };
@@ -150,20 +150,20 @@ export default function Auth() {
                   )}
                 </button>
               </div>
-              
+
               {/* Password strength indicator for signup */}
               {!isLogin && password.length > 0 && (
                 <div className="mt-2">
                   <div className="flex gap-1 mb-1">
                     <div className={cn(
                       "h-1 flex-1 rounded",
-                      passwordStrength === 'weak' ? 'bg-destructive' : 
-                      passwordStrength === 'medium' ? 'bg-warning' : 'bg-success'
+                      passwordStrength === 'weak' ? 'bg-destructive' :
+                        passwordStrength === 'medium' ? 'bg-warning' : 'bg-success'
                     )} />
                     <div className={cn(
                       "h-1 flex-1 rounded",
-                      passwordStrength === 'medium' ? 'bg-warning' : 
-                      passwordStrength === 'strong' ? 'bg-success' : 'bg-muted'
+                      passwordStrength === 'medium' ? 'bg-warning' :
+                        passwordStrength === 'strong' ? 'bg-success' : 'bg-muted'
                     )} />
                     <div className={cn(
                       "h-1 flex-1 rounded",
@@ -172,11 +172,11 @@ export default function Auth() {
                   </div>
                   <p className={cn(
                     "text-xs",
-                    passwordStrength === 'weak' ? 'text-destructive' : 
-                    passwordStrength === 'medium' ? 'text-warning' : 'text-success'
+                    passwordStrength === 'weak' ? 'text-destructive' :
+                      passwordStrength === 'medium' ? 'text-warning' : 'text-success'
                   )}>
-                    Força: {passwordStrength === 'weak' ? 'Fraca' : 
-                           passwordStrength === 'medium' ? 'Média' : 'Forte'}
+                    Força: {passwordStrength === 'weak' ? 'Fraca' :
+                      passwordStrength === 'medium' ? 'Média' : 'Forte'}
                   </p>
                 </div>
               )}
@@ -221,11 +221,7 @@ export default function Auth() {
           </div>
 
           {/* Test Account */}
-          <div className="mt-8 p-4 rounded-xl bg-muted/50 text-center">
-            <p className="text-xs text-muted-foreground mb-2">Conta de teste:</p>
-            <p className="text-sm font-mono">teste@raiz.app</p>
-            <p className="text-sm font-mono">123456</p>
-          </div>
+
         </div>
       </div>
     </div>
