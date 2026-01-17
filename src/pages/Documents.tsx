@@ -83,7 +83,8 @@ export default function Documents() {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [],
       'application/vnd.ms-excel': [],
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': []
-    }
+    },
+    noClick: true
   });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,7 +233,10 @@ export default function Documents() {
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuItem
                         className="gap-2"
-                        onClick={() => setViewingDoc(doc)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewingDoc(doc);
+                        }}
                       >
                         <Eye className="w-4 h-4" />
                         Visualizar
