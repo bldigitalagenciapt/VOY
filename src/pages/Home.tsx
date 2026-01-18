@@ -242,13 +242,13 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">AIMA</span>
               <span className="text-xs font-bold text-primary">
-                {aimaProcess?.process_type ? `${Math.round(aimaProcess.step / 5 * 100)}%` : '0%'}
+                {aimaProcess?.process_type ? `${Math.min(Math.round(aimaProcess.step / 5 * 100), 100)}%` : '0%'}
               </span>
             </div>
             <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
               <div
                 className="h-full bg-primary transition-all duration-500"
-                style={{ width: `${aimaProcess?.process_type ? (aimaProcess.step / 5 * 100) : 0}%` }}
+                style={{ width: `${aimaProcess?.process_type ? Math.min((aimaProcess.step / 5 * 100), 100) : 0}%` }}
               />
             </div>
             <p className="text-xs text-muted-foreground truncate font-semibold">

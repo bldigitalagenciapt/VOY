@@ -466,7 +466,7 @@ export default function Aima() {
   const steps = getStepsForProcess(process.process_type);
   const completedSteps = process.completed_steps || [];
   const completedCount = completedSteps.length;
-  const progress = steps.length > 0 ? (completedCount / steps.length) * 100 : 0;
+  const progress = steps.length > 0 ? Math.min((completedCount / steps.length) * 100, 100) : 0;
 
   return (
     <MobileLayout>
