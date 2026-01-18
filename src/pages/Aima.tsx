@@ -471,77 +471,122 @@ export default function Aima() {
   return (
     <MobileLayout>
       <div className="px-5 py-6 safe-area-top">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Imigração / AIMA</h1>
-            <p className="text-muted-foreground">
+        {/* Premium Header */}
+        <div className="relative mb-8 p-6 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Globe className="w-20 h-20 text-primary" />
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-primary uppercase tracking-widest">Processo Ativo</span>
+              <button
+                onClick={handleClearProcess}
+                disabled={saving}
+                className="text-xs font-bold text-destructive px-3 py-1 rounded-full bg-destructive/10 hover:bg-destructive/20 transition-colors"
+              >
+                Encerrar
+              </button>
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">
               {isSpecificVisa
                 ? visaTypes.find(v => v.id === process.process_type)?.name
                 : processTypes.find((p) => p.id === process.process_type)?.title}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Acompanhe cada etapa do seu caminho em Portugal
             </p>
           </div>
-          <button
-            onClick={handleClearProcess}
-            disabled={saving}
-            className="text-sm text-primary font-medium disabled:opacity-50"
-          >
-            Trocar
-          </button>
         </div>
 
-        {/* Progress */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">Progresso</span>
-            <span className="text-sm font-bold text-primary">{completedCount}/{steps.length}</span>
+        {/* Professional Combined Progress */}
+        <div className="mb-10 bg-card border rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Progresso Geral</p>
+              <p className="text-lg font-bold">{completedCount} de {steps.length} concluídas</p>
+            </div>
+            <div className="w-12 h-12 rounded-full border-4 border-primary/10 flex items-center justify-center relative">
+              <span className="text-xs font-bold text-primary">{Math.round(progress)}%</span>
+              <svg className="absolute inset-0 w-full h-full -rotate-90">
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  className="text-primary"
+                  strokeDasharray={`${(progress / 100) * 125.6} 125.6`}
+                />
+              </svg>
+            </div>
           </div>
-          <div className="h-3 bg-muted rounded-full overflow-hidden">
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary rounded-full transition-all duration-500"
+              className="h-full bg-primary rounded-full transition-all duration-700 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
-        {/* Checklist */}
-        <div className="mb-8">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
-            Suas etapas
+        {/* Professional Vertical Timeline */}
+        <div className="mb-10">
+          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-6 px-1">
+            Linha do Tempo
           </h2>
-          <div className="space-y-3">
-            {steps.map((step) => {
+          <div className="space-y-0 ml-4 border-l-2 border-muted">
+            {steps.map((step, index) => {
               const isCompleted = completedSteps.includes(step.id);
+              const isNext = !isCompleted && (index === 0 || completedSteps.includes(steps[index - 1].id));
+
               return (
-                <button
-                  key={step.id}
-                  onClick={() => handleToggleStep(step.id)}
-                  className={cn(
-                    'w-full flex items-center gap-4 p-4 rounded-xl border transition-all',
+                <div key={step.id} className="relative pb-8 pl-8 group">
+                  {/* Timeline Node */}
+                  <div className={cn(
+                    "absolute left-[-11px] top-0 w-5 h-5 rounded-full border-4 transition-all duration-300 z-10",
                     isCompleted
-                      ? 'bg-success/10 border-success/30'
-                      : 'bg-card border-border hover:border-primary/30'
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
-                      isCompleted
-                        ? 'bg-success border-success'
-                        : 'border-muted-foreground'
-                    )}
-                  >
-                    {isCompleted && <Check className="w-4 h-4 text-success-foreground" />}
+                      ? "bg-success border-[#fff] shadow-[0_0_0_2px_rgba(34,197,94,0.3)]"
+                      : isNext
+                        ? "bg-card border-primary animate-pulse shadow-[0_0_15px_rgba(var(--primary),0.2)]"
+                        : "bg-card border-muted"
+                  )}>
+                    {isCompleted && <Check className="w-3 h-3 text-white absolute inset-0 m-auto" />}
                   </div>
-                  <span
+
+                  {/* Content Card */}
+                  <button
+                    onClick={() => handleToggleStep(step.id)}
                     className={cn(
-                      'flex-1 text-left font-medium',
-                      isCompleted && 'line-through text-muted-foreground'
+                      'w-full text-left p-4 rounded-2xl border transition-all duration-200',
+                      isCompleted
+                        ? 'bg-success/5 border-success/20 opacity-80'
+                        : isNext
+                          ? 'bg-card border-primary/50 shadow-md scale-[1.02]'
+                          : 'bg-card border-border hover:border-primary/20'
                     )}
                   >
-                    {step.title}
-                  </span>
-                </button>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={cn(
+                        "text-xs font-bold tracking-tighter uppercase",
+                        isCompleted ? "text-success" : isNext ? "text-primary" : "text-muted-foreground"
+                      )}>
+                        Etapa {index + 1}
+                      </span>
+                      {isCompleted && <span className="text-[10px] bg-success/20 text-success px-2 py-0.5 rounded-full font-bold">Concluído</span>}
+                    </div>
+                    <span className={cn(
+                      'block font-semibold text-lg leading-tight',
+                      isCompleted && 'text-muted-foreground'
+                    )}>
+                      {step.title}
+                    </span>
+                    {isNext && (
+                      <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                        <ArrowLeft className="w-3 h-3 rotate-180" /> Clique para concluir esta etapa
+                      </p>
+                    )}
+                  </button>
+                </div>
               );
             })}
           </div>
