@@ -47,10 +47,11 @@ export function useDocuments() {
       let fileType = null;
 
       if (file) {
-        const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        // Construct the file path as requested: userId/filename
+        const fileName = `${user.id}/${file.name}`;
 
         // Determine content type
+        const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
         let contentType = file.type;
         if (!contentType || contentType === 'application/octet-stream') {
           const mimeTypes: Record<string, string> = {
@@ -68,14 +69,20 @@ export function useDocuments() {
         }
 
         const bucket = isSecure ? 'secure_documents' : 'documents';
+
+        // Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage
           .from(bucket)
           .upload(fileName, file, {
             contentType,
-            upsert: false,
+            upsert: true, // Use upsert to allow re-uploading the same file
           });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          // Log error as requested to debug 403 or bucket issues
+          console.error(`Supabase Storage Upload Error (${bucket}):`, uploadError);
+          throw uploadError;
+        }
 
         const { data: { publicUrl } } = supabase.storage
           .from(bucket)

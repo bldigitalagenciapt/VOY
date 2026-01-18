@@ -20,13 +20,14 @@ import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 import { TrendingUp, AlertCircle } from 'lucide-react';
 import { visaTypes } from '@/data/visaTypes';
+import { processTypes } from '@/pages/Aima'; // Imported from Aima page
 
-const processTypes = [
-  { id: 'cplp', title: 'CPLP' },
-  { id: 'manifestation', title: 'Manifestação de Interesse' },
-  { id: 'renewal', title: 'Renovação' },
-  { id: 'visa', title: 'Visto' },
-];
+// The local processTypes definition is now redundant if imported from Aima.
+// Keeping it for now as the instruction didn't explicitly remove it,
+// but the new logic uses the imported one.
+// The instruction implies this definition should be in Aima.tsx and exported from there.
+// For Home.tsx, we will use the imported 'processTypes'.
+// The original 'processTypesLocal' is removed as it's now redundant.
 
 type NumberField = 'nif' | 'niss' | 'sns' | 'passport';
 
@@ -34,10 +35,10 @@ export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, updateNumber, loading: profileLoading } = useProfile();
-  const { process: aimaProcess } = useAimaProcess();
+  const { process: aimaProcess } = useAimaProcess(); // Corrected destructuring to 'process'
   const { notes } = useNotes();
   const { documents } = useDocuments();
-  const { userDocuments, loading: docsLoading } = useUserDocuments();
+  const { userDocuments, loading: docsLoading } = useUserDocuments(); // Consolidated destructuring
   const [showNumberDialog, setShowNumberDialog] = useState<NumberField | null>(null);
   const [tempNumber, setTempNumber] = useState('');
   const [saving, setSaving] = useState(false);
@@ -112,10 +113,28 @@ export default function Home() {
     });
   }
 
-  // Calculate Progress
-  const totalChecklistItems = userDocuments.length || 0;
-  const completedChecklistItems = userDocuments.filter(ud => ud.is_completed).length;
-  const docProgress = totalChecklistItems > 0 ? Math.round((completedChecklistItems / totalChecklistItems) * 100) : 0;
+  // Calculate documentation progress based on the active AIMA process
+  const activeVisa = visaTypes.find(v => v.id === aimaProcess?.process_type);
+  const activeProcess = processTypes.find(p => p.id === aimaProcess?.process_type);
+
+  const requiredDocs = activeVisa?.requiredDocuments || [];
+  const totalChecklistItems = requiredDocs.length;
+
+  // A document is considered "completed" if:
+  // 1. It's manually checked in the user_documents table
+  // 2. OR if there's an actual file uploaded in the documents table with a similar name
+  const completedChecklistItems = requiredDocs.filter(docName => {
+    const isManualDone = userDocuments.some(ud => ud.document_name === docName && ud.is_completed);
+    const hasUpload = documents.some(d =>
+      d.name.toLowerCase().includes(docName.toLowerCase()) ||
+      docName.toLowerCase().includes(d.name.toLowerCase())
+    );
+    return isManualDone || hasUpload;
+  }).length;
+
+  const docProgress = totalChecklistItems > 0
+    ? Math.round((completedChecklistItems / totalChecklistItems) * 100)
+    : 0;
 
   const starredNotes = notes.filter(n => n.is_important);
 

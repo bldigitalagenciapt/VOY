@@ -18,7 +18,9 @@ import {
   Search,
   Home as HomeIcon,
   Globe,
-  Trash2
+  Trash2,
+  FileText,
+  RefreshCw
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -26,34 +28,15 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useAimaProcess } from '@/hooks/useAimaProcess';
 import { useUserDocuments } from '@/hooks/useUserDocuments';
+import { useDocuments } from '@/hooks/useDocuments';
 import { visaTypes, VisaType } from '@/data/visaTypes';
 import { toast } from '@/hooks/use-toast';
 
-const processTypes = [
-  {
-    id: 'cplp' as const,
-    icon: Users,
-    title: 'CPLP',
-    description: 'Comunidade dos Países de Língua Portuguesa',
-  },
-  {
-    id: 'manifestation' as const,
-    icon: FileCheck,
-    title: 'Manifestação de Interesse',
-    description: 'Para quem já está trabalhando',
-  },
-  {
-    id: 'renewal' as const,
-    icon: RotateCcw,
-    title: 'Renovação',
-    description: 'Renovar autorização de residência',
-  },
-  {
-    id: 'visa' as const,
-    icon: Plane,
-    title: 'Visto',
-    description: 'Visto de estadia temporária ou residência',
-  },
+export const processTypes = [
+  { id: 'cplp', title: 'CPLP', icon: Globe, description: 'Autorização de Residência CPLP' },
+  { id: 'manifestation', title: 'Manifestação de Interesse', icon: FileText, description: 'Artigo 88º e 89º' },
+  { id: 'renewal', title: 'Renovação', icon: RefreshCw, description: 'Renovação de Título de Residência' },
+  { id: 'visa', title: 'Vistos', icon: Plane, description: 'Vistos de Longa Duração (D1-D9)' },
 ];
 
 const visaIcons: Record<string, any> = {
@@ -108,6 +91,7 @@ const getStepsForProcess = (type: string) => {
 export default function Aima() {
   const { process, loading, selectProcessType, toggleStep, addDate, addProtocol, clearProcess, updateProcess } = useAimaProcess();
   const { userDocuments, toggleDocument } = useUserDocuments();
+  const { documents } = useDocuments();
   const [showDateDialog, setShowDateDialog] = useState(false);
   const [showProtocolDialog, setShowProtocolDialog] = useState(false);
   const [newDate, setNewDate] = useState({ label: '', date: '' });
@@ -119,7 +103,8 @@ export default function Aima() {
   const [selectedVisa, setSelectedVisa] = useState<VisaType | null>(null);
 
   // Consider process as a visa if it matches any specific visa ID
-  const isSpecificVisa = ['study', 'work', 'job-seeking', 'residence', 'schengen'].includes(process?.process_type || '');
+  const isSpecificVisa = visaTypes.some(v => v.id === process?.process_type);
+  const activeVisa = visaTypes.find(v => v.id === process?.process_type);
 
   const handleSelectProcess = async (type: string) => {
     setSaving(true);
@@ -591,6 +576,58 @@ export default function Aima() {
             })}
           </div>
         </div>
+
+        {/* Documentation Checklist for Visas */}
+        {isSpecificVisa && activeVisa && (
+          <div className="mb-10">
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-6 px-1">
+              Documentação Necessária
+            </h2>
+            <div className="space-y-3">
+              {activeVisa.requiredDocuments.map((docName, index) => {
+                const isCompleted = userDocuments.some(ud => ud.document_name === docName && ud.is_completed);
+                const hasUpload = documents.some(d =>
+                  d.name.toLowerCase().includes(docName.toLowerCase()) ||
+                  docName.toLowerCase().includes(d.name.toLowerCase())
+                );
+
+                return (
+                  <div
+                    key={index}
+                    className={cn(
+                      "flex items-center gap-4 p-4 rounded-2xl border-2 transition-all",
+                      isCompleted || hasUpload ? "border-success/20 bg-success/5" : "border-border bg-card"
+                    )}
+                  >
+                    <button
+                      onClick={() => toggleDocument(docName, isCompleted)}
+                      className={cn(
+                        "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors",
+                        isCompleted || hasUpload
+                          ? "bg-success border-success text-white"
+                          : "border-muted-foreground/30 hover:border-primary"
+                      )}
+                    >
+                      {(isCompleted || hasUpload) && <Check className="w-4 h-4 stroke-[3px]" />}
+                    </button>
+                    <div className="flex-1">
+                      <p className={cn(
+                        "font-semibold text-sm leading-tight",
+                        (isCompleted || hasUpload) && "text-muted-foreground line-through opacity-70"
+                      )}>
+                        {docName}
+                      </p>
+                      {hasUpload && !isCompleted && (
+                        <p className="text-[10px] text-success font-bold uppercase mt-1">Detectado em Meus Documentos</p>
+                      )}
+                    </div>
+                    {hasUpload && <FileText className="w-4 h-4 text-success opacity-50" />}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Important Dates */}
         <div className="mb-8">
