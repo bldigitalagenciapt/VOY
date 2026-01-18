@@ -215,78 +215,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* AIMA Status Summary - Redesigned for Premium Look */}
-        <div
-          onClick={() => navigate('/aima')}
-          className="mb-8 relative overflow-hidden bg-gradient-to-br from-[#1a1c1e] to-[#2d2f31] rounded-3xl p-6 shadow-xl border border-white/5 cursor-pointer hover:scale-[1.01] transition-all active:scale-[0.98]"
-        >
-          {/* Subtle Background Pattern */}
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Globe className="w-24 h-24 text-white" />
-          </div>
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="bg-primary/20 p-2 rounded-xl">
-                <Globe className="w-5 h-5 text-primary" />
-              </div>
-              <span className="text-sm font-semibold text-white/70 uppercase tracking-widest">AIMA - Status</span>
-            </div>
-
-            {aimaProcess?.process_type ? (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-bold text-white leading-tight">
-                    {visaTypes.find(v => v.id === aimaProcess.process_type)?.name ||
-                      processTypes.find(p => p.id === aimaProcess.process_type)?.title ||
-                      aimaProcess.process_type.replace(/_/g, ' ')}
-                  </h3>
-                  <p className="text-white/50 text-sm mt-1">Seu processo em andamento</p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-bold uppercase tracking-tighter">
-                    <span className="text-primary">Progresso</span>
-                    <span className="text-white">Etapa {aimaProcess.step}</span>
-                  </div>
-                  <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full transition-all duration-1000 ease-in-out shadow-[0_0_10px_rgba(var(--primary),0.3)]"
-                      style={{ width: `${Math.min((aimaProcess.step / 5) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className={cn(
-                        "w-6 h-6 rounded-full border-2 border-[#1a1c1e] bg-muted flex items-center justify-center overflow-hidden",
-                        i <= aimaProcess.step ? "bg-primary/20" : "bg-white/5"
-                      )}>
-                        {i <= aimaProcess.step && <div className="w-2 h-2 rounded-full bg-primary" />}
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-xs font-medium text-white/40">Atualizado recentemente</span>
-                </div>
-              </div>
-            ) : (
-              <div className="py-2">
-                <p className="text-white font-bold text-lg">Inicie seu processo</p>
-                <p className="text-white/50 text-sm">Configure seu perfil imigratório para começar o acompanhamento.</p>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="mt-4 bg-white/10 hover:bg-white/20 text-white border-none rounded-xl"
-                >
-                  Configurar agora
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Dashboard Widgets */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           {/* Profile Progress */}
@@ -303,6 +231,34 @@ export default function Home() {
             </div>
             <p className="text-xs text-muted-foreground">
               {completedFields} de {profileFields.length} documentos
+            </p>
+          </div>
+
+          {/* AIMA Status Summary - Restored to original size with specific name */}
+          <div
+            className="bg-card border rounded-2xl p-4 shadow-sm space-y-3 cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={() => navigate('/aima')}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">AIMA</span>
+              <span className="text-xs font-bold text-primary">
+                {aimaProcess?.process_type ? `${Math.round(aimaProcess.step / 5 * 100)}%` : '0%'}
+              </span>
+            </div>
+            <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-500"
+                style={{ width: `${aimaProcess?.process_type ? (aimaProcess.step / 5 * 100) : 0}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground truncate font-semibold">
+              {aimaProcess?.process_type ? (
+                visaTypes.find(v => v.id === aimaProcess.process_type)?.name ||
+                processTypes.find(p => p.id === aimaProcess.process_type)?.title ||
+                aimaProcess.process_type.replace(/_/g, ' ')
+              ) : (
+                "Iniciar Processo"
+              )}
             </p>
           </div>
         </div>
