@@ -19,7 +19,13 @@ export function useUserDocuments() {
         queryKey: ['user_documents', user?.id],
         queryFn: async () => {
             if (!user) return [];
+
+            // Debugging connection as requested
+            const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+            console.log(`[DEBUG] Attempting fetch to: ${baseUrl}/rest/v1/user_documents?user_id=eq.${user.id}`);
+
             const { data, error } = await (supabase as any)
+                .schema('public')
                 .from('user_documents')
                 .select('*')
                 .eq('user_id', user.id);
@@ -43,6 +49,7 @@ export function useUserDocuments() {
             if (!user) throw new Error('Not authenticated');
 
             const { data, error } = await (supabase as any)
+                .schema('public')
                 .from('user_documents')
                 .upsert(
                     {
@@ -56,7 +63,15 @@ export function useUserDocuments() {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Error upserting user document:', {
+                    message: error.message,
+                    hint: (error as any).hint,
+                    details: (error as any).details,
+                    fullError: error
+                });
+                throw error;
+            }
             return data;
         },
         onSuccess: () => {

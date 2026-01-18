@@ -30,6 +30,7 @@ export function useProfile() {
       if (!user) return null;
 
       const { data, error } = await supabase
+        .schema('public')
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
@@ -49,6 +50,7 @@ export function useProfile() {
       if (!user) throw new Error('Not authenticated');
 
       const { error } = await supabase
+        .schema('public')
         .from('profiles')
         .update(updates)
         .eq('user_id', user.id);

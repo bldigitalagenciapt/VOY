@@ -24,7 +24,12 @@ export function useDocuments() {
     queryFn: async () => {
       if (!user) return [];
 
+      // Debugging connection as requested
+      const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+      console.log(`[DEBUG] Attempting fetch to: ${baseUrl}/rest/v1/documents?user_id=eq.${user.id}`);
+
       const { data, error } = await supabase
+        .schema('public')
         .from('documents')
         .select('*')
         .eq('user_id', user.id)
@@ -80,9 +85,11 @@ export function useDocuments() {
 
         if (uploadError) {
           // Log error as requested to debug 403 or bucket issues
-          console.error(`Supabase Storage Upload Error (${bucket}):`, {
-            message: uploadError.message,
-            hint: (uploadError as any).hint,
+          console.error(`[CRITICAL] Supabase Storage Error!`, {
+            bucket,
+            fileName,
+            error: uploadError.message,
+            tip: "Certifique-se de que os buckets 'documents' e 'secure_documents' foram criados no SQL Editor.",
             fullError: uploadError
           });
           throw uploadError;
@@ -97,6 +104,7 @@ export function useDocuments() {
       }
 
       const { data, error } = await supabase
+        .schema('public')
         .from('documents')
         .insert({
           user_id: user.id,
@@ -109,7 +117,7 @@ export function useDocuments() {
         .single();
 
       if (error) {
-        console.error('Error inserting document record:', {
+        console.error('[DATABASE] Error inserting document record:', {
           message: error.message,
           hint: error.hint,
           details: error.details,
@@ -130,15 +138,18 @@ export function useDocuments() {
     },
     onError: (error: any) => {
       logger.error('Error adding document', { error });
-      console.error('useDocuments mutation error:', {
+      console.error('[UPLOAD_FAILED] useDocuments mutation error:', {
         message: error.message,
         hint: error.hint,
+        details: error.details,
         fullError: error
       });
       toast({
         variant: "destructive",
         title: "Erro ao salvar",
-        description: "Não foi possível fazer upload. Verifique sua conexão.",
+        description: error.message?.includes('bucket')
+          ? "Erro de configuração: Bucket não encontrado."
+          : "Não foi possível fazer upload. Verifique sua conexão.",
       });
     }
   });
@@ -148,6 +159,7 @@ export function useDocuments() {
       if (!user) throw new Error('Not authenticated');
 
       const { error } = await supabase
+        .schema('public')
         .from('documents')
         .update(updates)
         .eq('id', id)
@@ -180,6 +192,7 @@ export function useDocuments() {
       if (!user) throw new Error('Not authenticated');
 
       const { error } = await supabase
+        .schema('public')
         .from('documents')
         .delete()
         .eq('id', id)

@@ -26,6 +26,7 @@ export function useNotes() {
       if (!user) return [];
 
       const { data, error } = await supabase
+        .schema('public')
         .from('notes')
         .select('*')
         .eq('user_id', user.id)
@@ -52,6 +53,7 @@ export function useNotes() {
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
+        .schema('public')
         .from('notes')
         .insert({
           user_id: user.id,
@@ -91,6 +93,7 @@ export function useNotes() {
       if (!user) throw new Error('Not authenticated');
 
       const { error } = await supabase
+        .schema('public')
         .from('notes')
         .update(updates)
         .eq('id', id)
@@ -123,6 +126,7 @@ export function useNotes() {
       if (!user) throw new Error('Not authenticated');
 
       const { error } = await supabase
+        .schema('public')
         .from('notes')
         .delete()
         .eq('id', id)

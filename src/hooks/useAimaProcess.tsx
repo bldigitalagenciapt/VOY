@@ -43,6 +43,7 @@ export function useAimaProcess() {
       if (!user) return null;
 
       const { data, error } = await supabase
+        .schema('public')
         .from('aima_processes')
         .select('*')
         .eq('user_id', user.id)
@@ -96,6 +97,7 @@ export function useAimaProcess() {
 
       if (process) {
         const { error } = await supabase
+          .schema('public')
           .from('aima_processes')
           .update(dbUpdates)
           .eq('user_id', user.id);
@@ -110,6 +112,7 @@ export function useAimaProcess() {
         }
       } else {
         const { data, error } = await supabase
+          .schema('public')
           .from('aima_processes')
           .insert({
             user_id: user.id,
