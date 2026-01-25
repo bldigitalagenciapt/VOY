@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
-import { ChevronLeft, Globe, Shield, Cloud, Palette, Info, ChevronRight, LogOut, Loader2, User, FolderPlus, Star, Trash2, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, Globe, Shield, Cloud, Palette, Info, ChevronRight, LogOut, Loader2, User, FolderPlus, Star, Trash2, AlertTriangle, ShieldCheck, Terminal } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -20,6 +20,10 @@ export default function Settings() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const isAdmin = profile?.is_admin === true || user?.email?.toLowerCase().trim() === 'brunoalmeidaoficial21@gmail.com';
+
+  console.log('Current user email:', user?.email);
+  console.log('Is Admin:', isAdmin, 'is_admin flag:', profile?.is_admin);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -187,24 +191,28 @@ export default function Settings() {
 
         {/* Actions */}
         <div className="space-y-4">
-          {(profile?.is_admin || user?.email === 'brunoalmeidaoficial21@gmail.com') && (
+          {isAdmin && (
             <button
               onClick={() => navigate('/admin')}
-              className="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all border-dashed"
+              className="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary/10 border-2 border-primary/20 hover:bg-primary/20 transition-all border-dashed"
             >
               <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 text-left">
                 <p className="font-bold text-primary">Master Panel</p>
-                <p className="text-xs text-primary/70">Gestão global do sistema</p>
+                <p className="text-xs text-primary/70">Acesso Administrativo</p>
               </div>
               <ChevronRight className="w-5 h-5 text-primary" />
             </button>
           )}
 
           <button
-            onClick={handleLogout}
+            onClick={async () => {
+              setLoggingOut(true);
+              await signOut();
+              window.location.href = '/auth';
+            }}
             disabled={loggingOut}
             className="w-full flex items-center gap-4 p-4 rounded-2xl bg-muted/50 border border-border hover:bg-muted transition-all"
           >
