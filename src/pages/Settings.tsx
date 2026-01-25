@@ -22,9 +22,6 @@ export default function Settings() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const isAdmin = profile?.is_admin === true || user?.email?.toLowerCase().trim() === 'brunoalmeidaoficial21@gmail.com';
 
-  console.log('Current user email:', user?.email);
-  console.log('Is Admin:', isAdmin, 'is_admin flag:', profile?.is_admin);
-
   const handleLogout = async () => {
     setLoggingOut(true);
     await signOut();
