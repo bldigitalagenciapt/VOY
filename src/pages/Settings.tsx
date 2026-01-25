@@ -187,6 +187,22 @@ export default function Settings() {
 
         {/* Actions */}
         <div className="space-y-4">
+          {profile?.is_admin && (
+            <button
+              onClick={() => navigate('/admin')}
+              className="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all border-dashed"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="font-bold text-primary">Master Panel</p>
+                <p className="text-xs text-primary/70">Gestão global do sistema</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-primary" />
+            </button>
+          )}
+
           <button
             onClick={handleLogout}
             disabled={loggingOut}

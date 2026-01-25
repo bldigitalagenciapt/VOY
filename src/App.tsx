@@ -36,6 +36,7 @@ import SalaryCalculator from "./pages/SalaryCalculator";
 import UsefulLinks from "./pages/UsefulLinks";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
+import Admin from "./pages/Admin";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -260,6 +261,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Agenda />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <Admin />
           </ProtectedRoute>
         }
       />

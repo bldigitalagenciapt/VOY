@@ -19,6 +19,7 @@ export interface Profile {
   theme: string;
   display_name?: string | null;
   avatar_url?: string | null;
+  is_admin?: boolean;
   custom_quick_access?: { id: string; label: string; value: string }[] | null;
 }
 
@@ -47,7 +48,7 @@ export function useProfile() {
             decryptedDoc[field] = await decryptData(decryptedDoc[field] as string, user.id);
           }
         }
-        return decryptedDoc as Profile;
+        return decryptedDoc as unknown as Profile;
       }
       return null;
     },
