@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
-import { ChevronLeft, Globe, Shield, Cloud, Palette, Info, ChevronRight, LogOut, Loader2, User, FolderPlus, Star } from 'lucide-react';
+import { ChevronLeft, Globe, Shield, Cloud, Palette, Info, ChevronRight, LogOut, Loader2, User, FolderPlus, Star, Trash2, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -15,6 +18,8 @@ export default function Settings() {
   const [showLanguageDialog, setShowLanguageDialog] = useState(false);
   const [showThemeDialog, setShowThemeDialog] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -41,6 +46,29 @@ export default function Settings() {
     await updateProfile({ display_name: tempName });
     setSavingName(false);
     setShowNameDialog(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setDeletingAccount(true);
+    try {
+      // 1. Delete profile (cascades to other tables)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (profileError) throw profileError;
+
+      // 2. Sign Out
+      await signOut();
+      toast.success('Sua conta e dados foram removidos com sucesso.');
+      navigate('/auth');
+    } catch (error) {
+      console.error('Delete account error:', error);
+      toast.error('Erro ao excluir conta. Contacte o suporte.');
+      setDeletingAccount(false);
+    }
   };
 
   const settingsItems = [
@@ -87,7 +115,13 @@ export default function Settings() {
       id: 'about',
       icon: Info,
       label: 'Sobre o VOY',
-      onClick: () => { },
+      onClick: () => { window.open('https://voyapp.com', '_blank') },
+    },
+    {
+      id: 'privacy',
+      icon: ShieldCheck,
+      label: 'Privacidade e Termos',
+      onClick: () => { window.open('https://voyapp.com/privacy', '_blank') },
     },
   ];
 
@@ -151,21 +185,33 @@ export default function Settings() {
           })}
         </div>
 
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
-          disabled={loggingOut}
-          className="w-full flex items-center gap-4 p-4 rounded-2xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-all"
-        >
-          <div className="w-10 h-10 rounded-xl bg-destructive/20 flex items-center justify-center">
-            {loggingOut ? (
-              <Loader2 className="w-5 h-5 text-destructive animate-spin" />
-            ) : (
-              <LogOut className="w-5 h-5 text-destructive" />
-            )}
-          </div>
-          <span className="font-medium text-destructive">Sair da conta</span>
-        </button>
+        {/* Actions */}
+        <div className="space-y-4">
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-muted/50 border border-border hover:bg-muted transition-all"
+          >
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+              {loggingOut ? (
+                <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+              ) : (
+                <LogOut className="w-5 h-5 text-muted-foreground" />
+              )}
+            </div>
+            <span className="font-medium text-foreground">Sair da conta</span>
+          </button>
+
+          <button
+            onClick={() => setShowDeleteDialog(true)}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-all"
+          >
+            <div className="w-10 h-10 rounded-xl bg-destructive/20 flex items-center justify-center">
+              <Trash2 className="w-5 h-5 text-destructive" />
+            </div>
+            <span className="font-medium text-destructive">Excluir minha conta e dados</span>
+          </button>
+        </div>
 
         {/* Version */}
         <div className="mt-12 text-center">
@@ -270,6 +316,32 @@ export default function Settings() {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Delete Account Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="max-w-[calc(100vw-2rem)] rounded-3xl">
+          <AlertDialogHeader>
+            <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2 mx-auto">
+              <AlertTriangle className="w-6 h-6 text-destructive" />
+            </div>
+            <AlertDialogTitle className="text-center text-xl">Excluir Permanentemente?</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Esta ação é **irreversível**. Todos os seus documentos salvos, notas, transações e histórico serão apagados para sempre em conformidade com a **LGPD**.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col gap-2">
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deletingAccount}
+              className="w-full h-12 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold"
+            >
+              {deletingAccount ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sim, apagar tudo'}
+            </AlertDialogAction>
+            <AlertDialogCancel className="w-full h-12 rounded-xl border-none font-medium">
+              Cancelar
+            </AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </MobileLayout>
   );
 }

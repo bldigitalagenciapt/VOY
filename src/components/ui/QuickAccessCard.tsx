@@ -34,7 +34,7 @@ export function QuickAccessCard({
         onClick={onClick}
         className={cn(
           'w-full flex flex-col items-center justify-center p-4 rounded-2xl',
-          'bg-[#F8FAFC] border border-slate-200 shadow-sm',
+          'bg-card border border-border shadow-sm',
           'hover:shadow-md hover:border-primary/30 active:scale-[0.98]',
           'transition-all duration-200',
           className

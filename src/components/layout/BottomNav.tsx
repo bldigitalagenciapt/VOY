@@ -1,4 +1,4 @@
-import { Home, FileText, Globe, StickyNote, MessageCircle } from 'lucide-react';
+import { Home, FileText, Globe, StickyNote, MessageCircle, Wallet, Heart } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { cn } from '@/lib/utils';
@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { path: '/home', icon: Home, labelKey: 'nav.home' },
   { path: '/documents', icon: FileText, labelKey: 'nav.documents' },
+  { path: '/community', icon: Heart, labelKey: 'nav.community' },
   { path: '/aima', icon: Globe, labelKey: 'nav.aima' },
-  { path: '/notes', icon: StickyNote, labelKey: 'nav.notes' },
-  { path: '/assistant', icon: MessageCircle, labelKey: 'nav.help' },
+  { path: '/meu-bolso', icon: Wallet, labelKey: 'nav.meuBolso' },
 ];
 
 export function BottomNav() {
@@ -22,7 +22,7 @@ export function BottomNav() {
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
-          
+
           return (
             <button
               key={item.path}

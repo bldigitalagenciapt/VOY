@@ -41,12 +41,20 @@ export default function QuickAccess() {
     navigate(-1);
   };
 
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile, updateNumber } = useProfile();
   const [showAddBlock, setShowAddBlock] = useState(false);
+  const [editingBlock, setEditingBlock] = useState<{ id?: string, label: string, value: string, isStandard?: boolean } | null>(null);
   const [newBlockLabel, setNewBlockLabel] = useState('');
   const [newBlockValue, setNewBlockValue] = useState('');
 
   const customBlocks = profile?.custom_quick_access || [];
+
+  const standardBlocks = [
+    { key: 'nif', label: 'NIF', value: profile?.nif || '' },
+    { key: 'niss', label: 'NISS', value: profile?.niss || '' },
+    { key: 'sns', label: 'SNS', value: profile?.sns || '' },
+    { key: 'passport', label: 'Passaporte', value: profile?.passport || '' },
+  ];
 
   const handleAddBlock = async () => {
     if (!newBlockLabel.trim()) return;
@@ -55,6 +63,20 @@ export default function QuickAccess() {
     setShowAddBlock(false);
     setNewBlockLabel('');
     setNewBlockValue('');
+  };
+
+  const handleEditBlock = async () => {
+    if (!editingBlock) return;
+
+    if (editingBlock.isStandard) {
+      await updateNumber(editingBlock.id as any, editingBlock.value);
+    } else {
+      const updatedBlocks = customBlocks.map(b =>
+        b.id === editingBlock.id ? { ...b, value: editingBlock.value } : b
+      );
+      await updateProfile({ custom_quick_access: updatedBlocks });
+    }
+    setEditingBlock(null);
   };
 
   const handleDeleteBlock = async (id: string) => {
@@ -92,40 +114,65 @@ export default function QuickAccess() {
         {/* Custom Blocks Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Meus Blocos</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Meus Blocos (Números)</h2>
             <Button variant="ghost" size="sm" onClick={() => setShowAddBlock(true)} className="text-primary h-8 gap-1">
               <Plus className="w-4 h-4" /> Novo Bloco
             </Button>
           </div>
 
           <div className="space-y-2">
-            {customBlocks.length === 0 ? (
-              <p className="text-xs text-muted-foreground italic px-2">Nenhum bloco personalizado criado.</p>
-            ) : (
-              customBlocks.map((block) => (
-                <div key={block.id} className="flex items-center gap-3 p-4 bg-card border rounded-2xl">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Star className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{block.label}</p>
-                    <p className="text-xs text-muted-foreground">{block.value || 'Toque para adicionar'}</p>
-                  </div>
-                  <button onClick={() => handleDeleteBlock(block.id)} className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+            {/* Standard Blocks First */}
+            {standardBlocks.map((block) => (
+              <div
+                key={block.key}
+                className="flex items-center gap-3 p-4 bg-card border rounded-2xl cursor-pointer hover:border-primary/30 transition-all"
+                onClick={() => setEditingBlock({ id: block.key, label: block.label, value: block.value, isStandard: true })}
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Star className="w-5 h-5 text-primary" />
                 </div>
-              ))
-            )}
+                <div className="flex-1">
+                  <p className="font-medium text-sm">{block.label}</p>
+                  <p className="text-xs text-muted-foreground">{block.value || 'Toque para adicionar'}</p>
+                </div>
+                <div className="text-xs text-primary font-medium">Editar</div>
+              </div>
+            ))}
+
+            {/* Custom Blocks */}
+            {customBlocks.map((block) => (
+              <div
+                key={block.id}
+                className="flex items-center gap-3 p-4 bg-card border rounded-2xl cursor-pointer hover:border-primary/30 transition-all"
+                onClick={() => setEditingBlock({ id: block.id, label: block.label, value: block.value, isStandard: false })}
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Star className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-sm">{block.label}</p>
+                  <p className="text-xs text-muted-foreground">{block.value || 'Toque para adicionar'}</p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteBlock(block.id);
+                  }}
+                  className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Info */}
         <div className="mb-6 p-4 bg-info/10 border border-info/20 rounded-2xl">
           <div className="flex gap-3">
-            <Star className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
+            <FileText className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium">Documentos favoritos</p>
+              <p className="text-sm font-medium">Documentos favoritos (PDF/Images)</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Selecione os documentos da sua lista para acesso rápido.
               </p>
@@ -190,13 +237,13 @@ export default function QuickAccess() {
         {/* Save Button */}
         <Button
           onClick={handleSave}
-          className="w-full h-12 rounded-xl"
+          className="w-full h-12 rounded-xl mb-12"
           disabled={saving}
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            `Salvar Documentos (${selectedIds.length})`
+            `Salvar Configurações`
           )}
         </Button>
       </div>
@@ -219,6 +266,30 @@ export default function QuickAccess() {
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setShowAddBlock(false)} className="flex-1 h-12 rounded-xl">Cancelar</Button>
               <Button onClick={handleAddBlock} disabled={!newBlockLabel.trim()} className="flex-1 h-12 rounded-xl">Criar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Block Dialog */}
+      <Dialog open={!!editingBlock} onOpenChange={() => setEditingBlock(null)}>
+        <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Editar {editingBlock?.label}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Número / Valor</Label>
+              <Input
+                value={editingBlock?.value || ''}
+                onChange={(e) => setEditingBlock(prev => prev ? { ...prev, value: e.target.value } : null)}
+                placeholder="Digite o número"
+                className="rounded-xl h-12"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setEditingBlock(null)} className="flex-1 h-12 rounded-xl">Cancelar</Button>
+              <Button onClick={handleEditBlock} className="flex-1 h-12 rounded-xl">Salvar</Button>
             </div>
           </div>
         </DialogContent>

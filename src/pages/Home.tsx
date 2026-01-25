@@ -6,7 +6,7 @@ import { MobileLayout } from '@/components/layout/MobileLayout';
 import { AlertBanner } from '@/components/ui/AlertBanner';
 import { QuickAccessCard } from '@/components/ui/QuickAccessCard';
 import { ActionCard } from '@/components/ui/ActionCard';
-import { FileText, Globe, MessageCircle, Settings, StickyNote, Loader2, Star } from 'lucide-react';
+import { FileText, Globe, MessageCircle, Settings, StickyNote, Loader2, Star, Wallet, Calendar as CalendarIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -17,8 +17,7 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { SkeletonList, SkeletonCard } from '@/components/ui/skeleton-card';
 import { useUserDocuments } from '@/hooks/useUserDocuments';
 import { toast } from 'sonner';
-import { cn } from "@/lib/utils";
-import { TrendingUp, AlertCircle } from 'lucide-react';
+import { useQuickAccess } from '@/hooks/useQuickAccess';
 import { visaTypes } from '@/data/visaTypes';
 import { processTypes } from '@/pages/Aima'; // Imported from Aima page
 
@@ -28,6 +27,19 @@ import { processTypes } from '@/pages/Aima'; // Imported from Aima page
 // The instruction implies this definition should be in Aima.tsx and exported from there.
 // For Home.tsx, we will use the imported 'processTypes'.
 // The original 'processTypesLocal' is removed as it's now redundant.
+
+import { NewsSlider } from '@/components/home/NewsSlider';
+import { CalendarPreview } from '@/components/home/CalendarPreview';
+import { CommunityCard } from '@/components/home/CommunityCard';
+import { WelcomeModal } from '@/components/modals/WelcomeModal';
+import { EmergencyModal } from '@/components/modals/EmergencyModal';
+import {
+  ShieldAlert,
+  ArrowRight,
+  ClipboardCheck,
+  Calculator as CalcIcon,
+  ExternalLink
+} from 'lucide-react';
 
 type NumberField = 'nif' | 'niss' | 'sns' | 'passport';
 
@@ -39,7 +51,10 @@ export default function Home() {
   const { notes } = useNotes();
   const { documents } = useDocuments();
   const { userDocuments, loading: docsLoading } = useUserDocuments(); // Consolidated destructuring
+  const { quickAccessIds } = useQuickAccess();
+
   const [showNumberDialog, setShowNumberDialog] = useState<string | null>(null);
+  const [showEmergency, setShowEmergency] = useState(false);
   const [tempNumber, setTempNumber] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -173,14 +188,17 @@ export default function Home() {
     );
   }
 
+  const favoriteDocs = documents.filter(doc => quickAccessIds.includes(doc.id));
+
   return (
     <MobileLayout>
       <div className="px-5 py-6 safe-area-top">
+        <NewsSlider />
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              Olá! 👋
+              Olá, {profile?.display_name?.split(' ')[0] || 'Imigrante'}! 👋
             </h1>
             <p className="text-muted-foreground">Bem-vindo de volta</p>
           </div>
@@ -196,6 +214,18 @@ export default function Home() {
                   {user?.email?.charAt(0).toUpperCase()}
                 </span>
               )}
+            </button>
+            <button
+              onClick={() => setShowEmergency(true)}
+              className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center hover:bg-red-500/20 transition-all animate-pulse"
+            >
+              <ShieldAlert className="w-5 h-5 text-red-500" />
+            </button>
+            <button
+              onClick={() => navigate('/agenda')}
+              className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+            >
+              <CalendarIcon className="w-5 h-5 text-muted-foreground" />
             </button>
             <button
               onClick={() => navigate('/settings')}
@@ -299,7 +329,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Quick Access Numbers */}
+        {/* Quick Access Numbers & Documents */}
         <div className="mb-8">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
             Acesso rápido
@@ -349,18 +379,40 @@ export default function Home() {
                 isSecure={true}
               />
             ))}
+
           </div>
         </div>
+
+        <CalendarPreview />
+        <CommunityCard />
 
 
         {/* Main Actions */}
         <div className="space-y-3">
           <ActionCard
+            icon={<ClipboardCheck className="w-6 h-6 text-primary" />}
+            title="Primeiros Passos"
+            description="Guia essencial para quem chega"
+            onClick={() => navigate('/checklist')}
+            className="border-primary/20 bg-primary/5"
+          />
+          <ActionCard
+            icon={<CalcIcon className="w-6 h-6 text-orange-500" />}
+            title="Simulador de Salário"
+            description="Calcule seu rendimento líquido"
+            onClick={() => navigate('/calculator')}
+          />
+          <ActionCard
+            icon={<ExternalLink className="w-6 h-6 text-blue-500" />}
+            title="Links Úteis"
+            description="Diretório oficial de serviços"
+            onClick={() => navigate('/useful-links')}
+          />
+          <ActionCard
             icon={<FileText className="w-6 h-6" />}
             title="Documentos"
             description="Guarde seus documentos importantes"
             onClick={() => navigate('/documents')}
-            variant="primary"
           />
           <ActionCard
             icon={<Globe className="w-6 h-6" />}
@@ -369,17 +421,11 @@ export default function Home() {
             onClick={() => navigate('/aima')}
           />
           <ActionCard
-            icon={<StickyNote className="w-6 h-6" />}
-            title="Anotações"
-            description="Suas anotações e lembretes"
-            onClick={() => navigate('/notes')}
-          />
-          <ActionCard
-            icon={<MessageCircle className="w-6 h-6" />}
-            title="Ajuda"
-            description="Tire suas dúvidas"
-            onClick={() => navigate('/assistant')}
-            variant="success"
+            icon={<Wallet className="w-6 h-6 text-warning" />}
+            title="Meu Bolso"
+            description="Gestor financeiro e despesas"
+            onClick={() => navigate('/meu-bolso')}
+            variant="warning"
           />
         </div>
       </div>
@@ -423,6 +469,8 @@ export default function Home() {
           </div>
         </DialogContent>
       </Dialog>
+      <WelcomeModal />
+      <EmergencyModal open={showEmergency} onOpenChange={setShowEmergency} />
     </MobileLayout>
   );
 }

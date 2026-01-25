@@ -31,6 +31,15 @@ import { useUserDocuments } from '@/hooks/useUserDocuments';
 import { useDocuments } from '@/hooks/useDocuments';
 import { visaTypes, VisaType } from '@/data/visaTypes';
 import { toast } from '@/hooks/use-toast';
+import confetti from 'canvas-confetti';
+
+const MOTIVATIONAL_PHRASES = [
+  "Um passo mais perto do seu sonho! 🇵🇹",
+  "Excelente! A burocracia não te para. 💪",
+  "Mais uma etapa vencida! Orgulho desse caminho. ✨",
+  "Brilhante! Cada detalhe conta. 🚀",
+  "Caminhando com segurança rumo à residência! ✅"
+];
 
 export const processTypes = [
   { id: 'cplp', title: 'CPLP', icon: Globe, description: 'Autorização de Residência CPLP' },
@@ -50,6 +59,10 @@ const visaIcons: Record<string, any> = {
 const getStepsForProcess = (type: string) => {
   const steps: Record<string, { id: string; title: string }[]> = {
     cplp: [
+      { id: 'nif', title: 'Obter NIF' },
+      { id: 'niss', title: 'Obter NISS' },
+      { id: 'junta', title: 'Atestado da Junta de Freguesia' },
+      { id: 'utente', title: 'Número de Utente' },
       { id: '1', title: 'Reunir documentos do país de origem' },
       { id: '2', title: 'Agendar marcação AIMA' },
       { id: '3', title: 'Comparecer à entrevista' },
@@ -57,14 +70,19 @@ const getStepsForProcess = (type: string) => {
       { id: '5', title: 'Recolher título de residência' },
     ],
     manifestation: [
+      { id: 'nif', title: 'Obter NIF' },
+      { id: 'niss', title: 'Obter NISS' },
+      { id: 'junta', title: 'Atestado da Junta de Freguesia' },
+      { id: 'utente', title: 'Número de Utente' },
       { id: '1', title: 'Verificar elegibilidade' },
       { id: '2', title: 'Reunir contrato de trabalho' },
-      { id: '3', title: 'Obter NIF e NISS' },
       { id: '4', title: 'Submeter manifestação de interesse' },
       { id: '5', title: 'Aguardar convocação' },
       { id: '6', title: 'Comparecer à AIMA' },
     ],
     renewal: [
+      { id: 'nif', title: 'Verificar NIF' },
+      { id: 'junta', title: 'Atualizar Junta de Freguesia' },
       { id: '1', title: 'Verificar validade do título atual' },
       { id: '2', title: 'Reunir documentos atualizados' },
       { id: '3', title: 'Agendar renovação' },
@@ -113,7 +131,24 @@ export default function Aima() {
   };
 
   const handleToggleStep = async (stepId: string) => {
+    const isCurrentlyCompleted = process?.completed_steps?.includes(stepId);
     await toggleStep(stepId);
+
+    if (!isCurrentlyCompleted) {
+      // Just marked as completed
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.8 },
+        colors: ['#3b82f6', '#22c55e', '#f59e0b']
+      });
+
+      const randomPhrase = MOTIVATIONAL_PHRASES[Math.floor(Math.random() * MOTIVATIONAL_PHRASES.length)];
+      toast({
+        title: "Etapa Concluída!",
+        description: randomPhrase,
+      });
+    }
   };
 
   const handleAddDate = async () => {

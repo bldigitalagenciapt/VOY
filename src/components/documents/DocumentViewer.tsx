@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Download, X, FileText, Image, FileSpreadsheet, File, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface DocumentViewerProps {
   isOpen: boolean;
@@ -54,6 +56,40 @@ const isPdf = (fileType: string | null) => {
 export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProps) {
   const [downloading, setDownloading] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [loadingUrl, setLoadingUrl] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && document?.file_url) {
+      generateSignedUrl();
+    } else {
+      setSignedUrl(null);
+      setImageLoading(true);
+    }
+  }, [isOpen, document?.file_url]);
+
+  const generateSignedUrl = async () => {
+    if (!document?.file_url) return;
+
+    setLoadingUrl(true);
+    try {
+      const urlParts = document.file_url.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      const bucket = 'voy_secure_docs';
+
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(fileName, 60);
+
+      if (error) throw error;
+      setSignedUrl(data.signedUrl);
+    } catch (error) {
+      console.error('Error generating signed URL:', error);
+      toast.error('Não foi possível carregar o arquivo com segurança.');
+    } finally {
+      setLoadingUrl(false);
+    }
+  };
 
   if (!document) return null;
 
@@ -63,11 +99,12 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
   const canPreviewPdf = isPdf(document.file_type);
 
   const handleDownload = async () => {
-    if (!document.file_url) return;
+    const urlToUse = signedUrl || document.file_url;
+    if (!urlToUse) return;
 
     setDownloading(true);
     try {
-      const response = await fetch(document.file_url);
+      const response = await fetch(urlToUse);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = window.document.createElement('a');
@@ -79,16 +116,16 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
       window.document.body.removeChild(a);
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback: open in new tab
-      window.open(document.file_url, '_blank');
+      window.open(urlToUse, '_blank');
     } finally {
       setDownloading(false);
     }
   };
 
   const handleOpenExternal = () => {
-    if (document.file_url) {
-      window.open(document.file_url, '_blank');
+    const urlToUse = signedUrl || document.file_url;
+    if (urlToUse) {
+      window.open(urlToUse, '_blank');
     }
   };
 
@@ -109,18 +146,23 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-auto p-4">
-          {document.file_url ? (
+        <div className="flex-1 overflow-auto p-4 min-h-[300px] flex flex-col items-center justify-center">
+          {loadingUrl ? (
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground animate-pulse">Obtendo acesso seguro...</p>
+            </div>
+          ) : document.file_url && signedUrl ? (
             <>
               {canPreviewImage && (
-                <div className="relative flex items-center justify-center min-h-[200px] bg-muted rounded-xl overflow-hidden">
+                <div className="relative w-full flex items-center justify-center min-h-[200px] bg-muted rounded-xl overflow-hidden">
                   {imageLoading && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Loader2 className="w-8 h-8 animate-spin text-primary" />
                     </div>
                   )}
                   <img
-                    src={document.file_url}
+                    src={signedUrl}
                     alt={document.name}
                     className={cn(
                       "max-w-full max-h-[50vh] object-contain rounded-lg",
@@ -135,7 +177,7 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
               {canPreviewPdf && (
                 <div className="w-full h-full min-h-[400px] flex flex-col">
                   <iframe
-                    src={document.file_url + '#toolbar=0'}
+                    src={signedUrl + '#toolbar=0'}
                     className="w-full flex-1 rounded-xl bg-muted border border-border"
                     title={document.name}
                   />
@@ -160,6 +202,19 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
                 </div>
               )}
             </>
+          ) : document.file_url && !signedUrl && !loadingUrl ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4 text-red-500">
+                <X className="w-8 h-8" />
+              </div>
+              <h3 className="font-semibold mb-2">Erro de Segurança</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Não foi possível validar seu acesso a este documento.
+              </p>
+              <Button onClick={generateSignedUrl} variant="outline" className="rounded-xl">
+                Tentar novamente
+              </Button>
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center mb-4">
@@ -181,7 +236,7 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
           >
             Fechar
           </Button>
-          {document.file_url && (
+          {document.file_url && signedUrl && (
             <Button
               onClick={handleDownload}
               disabled={downloading}

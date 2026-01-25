@@ -4,7 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Leaf, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { Leaf, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { z } from 'zod';
 import { validatePassword, getPasswordStrength } from '@/lib/passwordValidation';
@@ -22,6 +23,7 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
 
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const passwordStrength = getPasswordStrength(password);
@@ -42,6 +44,10 @@ export default function Auth() {
       if (!validation.isValid) {
         setPasswordErrors(validation.errors);
         setError(validation.errors[0]);
+        return false;
+      }
+      if (!agreePrivacy) {
+        setError('Você deve concordar com os Termos e Política de Privacidade');
         return false;
       }
     } else {
@@ -252,6 +258,25 @@ export default function Auth() {
               </div>
             )}
 
+            {!isLogin && !isForgotPassword && (
+              <div className="flex items-start space-x-3 p-2">
+                <Checkbox
+                  id="privacy"
+                  checked={agreePrivacy}
+                  onCheckedChange={(checked) => setAgreePrivacy(checked as boolean)}
+                  className="mt-1"
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <label
+                    htmlFor="privacy"
+                    className="text-xs text-muted-foreground leading-relaxed cursor-pointer"
+                  >
+                    Eu aceito os <span className="text-primary font-medium">Termos de Uso</span> e a <span className="text-primary font-medium">Política de Privacidade</span> (LGPD/GDPR) do VOY App.
+                  </label>
+                </div>
+              </div>
+            )}
+
             {error && (
               <div className="p-3 rounded-xl bg-destructive/10 text-destructive text-sm text-center">
                 {error}
@@ -295,9 +320,6 @@ export default function Auth() {
               {isForgotPassword ? 'Voltar para login' : isLogin ? 'Criar conta' : 'Fazer login'}
             </button>
           </div>
-
-          {/* Test Account */}
-
         </div>
       </div>
     </div>

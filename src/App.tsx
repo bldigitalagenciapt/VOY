@@ -28,6 +28,12 @@ import Profile from "./pages/Profile";
 import DocumentCategories from "./pages/settings/DocumentCategories";
 import QuickAccess from "./pages/settings/QuickAccess";
 import ResetPassword from "./pages/ResetPassword";
+import MeuBolso from "./pages/MeuBolso";
+import Community from "./pages/Community";
+import Agenda from "./pages/Agenda";
+import Checklist from "./pages/Checklist";
+import SalaryCalculator from "./pages/SalaryCalculator";
+import UsefulLinks from "./pages/UsefulLinks";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import { Loader2 } from "lucide-react";
@@ -206,6 +212,54 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ResetPassword />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/meu-bolso"
+        element={
+          <ProtectedRoute>
+            <MeuBolso />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/community"
+        element={
+          <ProtectedRoute>
+            <Community />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/checklist"
+        element={
+          <ProtectedRoute>
+            <Checklist />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/calculator"
+        element={
+          <ProtectedRoute>
+            <SalaryCalculator />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/useful-links"
+        element={
+          <ProtectedRoute>
+            <UsefulLinks />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/agenda"
+        element={
+          <ProtectedRoute>
+            <Agenda />
           </ProtectedRoute>
         }
       />

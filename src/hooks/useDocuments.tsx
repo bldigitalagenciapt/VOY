@@ -206,6 +206,39 @@ export function useDocuments() {
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
 
+      // 1. Fetch document to get file_url
+      const { data: doc, error: fetchError } = await supabase
+        .schema('public')
+        .from('documents')
+        .select('file_url')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // 2. If there's a file, delete it from storage
+      if (doc?.file_url) {
+        try {
+          // Extract filename from URL (it's the last part)
+          const urlParts = doc.file_url.split('/');
+          const fileName = urlParts[urlParts.length - 1];
+          const bucket = 'voy_secure_docs';
+
+          const { error: storageError } = await supabase.storage
+            .from(bucket)
+            .remove([fileName]);
+
+          if (storageError) {
+            console.warn('[STORAGE_DELETE_WARNING]', storageError.message);
+            // We continue even if storage delete fails to ensure DB stays in sync,
+            // but we log it.
+          }
+        } catch (err) {
+          console.error('[STORAGE_DELETE_ERROR]', err);
+        }
+      }
+
+      // 3. Delete from database
       const { error } = await supabase
         .schema('public')
         .from('documents')
@@ -222,15 +255,15 @@ export function useDocuments() {
       );
       toast({
         title: "Documento excluído",
-        description: "O documento foi removido.",
+        description: "O documento e o arquivo foram removidos permanentemente.",
       });
     },
-    onError: () => {
-      logger.error('Error deleting document');
+    onError: (error: Error) => {
+      logger.error('Error deleting document', { error });
       toast({
         variant: "destructive",
         title: "Erro ao excluir",
-        description: "Tente novamente.",
+        description: "Não foi possível remover o documento. Tente novamente.",
       });
     }
   });
