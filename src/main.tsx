@@ -13,4 +13,14 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// Global error handling for older devices
+window.onerror = (message, source, lineno, colno, error) => {
+    console.error('Global Error:', { message, source, lineno, colno, error });
+    return false;
+};
+
+window.onunhandledrejection = (event) => {
+    console.error('Unhandled Promise Rejection:', event.reason);
+};
+
 createRoot(document.getElementById("root")!).render(<App />);

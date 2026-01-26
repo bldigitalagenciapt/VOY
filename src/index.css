@@ -137,12 +137,25 @@
 
 @layer components {
   .glass-card {
-    @apply bg-card/60 backdrop-blur-2xl border border-white/20 dark:border-white/5;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    @apply bg-card/90 border border-border/40;
+    box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.04);
+  }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass-card {
+      @apply bg-card/60 backdrop-blur-xl;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    }
   }
 
   .glass-card-hover {
-    @apply transition-all duration-300 hover:bg-card/80 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 active:scale-[0.98];
+    @apply transition-all duration-300 hover:border-primary/30 active:scale-[0.98];
+  }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass-card-hover {
+      @apply hover:bg-card/80 hover:shadow-xl hover:shadow-primary/5;
+    }
   }
 
   .premium-gradient {
