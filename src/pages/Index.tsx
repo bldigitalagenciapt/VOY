@@ -13,9 +13,8 @@ const Index = () => {
     );
   }
 
-  return hasCompletedOnboarding
-    ? <Navigate to="/home" replace />
-    : <Navigate to="/onboarding/welcome" replace />;
+  // Bypass onboarding and go straight to home
+  return <Navigate to="/home" replace />;
 };
 
 export default Index;

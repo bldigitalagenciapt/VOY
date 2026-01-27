@@ -91,7 +91,7 @@ export default function Auth() {
             setError('Erro ao criar conta. Tente novamente.');
           }
         } else {
-          navigate('/onboarding/welcome');
+          navigate('/home');
         }
       }
     } finally {
