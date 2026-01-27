@@ -28,6 +28,7 @@ export default function Emprego() {
             title: 'Portais de Emprego',
             links: [
                 { label: 'Net-Empregos', url: 'https://www.net-empregos.com/emprego-braga.asp', domain: 'net-empregos.com', desc: 'Maior portal de emprego em Portugal' },
+                { label: 'IEFP Online', url: 'https://www.iefp.pt/', domain: 'iefp.pt', desc: 'Instituto de Emprego e Formação Profissional' },
                 { label: 'SAPO Emprego', url: 'https://emprego.sapo.pt/', domain: 'sapo.pt', desc: 'Vagas de emprego em diversas áreas' },
                 { label: 'Indeed Portugal', url: 'https://pt.indeed.com/', domain: 'indeed.com', desc: 'Motor de busca de empregos' },
                 { label: 'Alerta Emprego', url: 'https://www.alertaemprego.pt/', domain: 'alertaemprego.pt', desc: 'Ofertas diárias de trabalho' }
