@@ -53,6 +53,7 @@ interface AppContextType {
   aimaProcess: AimaProcess;
   setAimaProcess: (process: AimaProcess) => void;
   t: (key: string) => string;
+  isProfileLoading: boolean;
 }
 
 const translations: Record<Language, Record<string, string>> = {
@@ -217,7 +218,7 @@ const translations: Record<Language, Record<string, string>> = {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { profile } = useProfile();
+  const { profile, loading } = useProfile();
 
   const [language, setLanguage] = useState<Language>('pt');
   const [userProfile, setUserProfile] = useState<UserProfile>(null);
@@ -233,10 +234,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    if (profile?.language && (profile.language === 'pt' || profile.language === 'en')) {
-      setLanguage(profile.language as Language);
+    if (profile) {
+      if (profile.language && (profile.language === 'pt' || profile.language === 'en')) {
+        setLanguage(profile.language as Language);
+      }
+
+      // If user has a profile type selected (Steps 1-3), we consider onboarding sufficiently advanced/complete
+      // to avoid restarting the flow.
+      if (profile.user_profile) {
+        setUserProfile(profile.user_profile as UserProfile);
+        setHasCompletedOnboarding(true);
+      }
     }
-  }, [profile?.language]);
+  }, [profile]);
 
   const t = (key: string): string => {
     return translations[language][key] || key;
@@ -280,6 +290,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         aimaProcess,
         setAimaProcess,
         t,
+        isProfileLoading: loading,
       }}
     >
       {children}
