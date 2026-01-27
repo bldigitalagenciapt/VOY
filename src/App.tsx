@@ -34,6 +34,7 @@ import Agenda from "./pages/Agenda";
 import Checklist from "./pages/Checklist";
 import SalaryCalculator from "./pages/SalaryCalculator";
 import UsefulLinks from "./pages/UsefulLinks";
+import Emprego from "./pages/Emprego";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
@@ -253,6 +254,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <UsefulLinks />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/emprego"
+        element={
+          <ProtectedRoute>
+            <Emprego />
           </ProtectedRoute>
         }
       />

@@ -403,6 +403,12 @@ export default function Home() {
             onClick={() => navigate('/useful-links')}
           />
           <ActionCard
+            icon={<Briefcase className="w-6 h-6 text-green-500" />}
+            title="Emprego"
+            description="Agências e portais de trabalho"
+            onClick={() => navigate('/emprego')}
+          />
+          <ActionCard
             icon={<FileText className="w-6 h-6" />}
             title="Documentos"
             description="Guarde seus documentos importantes"
