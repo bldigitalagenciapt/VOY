@@ -32,7 +32,8 @@ import {
   ArrowRight,
   ClipboardCheck,
   Calculator as CalcIcon,
-  ExternalLink
+  ExternalLink,
+  Briefcase
 } from 'lucide-react';
 
 type NumberField = 'nif' | 'niss' | 'sns' | 'passport';
