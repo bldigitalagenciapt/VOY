@@ -55,8 +55,8 @@ export function useDocuments() {
         // Determine file extension
         const fileExt = file.name.split('.').pop()?.toLowerCase() || 'pdf';
 
-        // Use simplified file naming: documento_${timestamp}.${extension}
-        const fileName = `documento_${Date.now()}.${fileExt}`;
+        // Use simplified file naming: userId/documento_${timestamp}.${extension}
+        const fileName = `${user.id}/documento_${Date.now()}.${fileExt}`;
 
         // Determine content type
         let contentType = file.type;
@@ -98,10 +98,11 @@ export function useDocuments() {
         }
 
         // DOUBLE CHECK: Verify file exists after upload before DB insert
+        // When checking for existence in a folder, we list the FOLDER (user.id) and look for the file
         const { data: listData, error: listError } = await supabase.storage
           .from(bucket)
-          .list('', {
-            search: fileName
+          .list(user.id, {
+            search: fileName.split('/').pop() // Search only for the filename part
           });
 
         if (listError || !listData || listData.length === 0) {
@@ -219,14 +220,27 @@ export function useDocuments() {
       // 2. If there's a file, delete it from storage
       if (doc?.file_url) {
         try {
-          // Extract filename from URL (it's the last part)
-          const urlParts = doc.file_url.split('/');
-          const fileName = urlParts[urlParts.length - 1];
           const bucket = 'voy_secure_docs';
+          
+          // Parse correct path from URL, handling both root and folder paths
+          // URL format: .../voy_secure_docs/path/to/file
+          let filePath = '';
+          const urlParts = doc.file_url.split(`/${bucket}/`);
+          
+          if (urlParts.length > 1) {
+            // Decodes URI components to handle potential %20 spaces etc, though less likely with our naming
+            filePath = decodeURIComponent(urlParts[1]);
+          } else {
+            // Fallback for older legacy URLs if format differs (unlikely given supabase getPublicUrl)
+            const parts = doc.file_url.split('/');
+            filePath = parts[parts.length - 1]; // Old behavior as fallback
+          }
+
+          console.log('[DELETE] Attempting to delete file path:', filePath);
 
           const { error: storageError } = await supabase.storage
             .from(bucket)
-            .remove([fileName]);
+            .remove([filePath]);
 
           if (storageError) {
             console.warn('[STORAGE_DELETE_WARNING]', storageError.message);

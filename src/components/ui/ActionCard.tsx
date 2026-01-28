@@ -12,17 +12,17 @@ interface ActionCardProps {
 }
 
 const variantStyles = {
-  default: 'bg-card border-border',
-  primary: 'bg-primary/5 border-primary/20',
-  warning: 'bg-warning/10 border-warning/30',
-  success: 'bg-success/10 border-success/30',
+  default: 'bg-white/50 border-white/40 backdrop-blur-sm dark:bg-white/5 dark:border-white/10',
+  primary: 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20',
+  warning: 'bg-gradient-to-br from-warning/10 to-warning/5 border-warning/30',
+  success: 'bg-gradient-to-br from-success/10 to-success/5 border-success/30',
 };
 
 const iconStyles = {
-  default: 'bg-muted text-muted-foreground',
-  primary: 'bg-primary/15 text-primary',
-  warning: 'bg-warning/20 text-warning',
-  success: 'bg-success/20 text-success',
+  default: 'bg-muted text-muted-foreground shadow-sm',
+  primary: 'bg-primary/20 text-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)]',
+  warning: 'bg-warning/20 text-warning shadow-[0_0_15px_hsl(var(--warning)/0.3)]',
+  success: 'bg-success/20 text-success shadow-[0_0_15px_hsl(var(--success)/0.3)]',
 };
 
 export function ActionCard({

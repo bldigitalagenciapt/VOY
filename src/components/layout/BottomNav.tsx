@@ -17,13 +17,12 @@ export function BottomNav() {
   const { t } = useApp();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-area-bottom pb-2">
-      <div className="flex items-center justify-around px-2 py-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom pointer-events-none flex justify-center pb-4">
+      {/* Floating Island Container */}
+      <div className="pointer-events-auto mx-4 bg-white/80 backdrop-blur-xl border border-white/40 shadow-soft rounded-2xl p-1.5 flex items-center justify-between gap-1 max-w-sm w-full dark:bg-black/60 dark:border-white/10 dark:shadow-black/20">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
-
-          // Fallback verify: if translation seems wrong (too long), use default
           const translated = t(item.labelKey);
           const label = translated.length > 15 ? item.label : translated;
 
@@ -32,22 +31,27 @@ export function BottomNav() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                'flex flex-col items-center justify-center min-w-[64px] py-1 px-3 rounded-xl transition-all duration-200',
+                'relative flex flex-col items-center justify-center flex-1 py-2 rounded-xl transition-all duration-300 group',
                 isActive
                   ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
               )}
             >
+              {/* Active Indicator Glow */}
+              {isActive && (
+                <span className="absolute inset-0 bg-primary/10 rounded-xl blur-sm -z-10 animate-fade-in" />
+              )}
+
               <Icon
                 className={cn(
-                  'w-6 h-6 mb-1 transition-transform duration-200',
-                  isActive && 'scale-110'
+                  'w-5 h-5 mb-1 transition-all duration-300',
+                  isActive ? 'scale-110 -translate-y-0.5 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'group-hover:scale-105'
                 )}
                 strokeWidth={isActive ? 2.5 : 2}
               />
               <span className={cn(
-                'text-[10px] font-medium leading-none',
-                isActive && 'font-black'
+                'text-[9px] font-medium leading-none transition-all duration-300',
+                isActive ? 'opacity-100 font-bold translate-y-0.5' : 'opacity-70 group-hover:opacity-100'
               )}>
                 {label}
               </span>

@@ -33,22 +33,22 @@ export function QuickAccessCard({
       <button
         onClick={onClick}
         className={cn(
-          'w-full flex flex-col items-center justify-center p-4 rounded-3xl',
-          'glass-card glass-card-hover',
-          'hover:shadow-primary/10',
+          'w-full flex flex-col items-center justify-center p-4 rounded-3xl border border-white/20 transition-all duration-300',
+          'bg-white/60 hover:bg-white backdrop-blur-md shadow-sm hover:shadow-md hover:-translate-y-0.5',
+          'dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10',
           className
         )}
       >
-        <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/60 mb-1">
+        <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/70 mb-1.5">
           {label}
         </span>
         {value ? (
-          <span className="text-lg font-bold text-foreground tracking-wide">
+          <span className="text-lg font-black text-foreground tracking-tight font-mono">
             {displayValue}
           </span>
         ) : (
-          <span className="text-sm text-primary font-medium">
-            {placeholder}
+          <span className="text-sm text-primary font-bold flex items-center gap-1">
+            + Add
           </span>
         )}
       </button>
@@ -56,13 +56,13 @@ export function QuickAccessCard({
       {isSecure && value && (
         <button
           onClick={toggleVisibility}
-          className="absolute top-1.5 right-1.5 p-2 rounded-xl bg-background/80 backdrop-blur-sm border border-border shadow-sm active:scale-90 transition-all z-10"
+          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/5 hover:bg-black/10 transition-colors dark:bg-white/10 dark:hover:bg-white/20"
           aria-label={isVisible ? "Esconder valor" : "Mostrar valor"}
         >
           {isVisible ? (
-            <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />
+            <EyeOff className="w-3 h-3 text-muted-foreground" />
           ) : (
-            <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+            <Eye className="w-3 h-3 text-muted-foreground" />
           )}
         </button>
       )}

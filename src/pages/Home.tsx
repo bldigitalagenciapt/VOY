@@ -33,7 +33,8 @@ import {
   ClipboardCheck,
   Calculator as CalcIcon,
   ExternalLink,
-  Briefcase
+  Briefcase,
+  User as UserIcon
 } from 'lucide-react';
 
 type NumberField = 'nif' | 'niss' | 'sns' | 'passport';
@@ -187,137 +188,158 @@ export default function Home() {
 
   return (
     <MobileLayout>
-      <div className="px-5 py-6 safe-area-top">
-        <NewsSlider />
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+      <div className="px-5 pb-32 pt-safe-top min-h-screen bg-gradient-to-b from-blue-50/50 via-white to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        {/* Premium Header */}
+        <div className="flex items-center justify-between mb-8 mt-2">
           <div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight">
-              Olá, <span className="text-primary italic">{profile?.display_name?.split(' ')[0] || 'Imigrante'}</span>! 👋
+            <h1 className="text-3xl font-black tracking-tight text-foreground">
+              VOY<span className="text-primary">.</span>
             </h1>
-            <p className="text-sm font-medium text-muted-foreground opacity-80">Bem-vindo de volta ao seu futuro</p>
+            <p className="text-sm font-medium text-muted-foreground">Seu futuro começa aqui</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate('/profile')}
-              className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors overflow-hidden"
-            >
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="Perfil" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-sm font-bold text-primary">
-                  {user?.email?.charAt(0).toUpperCase()}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setShowEmergency(true)}
-              className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center hover:bg-red-500/20 transition-all animate-pulse"
-            >
-              <ShieldAlert className="w-5 h-5 text-red-500" />
-            </button>
-            <button
-              onClick={() => navigate('/agenda')}
-              className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
-            >
-              <CalendarIcon className="w-5 h-5 text-muted-foreground" />
-            </button>
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/settings')}
-              className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+              className="w-10 h-10 rounded-full bg-white/80 border border-white/20 shadow-sm flex items-center justify-center hover:bg-white transition-all dark:bg-white/10 dark:border-white/5"
             >
               <Settings className="w-5 h-5 text-muted-foreground" />
+            </button>
+            <button
+              onClick={() => navigate('/profile')}
+              className="w-12 h-12 rounded-full p-1 bg-gradient-to-br from-primary via-blue-400 to-primary shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+            >
+              <div className="w-full h-full rounded-full border-2 border-white overflow-hidden bg-white">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Perfil" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-muted text-primary font-bold">
+                    {user?.email?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
             </button>
           </div>
         </div>
 
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-foreground mb-1">
+            Olá, <span className="premium-gradient-text">{profile?.display_name?.split(' ')[0] || 'Imigrante'}</span>
+          </h2>
+          <p className="text-muted-foreground text-sm">Pronto para avançar hoje?</p>
+        </div>
 
-        {/* Alerts */}
-        {alerts.length > 0 && (
-          <div className="space-y-3 mb-6">
-            {alerts.map((alert, index) => (
-              <AlertBanner
-                key={index}
-                message={alert.message}
-                action={alert.action}
-                onAction={alert.onAction}
-                variant={alert.variant || 'warning'}
-                className="animate-slide-up"
-              />
-            ))}
-          </div>
-        )}
+        <NewsSlider />
+
+        {/* Alerts moved below slider for better visual flow */}
+        <div className="mt-6">
+          {alerts.length > 0 && (
+            <div className="space-y-3 mb-6 animate-slide-up">
+              {alerts.map((alert, index) => (
+                <AlertBanner
+                  key={index}
+                  message={alert.message}
+                  action={alert.action}
+                  onAction={alert.onAction}
+                  variant={alert.variant || 'warning'}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Dashboard Widgets */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          {/* Profile Progress */}
+        <div className="grid grid-cols-2 gap-4 mb-8 mt-6">
+          {/* Profile Progress Widget */}
           <div
-            className="glass-card glass-card-hover p-4 space-y-3"
+            className="group relative overflow-hidden rounded-3xl bg-white border border-white/20 shadow-soft p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer dark:bg-white/5 dark:border-white/10"
             onClick={() => navigate('/profile')}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Perfil</span>
-              <span className="text-xs font-black text-primary">{completionPercentage}%</span>
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+              <div className="w-16 h-16 rounded-full bg-primary blur-2xl" />
             </div>
-            <div className="h-2 w-full bg-primary/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-primary to-primary/60 transition-all duration-1000 ease-out"
-                style={{ width: `${completionPercentage}%` }}
-              />
+
+            <div className="relative z-10 flex flex-col h-full justify-between gap-4">
+              <div className="flex items-start justify-between">
+                <div className="p-2.5 rounded-2xl bg-blue-50 text-primary dark:bg-blue-900/20">
+                  <UserIcon className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider bg-muted/50 px-2 py-1 rounded-full">{completionPercentage}%</span>
+              </div>
+
+              <div>
+                <span className="text-sm font-semibold text-foreground block mb-1">Meu Perfil</span>
+                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary to-blue-400 transition-all duration-1000 ease-out shadow-[0_0_10px_hsl(var(--primary)/0.5)]"
+                    style={{ width: `${completionPercentage}%` }}
+                  />
+                </div>
+              </div>
             </div>
-            <p className="text-[10px] font-medium text-muted-foreground/70 uppercase">
-              {completedFields} / {profileFields.length} campos
-            </p>
           </div>
 
-          {/* AIMA Status Summary - Restored to original size with specific name */}
+          {/* AIMA Status Widget */}
           <div
-            className="glass-card glass-card-hover p-4 space-y-3"
+            className="group relative overflow-hidden rounded-3xl bg-white border border-white/20 shadow-soft p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer dark:bg-white/5 dark:border-white/10"
             onClick={() => navigate('/aima')}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">AIMA</span>
-              <span className="text-xs font-black text-primary">
-                {aimaProcess?.process_type ? `${Math.min(Math.round(aimaProcess.step / 5 * 100), 100)}%` : '0%'}
-              </span>
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+              <div className="w-16 h-16 rounded-full bg-emerald-500 blur-2xl" />
             </div>
-            <div className="h-2 w-full bg-primary/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-primary to-primary/60 transition-all duration-1000 ease-out"
-                style={{ width: `${aimaProcess?.process_type ? Math.min((aimaProcess.step / 5 * 100), 100) : 0}%` }}
-              />
+
+            <div className="relative z-10 flex flex-col h-full justify-between gap-4">
+              <div className="flex items-start justify-between">
+                <div className="p-2.5 rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
+                  <Globe className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider bg-muted/50 px-2 py-1 rounded-full">
+                  {aimaProcess?.process_type ? `${Math.min(Math.round(aimaProcess.step / 5 * 100), 100)}%` : 'Start'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-sm font-semibold text-foreground block mb-1 truncate">
+                  {aimaProcess?.process_type ? (
+                    visaTypes.find(v => v.id === aimaProcess.process_type)?.name || "Processo"
+                  ) : "Iniciar AIMA"}
+                </span>
+                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000 ease-out shadow-[0_0_10px_hsl(150_60%_45%/0.5)]"
+                    style={{ width: `${aimaProcess?.process_type ? Math.min((aimaProcess.step / 5 * 100), 100) : 0}%` }}
+                  />
+                </div>
+              </div>
             </div>
-            <p className="text-[10px] font-bold text-primary truncate uppercase">
-              {aimaProcess?.process_type ? (
-                visaTypes.find(v => v.id === aimaProcess.process_type)?.name ||
-                processTypes.find(p => p.id === aimaProcess.process_type)?.title ||
-                aimaProcess.process_type.replace(/_/g, ' ')
-              ) : (
-                "Iniciar Processo"
-              )}
-            </p>
           </div>
         </div>
 
         {/* Starred Notes Section */}
         {starredNotes.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              Notas Favoritas
-            </h2>
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <h2 className="text-base font-bold text-foreground">Importante</h2>
+              <span className="text-xs font-medium text-primary cursor-pointer hover:underline" onClick={() => navigate('/notes')}>Ver tudo</span>
+            </div>
+
+            <div className="flex gap-3 overflow-x-auto pb-4 -mx-5 px-5 scrollbar-hide">
               {starredNotes.map((note) => (
                 <div
                   key={note.id}
                   onClick={() => navigate('/notes')}
-                  className="min-w-[160px] max-w-[200px] bg-card border rounded-3xl p-4 shadow-sm space-y-2 cursor-pointer hover:bg-muted/50 active:scale-95 transition-transform"
+                  className="min-w-[160px] max-w-[200px] bg-white border border-white/40 rounded-3xl p-4 shadow-sm space-y-3 cursor-pointer hover:-translate-y-1 transition-all active:scale-95 dark:bg-white/5 dark:border-white/10"
                 >
                   <div className="flex items-center justify-between">
-                    <StickyNote className="w-4 h-4 text-primary" />
+                    <div className="w-8 h-8 rounded-full bg-yellow-400/10 flex items-center justify-center">
+                      <StickyNote className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                    </div>
                     <Star className="w-4 h-4 fill-[#FFD700] text-[#FFD700]" />
                   </div>
-                  <h3 className="font-semibold text-sm truncate">{note.title}</h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2">{note.content}</p>
+                  <div>
+                    <h3 className="font-bold text-sm truncate text-foreground">{note.title}</h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">{note.content}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -326,17 +348,16 @@ export default function Home() {
 
         {/* Quick Access Numbers & Documents */}
         <div className="mb-8">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            Acesso rápido
-          </h2>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5">
-            {/* Standard Blocks */}
+          <h2 className="text-base font-bold text-foreground mb-4 px-1">Seus Documentos</h2>
+          <div className="flex gap-3 overflow-x-auto pb-4 -mx-5 px-5 scrollbar-hide">
+            {/* Standard Blocks with better styling */}
             <QuickAccessCard
               label="NIF"
               value={profile?.nif || ''}
               placeholder="Adicionar"
               onClick={() => openNumberDialog('nif')}
               isSecure={true}
+              className="bg-white"
             />
             <QuickAccessCard
               label="NISS"
@@ -369,7 +390,7 @@ export default function Home() {
                 placeholder="Adicionar"
                 onClick={() => {
                   setTempNumber(block.value || '');
-                  setShowNumberDialog(block.label); // Use label as type for dialog title
+                  setShowNumberDialog(block.label);
                 }}
                 isSecure={true}
               />
