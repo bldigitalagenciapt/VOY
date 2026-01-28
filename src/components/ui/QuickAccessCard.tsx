@@ -39,7 +39,7 @@ export function QuickAccessCard({
           className
         )}
       >
-        <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/70 mb-1.5">
+        <span className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground/70 mb-1.5">
           {label}
         </span>
         {value ? (

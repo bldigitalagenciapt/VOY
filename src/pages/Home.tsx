@@ -192,8 +192,7 @@ export default function Home() {
         {/* Premium Header */}
         <div className="flex items-center justify-between mb-8 mt-2">
           <div>
-            <img src="/logo.png" alt="VOY" className="h-10 w-auto object-contain" />
-            <p className="text-base font-medium text-muted-foreground mt-1">Seu futuro começa aqui</p>
+            <img src="/logo.png" alt="VOY" className="h-14 w-auto object-contain" />
           </div>
           <div className="flex items-center gap-3">
             <button
