@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCommunity, CommunityPost } from '@/hooks/useCommunity';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import {
     ChevronLeft,
     Send,
@@ -34,6 +35,8 @@ export default function Community() {
     const { user } = useAuth();
     const { posts, loading, createPost, toggleLike, deletePost, isPosting } = useCommunity();
     const [content, setContent] = useState('');
+
+    const { profile } = useProfile();
 
     const handlePost = async () => {
         if (!content.trim()) return;
@@ -76,8 +79,9 @@ export default function Community() {
                 <Card className="p-4 rounded-3xl mb-8 border-primary/10 shadow-lg shadow-primary/5">
                     <div className="flex gap-4">
                         <Avatar className="w-10 h-10 border-2 border-primary/20">
+                            <AvatarImage src={profile?.avatar_url || ''} />
                             <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                                {user?.email?.[0].toUpperCase()}
+                                {profile?.display_name ? profile.display_name.substring(0, 2).toUpperCase() : user?.email?.[0].toUpperCase()}
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 space-y-3">
