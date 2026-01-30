@@ -21,25 +21,14 @@ export function useAdminUsers() {
     const { data: users = [], isLoading, refetch } = useQuery({
         queryKey: ['admin-users'],
         queryFn: async () => {
-            // Get profiles with user emails
-            const { data: profiles, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: false });
+            // Usar função SQL para buscar usuários com emails
+            const { data: usersData, error: usersError } = await supabase
+                .rpc('get_all_users_for_admin');
 
-            if (profileError) throw profileError;
-
-            // Get user emails from auth.users
-            const { data: authData } = await supabase.auth.admin.listUsers();
-
-            // Merge profiles with emails
-            const usersWithEmails = profiles.map(profile => {
-                const authUser = authData?.users.find(u => u.id === profile.user_id);
-                return {
-                    ...profile,
-                    email: authUser?.email || 'N/A',
-                };
-            });
+            if (usersError) {
+                console.error('Erro ao buscar usuários:', usersError);
+                throw usersError;
+            }
 
             // Get document counts
             const { data: docCounts } = await supabase
@@ -51,7 +40,7 @@ export function useAdminUsers() {
                 return acc;
             }, {});
 
-            return usersWithEmails.map(user => ({
+            return (usersData || []).map(user => ({
                 ...user,
                 document_count: counts?.[user.user_id] || 0,
             })) as AdminUser[];
