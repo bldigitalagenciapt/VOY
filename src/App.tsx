@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { AppProvider } from "@/contexts/AppContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { OnboardingTour } from "@/components/OnboardingTour";
+import ScrollToTop from "@/components/ScrollToTop";
 // Auth
 import Auth from "./pages/Auth";
 
@@ -35,6 +36,7 @@ import Checklist from "./pages/Checklist";
 import SalaryCalculator from "./pages/SalaryCalculator";
 import UsefulLinks from "./pages/UsefulLinks";
 import Emprego from "./pages/Emprego";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
@@ -186,6 +188,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Notifications />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/profile"
         element={
           <ProtectedRoute>
@@ -299,6 +309,7 @@ const App = () => (
             <Sonner />
             <OnboardingTour />
             <BrowserRouter>
+              <ScrollToTop />
               <AppRoutes />
             </BrowserRouter>
           </ThemeProvider>

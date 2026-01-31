@@ -9,6 +9,7 @@ import {
     Shield,
     Bell,
     Settings,
+    MessageSquare,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -20,17 +21,42 @@ import { ContentManagement } from '@/components/admin/ContentManagement';
 import { SecurityLogs } from '@/components/admin/SecurityLogs';
 import { Communication } from '@/components/admin/Communication';
 import { AppSettings } from '@/components/admin/AppSettings';
+import { CommunityManagement } from '@/components/admin/CommunityManagement';
+import { useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from 'react';
 
-type TabType = 'dashboard' | 'users' | 'content' | 'logs' | 'communication' | 'settings';
+type TabType = 'dashboard' | 'users' | 'content' | 'logs' | 'communication' | 'community' | 'settings';
 
 export default function Admin() {
     const navigate = useNavigate();
+    const { profile, loading: profileLoading } = useProfile();
+    const { user, loading: authLoading } = useAuth();
     const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+
+    const isAdmin = profile?.is_admin === true || user?.email?.toLowerCase().trim() === 'brunoalmeidaoficial21@gmail.com';
+
+    useEffect(() => {
+        if (!profileLoading && !authLoading && !isAdmin) {
+            navigate('/');
+        }
+    }, [isAdmin, profileLoading, authLoading, navigate]);
+
+    if (profileLoading || authLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
+    if (!isAdmin) return null;
 
     const tabs = [
         { key: 'dashboard' as TabType, label: 'Dashboard', icon: LayoutDashboard },
         { key: 'users' as TabType, label: 'Usuários', icon: Users },
         { key: 'content' as TabType, label: 'Conteúdo', icon: FileText },
+        { key: 'community' as TabType, label: 'Comunidade', icon: MessageSquare },
         { key: 'logs' as TabType, label: 'Logs', icon: Shield },
         { key: 'communication' as TabType, label: 'Comunicação', icon: Bell },
         { key: 'settings' as TabType, label: 'Configurações', icon: Settings },
@@ -48,6 +74,8 @@ export default function Admin() {
                 return <SecurityLogs />;
             case 'communication':
                 return <Communication />;
+            case 'community':
+                return <CommunityManagement />;
             case 'settings':
                 return <AppSettings />;
             default:

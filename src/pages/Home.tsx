@@ -6,36 +6,36 @@ import { MobileLayout } from '@/components/layout/MobileLayout';
 import { AlertBanner } from '@/components/ui/AlertBanner';
 import { QuickAccessCard } from '@/components/ui/QuickAccessCard';
 import { ActionCard } from '@/components/ui/ActionCard';
-import { FileText, Globe, Settings, StickyNote, Loader2, Star, Wallet, Calendar as CalendarIcon } from 'lucide-react';
+import { CircularProgress } from '@/components/ui/CircularProgress';
+import {
+  FileText,
+  Settings,
+  Loader2,
+  Wallet,
+  Calendar as CalendarIcon,
+  Bell,
+  ClipboardCheck,
+  Calculator as CalcIcon,
+  ExternalLink,
+  Briefcase,
+  Users,
+  Globe,
+  Plus,
+  ShieldAlert,
+  StickyNote,
+  Star
+} from 'lucide-react';
+import { EmergencyModal } from '@/components/modals/EmergencyModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
-import { useDocuments } from '@/hooks/useDocuments';
-import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { useUserDocuments } from '@/hooks/useUserDocuments';
 import { toast } from 'sonner';
-import { useQuickAccess } from '@/hooks/useQuickAccess';
-import { visaTypes } from '@/data/visaTypes';
-import { processTypes } from '@/pages/Aima';
-
-
 import { NewsSlider } from '@/components/home/NewsSlider';
-import { CalendarPreview } from '@/components/home/CalendarPreview';
 import { CommunityCard } from '@/components/home/CommunityCard';
-import { WelcomeModal } from '@/components/modals/WelcomeModal';
-import { EmergencyModal } from '@/components/modals/EmergencyModal';
-import {
-  ShieldAlert,
-  ArrowRight,
-  ClipboardCheck,
-  Calculator as CalcIcon,
-  ExternalLink,
-  Briefcase,
-  User as UserIcon
-} from 'lucide-react';
 
 type NumberField = 'nif' | 'niss' | 'sns' | 'passport';
 
@@ -43,13 +43,12 @@ export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, updateNumber, updateProfile, loading: profileLoading } = useProfile();
-  const { process: aimaProcess } = useAimaProcess(); // Corrected destructuring to 'process'
+  const { process: aimaProcess } = useAimaProcess();
   const { notes } = useNotes();
-  const { documents } = useDocuments();
-  const { userDocuments, loading: docsLoading } = useUserDocuments(); // Consolidated destructuring
-  const { quickAccessIds } = useQuickAccess();
+  const { userDocuments } = useUserDocuments();
 
   const [showNumberDialog, setShowNumberDialog] = useState<string | null>(null);
+  const [showAllQuickAccess, setShowAllQuickAccess] = useState(false);
   const [showEmergency, setShowEmergency] = useState(false);
   const [tempNumber, setTempNumber] = useState('');
   const [saving, setSaving] = useState(false);
@@ -58,36 +57,32 @@ export default function Home() {
     if (showNumberDialog) {
       try {
         setSaving(true);
-        // Check if it's a standard field or a custom one
         const standardFields = ['nif', 'niss', 'sns', 'passport'];
         if (standardFields.includes(showNumberDialog as string)) {
           await updateNumber(showNumberDialog as NumberField, tempNumber);
         } else {
-          // Update custom block value
           const customBlocks = profile?.custom_quick_access || [];
           const updatedBlocks = customBlocks.map((b) =>
             b.label === showNumberDialog ? { ...b, value: tempNumber } : b
           );
           await updateProfile({ custom_quick_access: updatedBlocks });
         }
-        toast.success(`${getDialogTitle(showNumberDialog)} atualizado com sucesso!`);
+        toast.success(`${getDialogTitle(showNumberDialog)} atualizado!`);
         setShowNumberDialog(null);
         setTempNumber('');
       } catch (error) {
-        toast.error('Erro ao atualizar número. Tente novamente.');
+        toast.error('Erro ao salvar número.');
       } finally {
         setSaving(false);
       }
     }
   };
 
-  const openNumberDialog = (type: NumberField) => {
-    const currentValue = profile?.[type] || '';
-    setTempNumber(currentValue);
+  const openNumberDialog = (type: string, value: string) => {
+    setTempNumber(value);
     setShowNumberDialog(type);
   };
 
-  // Calculate profile completion
   const profileFields = ['nif', 'niss', 'sns', 'passport'] as const;
   const completedFields = profileFields.filter(field => profile?.[field]).length;
   const completionPercentage = Math.round((completedFields / profileFields.length) * 100);
@@ -96,409 +91,302 @@ export default function Home() {
     switch (type) {
       case 'nif': return 'NIF';
       case 'niss': return 'NISS';
-      case 'sns': return 'Número SNS';
+      case 'sns': return 'SNS';
       case 'passport': return 'Passaporte';
       default: return type || '';
     }
   };
 
-  // Determine alerts based on user state
-  const alerts = [];
-  if (!aimaProcess?.process_type && profile?.user_profile === 'legalizing') {
-    alerts.push({
-      message: 'Você ainda não configurou seu processo na AIMA',
-      action: 'Configurar',
-      onAction: () => navigate('/aima'),
-    });
-  }
-  if (!profile?.nif) {
-    alerts.push({
-      message: 'Adicione seu NIF para ter acesso rápido',
-      variant: 'info' as const,
-    });
-  }
-
-  // Notification for deadlines (24h before)
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
-
-  const noteDeadlines = notes.filter(n => n.reminder_date?.startsWith(tomorrowStr));
-  const aimaDeadlines = aimaProcess?.important_dates?.filter(d => d.date === tomorrowStr) || [];
-
-  if (noteDeadlines.length > 0 || aimaDeadlines.length > 0) {
-    alerts.push({
-      message: `Você tem ${noteDeadlines.length + aimaDeadlines.length} prazos chegando em 24h!`,
-      variant: 'warning' as const,
-      action: 'Ver',
-      onAction: () => navigate(noteDeadlines.length > 0 ? '/notes' : '/aima'),
-    });
-  }
-
-  // Calculate documentation progress based on the active AIMA process
-  const activeVisa = visaTypes.find(v => v.id === aimaProcess?.process_type);
-  const activeProcess = processTypes.find(p => p.id === aimaProcess?.process_type);
-
-  const requiredDocs = activeVisa?.requiredDocuments || [];
-  const totalChecklistItems = requiredDocs.length;
-
-  // A document is considered "completed" if:
-  // 1. It's manually checked in the user_documents table
-  // 2. OR if there's an actual file uploaded in the documents table with a similar name
-  const completedChecklistItems = requiredDocs.filter(docName => {
-    const isManualDone = userDocuments.some(ud => ud.document_name === docName && ud.is_completed);
-    const hasUpload = documents.some(d =>
-      d.name.toLowerCase().includes(docName.toLowerCase()) ||
-      docName.toLowerCase().includes(d.name.toLowerCase())
-    );
-    return isManualDone || hasUpload;
-  }).length;
-
-  // Process completion calculation moved to widgets
-
-  const starredNotes = notes.filter(n => n.is_important);
-
+  const processPercentage = aimaProcess?.process_type
+    ? Math.min(Math.round((aimaProcess.step || 0) / 5 * 100), 100)
+    : 0;
 
   if (profileLoading) {
     return (
-      <MobileLayout>
-        <div className="px-5 py-6 safe-area-top space-y-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="space-y-2">
-              <div className="h-8 w-32 bg-muted animate-pulse rounded" />
-              <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-            </div>
-            <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
-          </div>
-          <div className="space-y-4">
-            <div className="h-4 w-32 bg-muted animate-pulse rounded" />
-            <div className="flex gap-3 overflow-hidden">
-              <SkeletonCard count={2} className="w-[140px] h-[100px]" />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <SkeletonCard count={4} />
-          </div>
-        </div>
-      </MobileLayout>
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
     );
   }
 
-  const favoriteDocs = documents.filter(doc => quickAccessIds.includes(doc.id));
-
   return (
     <MobileLayout>
-      <div className="px-5 pb-32 pt-safe-top min-h-screen bg-gradient-to-b from-blue-50/50 via-white to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        {/* Premium Header */}
-        <div className="flex items-center justify-between mb-8 mt-2">
-          <div>
-            <img src="/logo.png" alt="VOY" className="h-14 w-auto object-contain" />
-          </div>
+      <div className="pb-32 pt-8 px-6 bg-background min-h-screen">
+
+        {/* Header Section */}
+        <header className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/agenda')}
-              className="w-11 h-11 rounded-full bg-white/80 border border-white/20 shadow-sm flex items-center justify-center hover:bg-white transition-all dark:bg-white/10 dark:border-white/5"
-            >
-              <CalendarIcon className="w-5 h-5 text-muted-foreground" />
-            </button>
-            <button
-              onClick={() => setShowEmergency(true)}
-              className="w-11 h-11 rounded-full bg-red-500/10 border border-red-500/20 shadow-sm flex items-center justify-center hover:bg-red-500/20 transition-all animate-pulse"
-            >
-              <ShieldAlert className="w-5 h-5 text-red-500" />
-            </button>
-            <button
-              onClick={() => navigate('/settings')}
-              className="w-11 h-11 rounded-full bg-white/80 border border-white/20 shadow-sm flex items-center justify-center hover:bg-white transition-all dark:bg-white/10 dark:border-white/5"
-            >
-              <Settings className="w-5 h-5 text-muted-foreground" />
-            </button>
-            <button
-              onClick={() => navigate('/profile')}
-              className="w-12 h-12 rounded-full p-1 bg-gradient-to-br from-primary via-blue-400 to-primary shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
-            >
-              <div className="w-full h-full rounded-full border-2 border-white overflow-hidden bg-white">
+            <div className="w-12 h-12 rounded-full p-0.5 bg-gradient-to-br from-primary to-blue-400">
+              <div className="w-full h-full rounded-full border-2 border-background overflow-hidden bg-muted">
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Perfil" className="w-full h-full object-cover" />
+                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-muted text-primary font-bold text-lg">
+                  <div className="w-full h-full flex items-center justify-center font-bold text-primary">
                     {user?.email?.charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-foreground leading-none">
+                Olá, {profile?.display_name?.split(' ')[0] || 'Imigrante'}
+              </h1>
+              <p className="text-xs font-bold text-muted-foreground mt-1 uppercase tracking-widest opacity-60">
+                Sua jornada para Portugal
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/agenda')}
+              className="w-11 h-11 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground shadow-soft hover:bg-muted/50 transition-colors"
+            >
+              <CalendarIcon className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setShowEmergency(true)}
+              className="w-11 h-11 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 shadow-soft hover:bg-red-500/20 transition-all animate-pulse"
+            >
+              <ShieldAlert className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => navigate('/notifications')}
+              className="w-11 h-11 rounded-full bg-card border border-border flex items-center justify-center text-foreground shadow-soft hover:bg-muted/50 transition-colors"
+            >
+              <Bell className="w-5 h-5" />
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-foreground mb-1">
-            Olá, <span className="premium-gradient-text">{profile?.display_name?.split(' ')[0] || 'Imigrante'}</span>
-          </h2>
-          <p className="text-muted-foreground text-base">Pronto para avançar hoje?</p>
-        </div>
-
-        <NewsSlider />
-
-        {/* Quick Access Numbers & Documents - MOVED UP */}
-        <div className="mt-8 mb-8">
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-lg font-extrabold text-foreground">Seus Documentos</h2>
-            <button onClick={() => navigate('/documents')} className="text-sm font-semibold text-primary hover:underline">Ver todos</button>
+        {/* Seu Progresso Section */}
+        <section className="mb-10">
+          <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider">Seu Progresso</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <CircularProgress
+              percentage={completionPercentage}
+              label="Perfil"
+              evolution="+5%"
+              onClick={() => navigate('/profile')}
+            />
+            <CircularProgress
+              percentage={processPercentage}
+              label="Processo"
+              evolution="+12%"
+              onClick={() => navigate('/aima')}
+            />
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-6 -mx-5 px-5 scrollbar-hide">
-            {/* Standard Blocks with better styling */}
+        </section>
+
+        {/* Acesso Rápido Section */}
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Acesso Rápido</h2>
+            <button
+              onClick={() => setShowAllQuickAccess(true)}
+              className="text-xs font-black text-primary uppercase tracking-widest hover:underline"
+            >
+              Ver Todos
+            </button>
+          </div>
+
+          <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
             <QuickAccessCard
               label="NIF"
               value={profile?.nif || ''}
-              placeholder="Adicionar"
-              onClick={() => openNumberDialog('nif')}
-              isSecure={true}
-              className="bg-white dark:bg-card min-w-[140px]"
+              placeholder="Adicionar NIF"
+              onClick={() => openNumberDialog('nif', profile?.nif || '')}
+              className="w-[280px]"
             />
             <QuickAccessCard
               label="NISS"
               value={profile?.niss || ''}
-              placeholder="Adicionar"
-              onClick={() => openNumberDialog('niss')}
-              isSecure={true}
-              className="min-w-[140px]"
+              placeholder="Adicionar NISS"
+              onClick={() => openNumberDialog('niss', profile?.niss || '')}
+              className="w-[280px]"
             />
-            <QuickAccessCard
-              label="SNS"
-              value={profile?.sns || ''}
-              placeholder="Adicionar"
-              onClick={() => openNumberDialog('sns')}
-              isSecure={true}
-              className="min-w-[140px]"
-            />
-            <QuickAccessCard
-              label="Passaporte"
-              value={profile?.passport || ''}
-              placeholder="Adicionar"
-              onClick={() => openNumberDialog('passport')}
-              isSecure={true}
-              className="min-w-[140px]"
-            />
-
-            {/* Custom Blocks Added by User */}
-            {profile?.custom_quick_access?.map((block) => (
-              <QuickAccessCard
-                key={block.id}
-                label={block.label}
-                value={block.value || ''}
-                placeholder="Adicionar"
-                onClick={() => {
-                  setTempNumber(block.value || '');
-                  setShowNumberDialog(block.label);
-                }}
-                isSecure={true}
-                className="min-w-[140px]"
-              />
-            ))}
-
           </div>
-        </div>
-        <div className="mt-6">
-          {alerts.length > 0 && (
-            <div className="space-y-3 mb-6 animate-slide-up">
-              {alerts.map((alert, index) => (
-                <AlertBanner
-                  key={index}
-                  message={alert.message}
-                  action={alert.action}
-                  onAction={alert.onAction}
-                  variant={alert.variant || 'warning'}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        </section>
 
-        {/* Dashboard Widgets */}
-        <div className="grid grid-cols-2 gap-5 mb-10 mt-6">
-          {/* Profile Progress Widget */}
-          <div
-            className="group relative overflow-hidden rounded-[2rem] bg-white border border-white/20 shadow-soft p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer dark:bg-card dark:border-white/5"
-            onClick={() => navigate('/profile')}
-          >
-            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-              <div className="w-20 h-20 rounded-full bg-primary blur-3xl" />
+        {/* Anotações Section */}
+        {notes.filter(n => n.is_important).length > 0 && (
+          <section className="mb-10">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Anotações</h2>
+              <button
+                onClick={() => navigate('/notes')}
+                className="text-xs font-black text-primary uppercase tracking-widest hover:underline"
+              >
+                Ver Todas
+              </button>
             </div>
 
-            <div className="relative z-10 flex flex-col h-full justify-between gap-6">
-              <div className="flex items-start justify-between">
-                <div className="p-3 rounded-2xl bg-blue-50 text-primary dark:bg-blue-500/10">
-                  <UserIcon className="w-6 h-6" />
-                </div>
-                <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider bg-muted/50 px-2.5 py-1 rounded-full">{completionPercentage}%</span>
-              </div>
-
-              <div>
-                <span className="text-base font-bold text-foreground block mb-2">Meu Perfil</span>
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-primary to-blue-400 transition-all duration-1000 ease-out shadow-[0_0_10px_hsl(var(--primary)/0.5)]"
-                    style={{ width: `${completionPercentage}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* AIMA Status Widget */}
-          <div
-            className="group relative overflow-hidden rounded-[2rem] bg-white border border-white/20 shadow-soft p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer dark:bg-card dark:border-white/5"
-            onClick={() => navigate('/aima')}
-          >
-            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-              <div className="w-20 h-20 rounded-full bg-emerald-500 blur-3xl" />
-            </div>
-
-            <div className="relative z-10 flex flex-col h-full justify-between gap-6">
-              <div className="flex items-start justify-between">
-                <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                  <Globe className="w-6 h-6" />
-                </div>
-                <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider bg-muted/50 px-2.5 py-1 rounded-full">
-                  {aimaProcess?.process_type ? `${Math.min(Math.round(aimaProcess.step / 5 * 100), 100)}%` : 'New'}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-base font-bold text-foreground block mb-2 truncate">
-                  {aimaProcess?.process_type ? (
-                    visaTypes.find(v => v.id === aimaProcess.process_type)?.name || "Processo"
-                  ) : "Iniciar AIMA"}
-                </span>
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000 ease-out shadow-[0_0_10px_hsl(150_60%_45%/0.5)]"
-                    style={{ width: `${aimaProcess?.process_type ? Math.min((aimaProcess.step / 5 * 100), 100) : 0}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Starred Notes Section */}
-        {starredNotes.length > 0 && (
-          <div className="mb-10">
-            <div className="flex items-center justify-between mb-4 px-1">
-              <h2 className="text-lg font-extrabold text-foreground">Importante</h2>
-              <span className="text-sm font-medium text-primary cursor-pointer hover:underline" onClick={() => navigate('/notes')}>Ver tudo</span>
-            </div>
-
-            <div className="flex gap-4 overflow-x-auto pb-6 -mx-5 px-5 scrollbar-hide">
-              {starredNotes.map((note) => (
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
+              {notes.filter(n => n.is_important).map((note) => (
                 <div
                   key={note.id}
                   onClick={() => navigate('/notes')}
-                  className="min-w-[170px] max-w-[210px] bg-white border border-white/40 rounded-[1.5rem] p-5 shadow-sm space-y-3 cursor-pointer hover:-translate-y-1 transition-all active:scale-95 dark:bg-card dark:border-white/10"
+                  className="min-w-[200px] max-w-[240px] bg-card border border-border rounded-[2rem] p-5 shadow-soft hover:-translate-y-1 transition-all cursor-pointer relative overflow-hidden"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="w-9 h-9 rounded-full bg-yellow-400/10 flex items-center justify-center">
-                      <StickyNote className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                    <Star className="w-5 h-5 fill-[#FFD700] text-[#FFD700]" />
+                  <div className="absolute top-0 right-0 p-3 opacity-10">
+                    <StickyNote className="w-12 h-12 text-primary blur-sm" />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-base truncate text-foreground mb-1">{note.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed opacity-90">{note.content}</p>
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <StickyNote className="w-4 h-4 text-primary" />
+                      </div>
+                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                    </div>
+                    <h3 className="font-bold text-foreground text-sm truncate mb-1">{note.title}</h3>
+                    <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
+                      {note.content}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
+        {/* Dialog for All Quick Access Documents */}
+        <Dialog open={showAllQuickAccess} onOpenChange={setShowAllQuickAccess}>
+          <DialogContent className="max-w-[calc(100vw-2rem)] rounded-[2.5rem] p-6 max-h-[80vh] overflow-y-auto">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-2xl font-black text-center">Acesso Rápido</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-1 gap-4">
+              <QuickAccessCard
+                label="NIF"
+                value={profile?.nif || ''}
+                placeholder="Adicionar NIF"
+                onClick={() => openNumberDialog('nif', profile?.nif || '')}
+              />
+              <QuickAccessCard
+                label="NISS"
+                value={profile?.niss || ''}
+                placeholder="Adicionar NISS"
+                onClick={() => openNumberDialog('niss', profile?.niss || '')}
+              />
+              <QuickAccessCard
+                label="SNS"
+                value={profile?.sns || ''}
+                placeholder="Adicionar SNS"
+                onClick={() => openNumberDialog('sns', profile?.sns || '')}
+              />
+              <QuickAccessCard
+                label="Passaporte"
+                value={profile?.passport || ''}
+                placeholder="Adicionar Passaporte"
+                onClick={() => openNumberDialog('passport', profile?.passport || '')}
+              />
+              {profile?.custom_quick_access?.map((block) => (
+                <QuickAccessCard
+                  key={block.id}
+                  label={block.label}
+                  value={block.value || ''}
+                  placeholder={`Adicionar ${block.label}`}
+                  onClick={() => openNumberDialog(block.label, block.value || '')}
+                />
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
 
+        {/* Comunidade Voy Section */}
+        <section className="mb-10">
+          <CommunityCard />
+        </section>
 
-        <CalendarPreview />
-        <CommunityCard />
+        {/* Serviços Grid */}
+        <section className="mb-10">
+          <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider">Serviços</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <ActionCard
+              icon={<ClipboardCheck className="w-8 h-8 text-blue-500" />}
+              title="Primeiros Passos"
+              description="Guia Essencial"
+              onClick={() => navigate('/checklist')}
+            />
+            <ActionCard
+              icon={<CalcIcon className="w-8 h-8 text-orange-500" />}
+              title="Simulador"
+              description="Salário Líquido"
+              onClick={() => navigate('/calculator')}
+            />
+            <ActionCard
+              icon={<Briefcase className="w-8 h-8 text-emerald-500" />}
+              title="Emprego"
+              description="Vagas e Dicas"
+              onClick={() => navigate('/emprego')}
+            />
+            <ActionCard
+              icon={<ExternalLink className="w-8 h-8 text-purple-500" />}
+              title="Links Úteis"
+              description="Links e Dicas"
+              onClick={() => navigate('/useful-links')}
+            />
+            <ActionCard
+              icon={<FileText className="w-8 h-8 text-blue-400" />}
+              title="Documentos"
+              description="Seus Arquivos"
+              onClick={() => navigate('/documents')}
+            />
+            <ActionCard
+              icon={<Globe className="w-8 h-8 text-indigo-500" />}
+              title="Imigração"
+              description="Seu Processo"
+              onClick={() => navigate('/aima')}
+            />
+            <ActionCard
+              icon={<Wallet className="w-8 h-8 text-amber-500" />}
+              title="Meu Bolso"
+              description="Gestor Financeiro"
+              onClick={() => navigate('/meu-bolso')}
+            />
+            <ActionCard
+              icon={<StickyNote className="w-8 h-8 text-yellow-500" />}
+              title="Minhas Notas"
+              description="Suas Anotações"
+              onClick={() => navigate('/notes')}
+            />
+          </div>
+        </section>
 
+        <NewsSlider className="mt-6" />
 
-        {/* Main Actions */}
-        <div className="space-y-3">
-          <ActionCard
-            icon={<ClipboardCheck className="w-6 h-6 text-primary" />}
-            title="Primeiros Passos"
-            description="Guia essencial para quem chega"
-            onClick={() => navigate('/checklist')}
-            className="border-primary/20 bg-primary/5"
-          />
-          <ActionCard
-            icon={<CalcIcon className="w-6 h-6 text-orange-500" />}
-            title="Simulador de Salário"
-            description="Calcule seu rendimento líquido"
-            onClick={() => navigate('/calculator')}
-          />
-          <ActionCard
-            icon={<ExternalLink className="w-6 h-6 text-blue-500" />}
-            title="Links Úteis"
-            description="Diretório oficial de serviços"
-            onClick={() => navigate('/useful-links')}
-          />
-          <ActionCard
-            icon={<Briefcase className="w-6 h-6 text-green-500" />}
-            title="Emprego"
-            description="Agências e portais de trabalho"
-            onClick={() => navigate('/emprego')}
-          />
-          <ActionCard
-            icon={<FileText className="w-6 h-6" />}
-            title="Documentos"
-            description="Guarde seus documentos importantes"
-            onClick={() => navigate('/documents')}
-          />
-          <ActionCard
-            icon={<Globe className="w-6 h-6" />}
-            title="Imigração"
-            description="Acompanhe seu processo"
-            onClick={() => navigate('/aima')}
-          />
-          <ActionCard
-            icon={<Wallet className="w-6 h-6 text-warning" />}
-            title="Meu Bolso"
-            description="Gestor financeiro e despesas"
-            onClick={() => navigate('/meu-bolso')}
-            variant="warning"
-          />
-        </div>
       </div>
 
       {/* Number Input Dialog */}
       <Dialog open={!!showNumberDialog} onOpenChange={() => setShowNumberDialog(null)}>
-        <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl">
+        <DialogContent className="max-w-[calc(100vw-2rem)] rounded-[2.5rem] p-8">
           <DialogHeader>
-            <DialogTitle>
-              {profile?.[showNumberDialog as NumberField] ? 'Editar' : 'Adicionar'} {getDialogTitle(showNumberDialog)}
+            <DialogTitle className="text-2xl font-black">
+              {getDialogTitle(showNumberDialog)}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="number">Número</Label>
+          <div className="space-y-6 pt-4">
+            <div className="space-y-3">
+              <Label htmlFor="number" className="text-xs font-bold uppercase tracking-widest opacity-60">Número do documento</Label>
               <Input
                 id="number"
                 value={tempNumber}
                 onChange={(e) => setTempNumber(e.target.value)}
-                placeholder="Digite o número..."
-                className="h-12 text-lg rounded-xl"
+                placeholder="000 000 000"
+                className="h-16 text-xl font-black rounded-2xl bg-muted/30 border-none focus-visible:ring-primary"
               />
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <Button
                 variant="outline"
                 onClick={() => setShowNumberDialog(null)}
-                className="flex-1 h-12 rounded-xl"
+                className="flex-1 h-14 rounded-full font-bold border-border"
                 disabled={saving}
               >
                 Cancelar
               </Button>
               <Button
                 onClick={handleSaveNumber}
-                className="flex-1 h-12 rounded-xl"
+                className="flex-1 h-14 rounded-full font-black bg-primary text-white"
                 disabled={saving}
               >
                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Salvar'}
@@ -507,8 +395,10 @@ export default function Home() {
           </div>
         </DialogContent>
       </Dialog>
-      <WelcomeModal />
+
+      {/* Emergency Modal */}
       <EmergencyModal open={showEmergency} onOpenChange={setShowEmergency} />
+
     </MobileLayout>
   );
 }

@@ -2,13 +2,16 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { PartyPopper, Users, MapPin } from 'lucide-react';
+import { Trophy, PartyPopper, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import confetti from 'canvas-confetti';
 
-export function CommunityCard() {
+interface CommunityCardProps {
+    className?: string;
+}
+
+export function CommunityCard({ className }: CommunityCardProps) {
     const { user } = useAuth();
     const [count, setCount] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -16,7 +19,6 @@ export function CommunityCard() {
     useEffect(() => {
         fetchCount();
 
-        // Realtime subscription for updates
         const channel = supabase
             .channel('aima_status_changes')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'aima_status' }, () => {
@@ -54,7 +56,7 @@ export function CommunityCard() {
                 particleCount: 150,
                 spread: 70,
                 origin: { y: 0.6 },
-                colors: ['#22c55e', '#3b82f6', '#f59e0b']
+                colors: ['#0090FF', '#22C55E', '#FFFFFF']
             });
             toast.success("Parabéns pela sua conquista! 🎉");
             fetchCount();
@@ -65,32 +67,49 @@ export function CommunityCard() {
     };
 
     return (
-        <Card className="p-6 rounded-3xl border-2 border-primary/10 bg-gradient-to-br from-primary/5 to-transparent mb-8">
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <Users className="w-4 h-4 text-primary" />
+        <div className={cn(
+            "relative overflow-hidden rounded-[2.5rem] bg-card border border-border p-8 text-center shadow-soft group transition-all duration-300 hover:shadow-glow",
+            className
+        )}>
+            {/* Background Decor */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-primary/10 blur-[80px] -mt-32" />
+
+            <div className="relative z-10 flex flex-col items-center gap-6">
+                <div className="w-full flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <Trophy className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-xl font-black text-foreground tracking-tight">Comemore seu título</h3>
                     </div>
-                    <h2 className="font-bold text-lg">Comunidade Voy</h2>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-success/10 rounded-full border border-success/20">
+                        <PartyPopper className="w-3.5 h-3.5 text-success" />
+                        <span className="text-[10px] font-black text-success uppercase tracking-wider">{count} VITÓRIAS</span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-1 px-3 py-1 bg-success/10 rounded-full">
-                    <PartyPopper className="w-3 h-3 text-success" />
-                    <span className="text-[10px] font-bold text-success uppercase">{count} Vitórias</span>
+
+                <div className="text-left w-full">
+                    <p className="text-foreground text-sm leading-relaxed">
+                        <span className="font-black">{count} títulos entregues</span> nas últimas 24h. A próxima vitória pode ser a sua!
+                    </p>
+                </div>
+
+                <div className="w-full">
+                    <Button
+                        onClick={handleVictory}
+                        disabled={loading}
+                        size="lg"
+                        className="w-full h-14 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-glow transition-all active:scale-95 flex items-center justify-center gap-2 group/btn"
+                    >
+                        {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                            <>
+                                <PartyPopper className="w-6 h-6" />
+                                Recebi minha Residência! 🎉
+                            </>
+                        )}
+                    </Button>
                 </div>
             </div>
-
-            <p className="text-sm text-muted-foreground mb-4">
-                <span className="font-bold text-foreground">{count} títulos entregues</span> nas últimas 24h. A próxima vitória pode ser a sua!
-            </p>
-
-            <Button
-                onClick={handleVictory}
-                disabled={loading}
-                className="w-full h-12 rounded-2xl gap-2 font-bold text-md shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-                <PartyPopper className="w-5 h-5" />
-                Recebi minha Residência! 🎉
-            </Button>
-        </Card>
+        </div>
     );
 }

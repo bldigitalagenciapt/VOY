@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface QuickAccessCardProps {
   label: string;
@@ -17,55 +18,89 @@ export function QuickAccessCard({
   placeholder,
   onClick,
   className,
-  isSecure = false,
+  isSecure = true, // Default to true as per guidelines
 }: QuickAccessCardProps) {
-  const [isVisible, setIsVisible] = useState(!isSecure);
+  const [isVisible, setIsVisible] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const toggleVisibility = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsVisible(!isVisible);
   };
 
-  const displayValue = isVisible ? value : '••••••••';
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (value) {
+      navigator.clipboard.writeText(value);
+      setCopied(true);
+      toast.success(`${label} copiado!`);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const formatValue = (val: string) => {
+    if (!val) return '';
+    // Format numeric values with spaces for better legibility (e.g. NIF, NISS)
+    return val.replace(/\s/g, '').replace(/(\d{3})(?=\d)/g, '$1 ');
+  };
+
+  const displayValue = isVisible ? formatValue(value || '') : '••• ••• •••';
 
   return (
-    <div className="relative group min-w-[120px]">
-      <button
-        onClick={onClick}
-        className={cn(
-          'w-full flex flex-col items-center justify-center p-4 rounded-3xl border border-white/20 transition-all duration-300',
-          'bg-white/60 hover:bg-white backdrop-blur-md shadow-sm hover:shadow-md hover:-translate-y-0.5',
-          'dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10',
-          className
-        )}
-      >
-        <span className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground/70 mb-1.5">
-          {label}
-        </span>
-        {value ? (
-          <span className="text-lg font-black text-foreground tracking-tight font-mono">
-            {displayValue}
-          </span>
-        ) : (
-          <span className="text-sm text-primary font-bold flex items-center gap-1">
-            + Add
-          </span>
-        )}
-      </button>
-
-      {isSecure && value && (
-        <button
-          onClick={toggleVisibility}
-          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/5 hover:bg-black/10 transition-colors dark:bg-white/10 dark:hover:bg-white/20"
-          aria-label={isVisible ? "Esconder valor" : "Mostrar valor"}
-        >
-          {isVisible ? (
-            <EyeOff className="w-3 h-3 text-muted-foreground" />
-          ) : (
-            <Eye className="w-3 h-3 text-muted-foreground" />
-          )}
-        </button>
+    <div
+      onClick={onClick}
+      className={cn(
+        "group relative flex flex-col p-5 rounded-[2rem] bg-card border border-border shadow-soft transition-all duration-300 hover:shadow-lg cursor-pointer min-w-[200px] overflow-hidden",
+        className
       )}
+    >
+      {/* Background Decor (optional gradient indicator) */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[40px] -mr-10 -mt-10" />
+
+      <div className="flex items-center justify-between mb-4 relative z-10">
+        <div className="flex flex-col">
+          <span className="text-xl font-black text-foreground tracking-tight">{label}</span>
+          <div className="flex items-center gap-1.5 mt-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-success" />
+            <span className="text-[10px] uppercase font-bold text-success/80">Validado</span>
+          </div>
+        </div>
+
+        {value && (
+          <button
+            onClick={toggleVisibility}
+            className="p-2.5 rounded-2xl bg-muted/50 hover:bg-muted transition-colors"
+          >
+            {isVisible ? (
+              <EyeOff className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <Eye className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+        )}
+      </div>
+
+      <div className="mt-auto relative z-10">
+        {value ? (
+          <div className="flex items-center justify-between bg-muted/30 p-3 rounded-2xl border border-border/50">
+            <span className="text-lg font-black text-foreground tracking-[0.1em] font-mono">
+              {displayValue}
+            </span>
+            {isVisible && (
+              <button
+                onClick={handleCopy}
+                className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </button>
+            )}
+          </div>
+        ) : (
+          <span className="text-sm text-primary font-bold flex items-center gap-1 py-1">
+            + {placeholder}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

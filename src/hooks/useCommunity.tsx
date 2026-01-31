@@ -221,7 +221,24 @@ export function useCommunity() {
             queryClient.invalidateQueries({ queryKey: ['community_posts'] });
             toast({
                 title: "Removido",
-                description: "A sua publicação foi eliminada.",
+                description: "A publicação foi eliminada.",
+            });
+        }
+    });
+
+    const deleteReplyMutation = useMutation({
+        mutationFn: async (replyId: string) => {
+            const { error } = await (supabase as any)
+                .from('community_replies')
+                .delete()
+                .eq('id', replyId);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['community_posts'] });
+            toast({
+                title: "Resposta removida",
+                description: "A resposta foi eliminada com sucesso.",
             });
         }
     });
@@ -233,6 +250,7 @@ export function useCommunity() {
         createReply: createReplyMutation.mutateAsync,
         toggleLike: (postId: string, hasLiked: boolean) => toggleLikeMutation.mutateAsync({ postId, hasLiked }),
         deletePost: deletePostMutation.mutateAsync,
+        deleteReply: deleteReplyMutation.mutateAsync,
         isPosting: createPostMutation.isPending,
         isReplying: createReplyMutation.isPending
     };

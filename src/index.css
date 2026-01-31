@@ -2,19 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    /* Brand Palette - "Voy Premium" Style */
-    /* Primary: Deep Ocean Blue -> hsl(222 47% 11%) */
-    /* Accent: Electric Blue -> hsl(217 91% 60%) */
-    /* Highlights: Champagne Gold -> hsl(43 74% 66%) */
-    /* Background: Slightly darker Off-White -> hsl(210 20% 96%) */
-
-    --background: 210 20% 96%;
+    /* Light Mode - Refined */
+    --background: 210 20% 95%;
     --foreground: 222 47% 11%;
-    /* Deep Navy for text */
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -22,14 +17,14 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 217 91% 60%;
-    /* Electric Blue for buttons/actions */
+    --primary: 211 100% 50%;
+    /* #0081FF */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 210 20% 92%;
     --secondary-foreground: 222 47% 11%;
 
-    --muted: 210 40% 96.1%;
+    --muted: 210 20% 92%;
     --muted-foreground: 215 16% 47%;
 
     --accent: 210 40% 96.1%;
@@ -39,88 +34,67 @@
     --destructive-foreground: 210 40% 98%;
 
     --success: 150 100% 35%;
-    /* Rich Emerald */
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
     --info: 199 89% 48%;
-    /* Cerulean */
     --info-foreground: 0 0% 100%;
-
-    --gold: 43 74% 66%;
-    /* Custom Gold for Premium items */
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 217 91% 60%;
+    --ring: 211 100% 50%;
 
-    --radius: 1rem;
-    /* More rounded premium feel */
-
-    /* Custom gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(222 47% 11%));
-    --gradient-gold: linear-gradient(135deg, hsl(43 74% 66%), hsl(35 90% 50%));
-    --gradient-ocean: linear-gradient(180deg, hsl(210 40% 98%) 0%, hsl(214 32% 91%) 100%);
+    --radius: 1.25rem;
+    /* 20px - matching reference cards */
 
     /* Shadows - Premium Soft */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.04);
     --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-    --shadow-button: 0 8px 16px -4px rgba(59, 130, 246, 0.25);
-
-    /* Sidebar */
-    --sidebar-background: 210 40% 98%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96.1%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 60%;
+    --shadow-glow: 0 0 15px rgba(0, 144, 255, 0.3);
   }
 
   .dark {
-    --background: 222 47% 6%;
-    /* Very dark navy */
-    --foreground: 210 40% 98%;
+    /* Dark Mode - Based on Reference image_11ecbb.png */
+    --background: 213 42% 9%;
+    /* #0D1520 */
+    --foreground: 0 0% 100%;
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 213 35% 14%;
+    /* #16212E - Deep Petrol Blue */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 213 35% 14%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 211 100% 50%;
+    /* Vibrant Blue accent */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 32% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 213 32% 17%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 217 32% 17%;
+    --muted: 213 32% 17%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 217 32% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 213 32% 17%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 150 60% 45%;
+    --success: 158 64% 52%;
+    /* Emerald/Cyan from progress +12% */
     --success-foreground: 0 0% 100%;
 
-    --border: 217 32% 17%;
-    --input: 217 32% 17%;
-    --ring: 212.7 26.8% 83.9%;
-
-    --gold: 43 74% 66%;
+    --border: 213 30% 20%;
+    --input: 213 30% 20%;
+    --ring: 211 100% 50%;
 
     --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.3);
     --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
-    --shadow-button: 0 8px 16px -4px rgba(59, 130, 246, 0.2);
+    --shadow-glow: 0 0 20px rgba(0, 144, 255, 0.4);
   }
 }
 
@@ -130,7 +104,7 @@
   }
 
   html {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -138,7 +112,6 @@
     @apply bg-background text-foreground antialiased;
   }
 
-  /* Smooth Scrolling */
   html {
     scroll-behavior: smooth;
   }

@@ -1,59 +1,109 @@
-import { Home, FileText, Globe, StickyNote, MessageCircle, Wallet, Heart } from 'lucide-react';
+import { Home, FileText, Plus, MessageCircle, User, Fingerprint, StickyNote, TrendingDown, TrendingUp } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useApp } from '@/contexts/AppContext';
 import { cn } from '@/lib/utils';
-
-const navItems = [
-  { path: '/home', icon: Home, labelKey: 'nav.home', label: 'Início' },
-  { path: '/documents', icon: FileText, labelKey: 'nav.documents', label: 'Docs' },
-  { path: '/community', icon: Heart, labelKey: 'nav.community', label: 'Mural' },
-  { path: '/aima', icon: Globe, labelKey: 'nav.aima', label: 'AIMA' },
-  { path: '/meu-bolso', icon: Wallet, labelKey: 'nav.meuBolso', label: 'Bolso' },
-];
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { t } = useApp();
+
+  const navItems = [
+    { path: '/home', icon: Home, label: 'INÍCIO' },
+    { path: '/documents', icon: FileText, label: 'DOCS' },
+    { isFAB: true },
+    { path: '/community', icon: MessageCircle, label: 'CHAT' },
+    { path: '/profile', icon: User, label: 'PERFIL' },
+  ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom pointer-events-none flex justify-center pb-4">
-      {/* Floating Island Container */}
-      <div className="pointer-events-auto mx-4 bg-white/80 backdrop-blur-xl border border-white/40 shadow-soft rounded-2xl p-1.5 flex items-center justify-between gap-1 max-w-sm w-full dark:bg-black/60 dark:border-white/10 dark:shadow-black/20">
-        {navItems.map((item) => {
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border/50 pb-safe-bottom backdrop-blur-xl">
+      <div className="max-w-md mx-auto px-6 h-20 flex items-center justify-between relative">
+        {navItems.map((item, index) => {
+          if (item.isFAB) {
+            return (
+              <Sheet key="fab">
+                <SheetTrigger asChild>
+                  <div className="relative -top-10">
+                    <button
+                      className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white shadow-glow hover:scale-110 active:scale-95 transition-transform"
+                    >
+                      <Plus className="w-10 h-10 stroke-[3]" />
+                    </button>
+                  </div>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="rounded-t-[2.5rem] border-t-0 bg-[#0D1520] p-8 border-none">
+                  <SheetHeader className="mb-8">
+                    <SheetTitle className="text-2xl font-black text-center text-white">Ações Rápidas</SheetTitle>
+                  </SheetHeader>
+                  <div className="grid grid-cols-2 gap-4 pb-8">
+                    <button
+                      onClick={() => { navigate('/settings/quick-access'); }}
+                      className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-center"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400">
+                        <Plus className="w-6 h-6" />
+                      </div>
+                      <span className="text-sm font-bold text-white">Novo Cartão</span>
+                    </button>
+                    <button
+                      onClick={() => { navigate('/notes'); }}
+                      className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-center"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center text-yellow-400">
+                        <StickyNote className="w-6 h-6" />
+                      </div>
+                      <span className="text-sm font-bold text-white">Add Nota</span>
+                    </button>
+                    <button
+                      onClick={() => { navigate('/meu-bolso'); }}
+                      className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-center"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center text-red-400">
+                        <TrendingDown className="w-6 h-6" />
+                      </div>
+                      <span className="text-sm font-bold text-white">Add Gasto</span>
+                    </button>
+                    <button
+                      onClick={() => { navigate('/meu-bolso'); }}
+                      className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-center"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <TrendingUp className="w-6 h-6" />
+                      </div>
+                      <span className="text-sm font-bold text-white">Add Ganho</span>
+                    </button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            );
+          }
+
           const isActive = location.pathname === item.path;
-          const Icon = item.icon;
-          const translated = t(item.labelKey);
-          const label = translated.length > 15 ? item.label : translated;
+          const Icon = item.icon!;
 
           return (
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                'relative flex flex-col items-center justify-center flex-1 py-2 rounded-xl transition-all duration-300 group',
-                isActive
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
+                'flex flex-col items-center justify-center gap-1 transition-colors',
+                isActive ? 'text-primary' : 'text-muted-foreground'
               )}
             >
-              {/* Active Indicator Glow */}
-              {isActive && (
-                <span className="absolute inset-0 bg-primary/10 rounded-xl blur-sm -z-10 animate-fade-in" />
-              )}
-
               <Icon
-                className={cn(
-                  'w-5 h-5 mb-1 transition-all duration-300',
-                  isActive ? 'scale-110 -translate-y-0.5 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'group-hover:scale-105'
-                )}
-                strokeWidth={isActive ? 2.5 : 2}
+                className={cn('w-6 h-6', isActive ? 'stroke-[2.5]' : 'stroke-[1.5]')}
               />
               <span className={cn(
-                'text-[9px] font-medium leading-none transition-all duration-300',
-                isActive ? 'opacity-100 font-bold translate-y-0.5' : 'opacity-70 group-hover:opacity-100'
+                'text-[10px] font-black tracking-widest',
+                isActive ? 'opacity-100' : 'opacity-60'
               )}>
-                {label}
+                {item.label}
               </span>
             </button>
           );

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Trash2, Edit2, GripVertical, Save, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, GripVertical, Save, X, RefreshCw, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,7 +25,7 @@ export function ContentManagement() {
     const { data: links = [], isLoading } = useQuery({
         queryKey: ['admin-links'],
         queryFn: async () => {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('useful_links')
                 .select('*')
                 .order('order_index', { ascending: true });
@@ -36,7 +36,7 @@ export function ContentManagement() {
 
     const addLinkMutation = useMutation({
         mutationFn: async (link: Partial<UsefulLink>) => {
-            const { error } = await supabase.from('useful_links').insert({
+            const { error } = await (supabase as any).from('useful_links').insert({
                 ...link,
                 order_index: links.length,
             });
@@ -51,7 +51,7 @@ export function ContentManagement() {
 
     const updateLinkMutation = useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<UsefulLink> }) => {
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('useful_links')
                 .update(updates)
                 .eq('id', id);
@@ -66,7 +66,7 @@ export function ContentManagement() {
 
     const deleteLinkMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { error } = await supabase.from('useful_links').delete().eq('id', id);
+            const { error } = await (supabase as any).from('useful_links').delete().eq('id', id);
             if (error) throw error;
         },
         onSuccess: () => {
@@ -74,6 +74,84 @@ export function ContentManagement() {
             queryClient.invalidateQueries({ queryKey: ['admin-links'] });
         },
     });
+
+    const syncAimaNews = async () => {
+        const toastId = 'sync-news';
+        try {
+            toast.loading('Buscando notícias no site da AIMA...', { id: toastId });
+
+            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const targetUrl = encodeURIComponent('https://aima.gov.pt/pt/noticias');
+
+            const response = await fetch(`${proxyUrl}${targetUrl}`);
+            if (!response.ok) throw new Error('Falha ao acessar proxy');
+
+            const data = await response.json();
+            const html = data.contents;
+
+            // Improved parsing logic: split by card class instead of fragile regex
+            const chunks = html.split('<div class="uk-card uk-margin-remove-first-child"');
+            if (chunks.length <= 1) throw new Error('Estrutura do site da AIMA mudou ou nenhuma notícia na página');
+
+            const newsItems = [];
+            // Skip the first chunk as it's the HTML before the first card
+            for (const cardHtml of chunks.slice(1, 6)) {
+                // Extract fields with more flexible regex
+                const titleMatch = cardHtml.match(/<h3[^>]*>[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/);
+                const linkMatch = cardHtml.match(/href="([^"]+)"/);
+                const summaryMatch = cardHtml.match(/<p class="uk-margin-remove-top">([\s\S]*?)<\/p>/);
+                // Look for images in both <img> tags and <source> tags if needed, but <img> is usually enough
+                const imgMatch = cardHtml.match(/<img[^>]*src="([^"]+)"/);
+
+                if (titleMatch && linkMatch) {
+                    const rawTitle = titleMatch[1].trim();
+                    const cleanTitle = rawTitle
+                        .replace(/&amp;/g, '&')
+                        .replace(/&quot;/g, '"')
+                        .replace(/&nbsp;/g, ' ')
+                        .replace(/<[^>]*>/g, ''); // Remove any nested tags in title
+
+                    const link = linkMatch[1];
+                    const fullLink = link.startsWith('http') ? link : `https://aima.gov.pt${link}`;
+
+                    const rawSummary = summaryMatch ? summaryMatch[1].trim() : '';
+                    const cleanSummary = rawSummary
+                        .replace(/&amp;/g, '&')
+                        .replace(/&quot;/g, '"')
+                        .replace(/<[^>]*>/g, '');
+
+                    newsItems.push({
+                        titulo: cleanTitle,
+                        link: fullLink,
+                        resumo: cleanSummary,
+                        imagem_url: imgMatch ? imgMatch[1].replace(/&amp;/g, '&') : '',
+                    });
+                }
+            }
+
+            if (newsItems.length === 0) throw new Error('Falha ao extrair campos das notícias');
+
+            let newCount = 0;
+            for (const item of newsItems) {
+                const { data: existing } = await supabase
+                    .from('noticias')
+                    .select('id')
+                    .eq('titulo', item.titulo)
+                    .maybeSingle();
+
+                if (!existing) {
+                    const { error } = await supabase.from('noticias').insert(item);
+                    if (!error) newCount++;
+                }
+            }
+
+            toast.success(`Sincronização concluída! ${newCount} novas notícias.`, { id: toastId });
+            queryClient.invalidateQueries({ queryKey: ['noticias'] });
+        } catch (error) {
+            console.error('Sync Error:', error);
+            toast.error('Erro ao sincronizar. Tente novamente.', { id: toastId });
+        }
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -108,6 +186,40 @@ export function ContentManagement() {
                         <Plus className="w-5 h-5 mr-2" />
                         Adicionar Link
                     </Button>
+                </div>
+            </div>
+
+            {/* AIMA News Sync Section */}
+            <div className="p-5 bg-card border border-border rounded-3xl space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <RefreshCw className="w-5 h-5 text-primary" />
+                        <h3 className="font-bold text-lg">Notícias AIMA Oficial</h3>
+                    </div>
+                    <span className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-lg uppercase">Auto-Scraper</span>
+                </div>
+
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                    Clique no botão abaixo para buscar automaticamente as últimas 4 notícias postadas no site oficial da AIMA (aima.gov.pt) e atualizar o aplicativo.
+                </p>
+
+                <Button
+                    onClick={syncAimaNews}
+                    variant="outline"
+                    className="w-full h-12 rounded-xl border-primary/20 hover:bg-primary/5 hover:border-primary transition-all group"
+                >
+                    <RefreshCw className="w-5 h-5 mr-3 group-hover:rotate-180 transition-transform duration-500" />
+                    Sincronizar com AIMA.GOV.PT
+                </Button>
+
+                <div className="p-4 bg-muted/30 rounded-2xl border border-white/5">
+                    <div className="flex items-center gap-2 mb-2">
+                        <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Fonte das Notícias</span>
+                    </div>
+                    <a href="https://aima.gov.pt/pt/noticias" target="_blank" className="text-primary hover:underline text-xs truncate block">
+                        https://aima.gov.pt/pt/noticias
+                    </a>
                 </div>
             </div>
 

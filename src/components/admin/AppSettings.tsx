@@ -14,7 +14,7 @@ export function AppSettings() {
     const { data: appSettings, isLoading } = useQuery({
         queryKey: ['app-settings'],
         queryFn: async () => {
-            const { data, error } = await supabase.from('app_settings').select('*');
+            const { data, error } = await (supabase as any).from('app_settings').select('*');
             if (error) throw error;
 
             // Convert array to object
@@ -34,16 +34,40 @@ export function AppSettings() {
 
     const updateSettingMutation = useMutation({
         mutationFn: async ({ key, value }: { key: string; value: any }) => {
-            const { error } = await supabase
+            const db = supabase as any;
+
+            // Check if exists
+            const { data: current, error: fetchError } = await db
                 .from('app_settings')
-                .update({ value, updated_at: new Date().toISOString() })
-                .eq('key', key);
-            if (error) throw error;
+                .select('key')
+                .eq('key', key)
+                .maybeSingle();
+
+            if (fetchError) throw fetchError;
+
+            let result;
+            if (current) {
+                result = await db
+                    .from('app_settings')
+                    .update({ value, updated_at: new Date().toISOString() })
+                    .eq('key', key);
+            } else {
+                result = await db
+                    .from('app_settings')
+                    .insert({ key, value, updated_at: new Date().toISOString() });
+            }
+
+            if (result.error) throw result.error;
         },
         onSuccess: () => {
             toast.success('Configuração atualizada!');
             queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['community-enabled'] });
         },
+        onError: (error: any) => {
+            console.error('Erro ao atualizar configuração:', error);
+            toast.error('Falha ao salvar: ' + (error.message || 'Erro desconhecido'));
+        }
     });
 
     const handleToggle = (key: string, currentValue: boolean) => {
@@ -93,6 +117,17 @@ export function AppSettings() {
                         <Switch
                             checked={settings.upload_enabled === true}
                             onCheckedChange={() => handleToggle('upload_enabled', settings.upload_enabled)}
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-muted rounded-xl">
+                        <div>
+                            <p className="font-medium">Mural da Comunidade</p>
+                            <p className="text-xs text-muted-foreground">Permitir postagens e conversas no mural</p>
+                        </div>
+                        <Switch
+                            checked={settings.community_enabled !== false} // Default to true if missing
+                            onCheckedChange={() => handleToggle('community_enabled', settings.community_enabled ?? true)}
                         />
                     </div>
 

@@ -18,14 +18,18 @@ import {
     Loader2,
     ShieldCheck,
     PartyPopper,
-    Info
+    Info,
+    ShieldAlert
 } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -37,6 +41,31 @@ export default function Community() {
     const [content, setContent] = useState('');
 
     const { profile } = useProfile();
+    const queryClient = useQueryClient();
+
+    // Check if community is enabled
+    const { data: communityEnabled = true, isLoading: loadingStatus } = useQuery({
+        queryKey: ['community-enabled'],
+        queryFn: async () => {
+            try {
+                const { data, error } = await (supabase as any)
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'community_enabled')
+                    .maybeSingle();
+
+                if (error) throw error;
+                // If row doesn't exist, we assume it's enabled by default
+                if (!data) return true;
+                return data.value === true;
+            } catch (err) {
+                console.error("Error fetching community status:", err);
+                return true;
+            }
+        }
+    });
+
+    const isAdmin = profile?.is_admin === true || user?.email?.toLowerCase().trim() === 'brunoalmeidaoficial21@gmail.com';
 
     const handlePost = async () => {
         if (!content.trim()) return;
@@ -75,66 +104,91 @@ export default function Community() {
                     </p>
                 </div>
 
-                {/* Create Post */}
-                <Card className="p-4 rounded-3xl mb-8 border-primary/10 shadow-lg shadow-primary/5">
-                    <div className="flex gap-4">
-                        <Avatar className="w-10 h-10 border-2 border-primary/20">
-                            <AvatarImage src={profile?.avatar_url || ''} />
-                            <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                                {profile?.display_name ? profile.display_name.substring(0, 2).toUpperCase() : user?.email?.[0].toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 space-y-3">
-                            <Textarea
-                                placeholder="Partilhe uma dica, dúvida ou vitória..."
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                className="min-h-[100px] bg-muted/30 border-none focus-visible:ring-primary/20 rounded-2xl resize-none text-sm"
-                            />
-                            <div className="flex justify-between items-center">
-                                <span className="text-[10px] text-muted-foreground italic">
-                                    Todos serão educados. 🛡️
-                                </span>
-                                <Button
-                                    size="sm"
-                                    onClick={handlePost}
-                                    disabled={isPosting || !content.trim()}
-                                    className="rounded-full px-6 font-bold gap-2"
-                                >
-                                    {isPosting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                    Publicar
-                                </Button>
-                            </div>
+                {/* Content */}
+                {!communityEnabled ? (
+                    <div className="flex flex-col items-center justify-center p-12 space-y-6 bg-muted/20 rounded-[2.5rem] border border-dashed border-border text-center animate-in fade-in zoom-in duration-500 mt-10">
+                        <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500">
+                            <ShieldAlert className="w-10 h-10" />
                         </div>
+                        <div className="space-y-2">
+                            <h2 className="text-xl font-bold">Mural Temporariamente Indisponível</h2>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                A administração suspendeu o mural para manutenção ou moderação. Por favor, volte mais tarde.
+                            </p>
+                        </div>
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate('/home')}
+                            className="rounded-full px-8"
+                        >
+                            Voltar ao Início
+                        </Button>
                     </div>
-                </Card>
-
-                {/* Feed */}
-                <div className="space-y-6">
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center p-12 space-y-4">
-                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                            <p className="text-sm text-muted-foreground">A sintonizar com a comunidade...</p>
-                        </div>
-                    ) : posts.length === 0 ? (
-                        <div className="text-center p-12 space-y-4">
-                            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto opacity-50">
-                                <MessageCircle className="w-8 h-8" />
+                ) : (
+                    <>
+                        {/* Create Post */}
+                        <Card className="p-4 rounded-3xl mb-8 border-primary/10 shadow-lg shadow-primary/5">
+                            <div className="flex gap-4">
+                                <Avatar className="w-10 h-10 border-2 border-primary/20">
+                                    <AvatarImage src={profile?.avatar_url || ''} />
+                                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                                        {profile?.display_name ? profile.display_name.substring(0, 2).toUpperCase() : user?.email?.[0].toUpperCase()}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 space-y-3">
+                                    <Textarea
+                                        placeholder="Partilhe uma dica, dúvida ou vitória..."
+                                        value={content}
+                                        onChange={(e) => setContent(e.target.value)}
+                                        className="min-h-[100px] bg-muted/30 border-none focus-visible:ring-primary/20 rounded-2xl resize-none text-sm"
+                                    />
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[10px] text-muted-foreground italic">
+                                            Todos serão educados. 🛡️
+                                        </span>
+                                        <Button
+                                            size="sm"
+                                            onClick={handlePost}
+                                            disabled={isPosting || !content.trim()}
+                                            className="rounded-full px-6 font-bold gap-2"
+                                        >
+                                            {isPosting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                            Publicar
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
-                            <p className="text-muted-foreground font-medium">Seja o primeiro a dizer olá!</p>
+                        </Card>
+
+                        {/* Feed */}
+                        <div className="space-y-6">
+                            {loading ? (
+                                <div className="flex flex-col items-center justify-center p-12 space-y-4">
+                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                    <p className="text-sm text-muted-foreground">A sintonizar com a comunidade...</p>
+                                </div>
+                            ) : posts.length === 0 ? (
+                                <div className="text-center p-12 space-y-4">
+                                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto opacity-50">
+                                        <MessageCircle className="w-8 h-8" />
+                                    </div>
+                                    <p className="text-muted-foreground font-medium">Seja o primeiro a dizer olá!</p>
+                                </div>
+                            ) : (
+                                posts.map((post) => (
+                                    <PostCard
+                                        key={post.id}
+                                        post={post}
+                                        onLike={() => toggleLike(post.id, post.user_has_liked)}
+                                        onDelete={() => deletePost(post.id)}
+                                        currentUserId={user?.id}
+                                        isAdmin={isAdmin}
+                                    />
+                                ))
+                            )}
                         </div>
-                    ) : (
-                        posts.map((post) => (
-                            <PostCard
-                                key={post.id}
-                                post={post}
-                                onLike={() => toggleLike(post.id, post.user_has_liked)}
-                                onDelete={() => deletePost(post.id)}
-                                currentUserId={user?.id}
-                            />
-                        ))
-                    )}
-                </div>
+                    </>
+                )}
             </div>
         </MobileLayout>
     );
@@ -144,14 +198,17 @@ function PostCard({
     post,
     onLike,
     onDelete,
-    currentUserId
+    currentUserId,
+    isAdmin
 }: {
     post: CommunityPost;
     onLike: () => void;
     onDelete: () => void;
     currentUserId?: string;
+    isAdmin?: boolean;
 }) {
     const isOwner = currentUserId === post.user_id;
+    const canDelete = isOwner || isAdmin;
     const [showReplies, setShowReplies] = useState(false);
     const [replyContent, setReplyContent] = useState('');
     const { createReply, isReplying } = useCommunity();
@@ -186,7 +243,7 @@ function PostCard({
                                 </span>
                             </div>
 
-                            {isOwner && (
+                            {canDelete && (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button className="p-1 hover:bg-muted rounded-full transition-colors">
@@ -280,6 +337,3 @@ function PostCard({
         </div>
     );
 }
-
-// Fixed import for Input
-import { Input } from '@/components/ui/input';

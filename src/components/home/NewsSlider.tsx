@@ -4,6 +4,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExternalLink } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Noticia {
     id: string;
@@ -13,7 +14,11 @@ interface Noticia {
     imagem_url: string;
 }
 
-export function NewsSlider() {
+interface NewsSliderProps {
+    className?: string;
+}
+
+export function NewsSlider({ className }: NewsSliderProps) {
     const [noticias, setNoticias] = useState<Noticia[]>([]);
     const [loading, setLoading] = useState(true);
     const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000 })]);
@@ -42,7 +47,7 @@ export function NewsSlider() {
     if (noticias.length === 0) return null;
 
     return (
-        <div className="overflow-hidden mb-8 rounded-3xl bg-muted/20 border border-white/5 shadow-xl" ref={emblaRef}>
+        <div className={cn("overflow-hidden mb-8 rounded-3xl bg-muted/20 border border-white/5 shadow-xl", className)} ref={emblaRef}>
             <div className="flex">
                 {noticias.map((noticia) => (
                     <div
