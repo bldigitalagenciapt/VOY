@@ -3,17 +3,23 @@
  * Usa AES-GCM para garantir confidencialidade e integridade.
  */
 
+const keyCache = new Map<string, CryptoKey>();
+
 async function getEncryptionKey(userId: string): Promise<CryptoKey> {
+    if (keyCache.has(userId)) {
+        return keyCache.get(userId)!;
+    }
+
     const enc = new TextEncoder();
     const baseKey = await window.crypto.subtle.importKey(
         'raw',
-        enc.encode(userId), // No futuro, usar uma derivação de chave mais robusta (PBKDF2)
+        enc.encode(userId),
         'PBKDF2',
         false,
         ['deriveKey']
     );
 
-    return window.crypto.subtle.deriveKey(
+    const key = await window.crypto.subtle.deriveKey(
         {
             name: 'PBKDF2',
             salt: enc.encode('voy-salt-2026'),
@@ -25,6 +31,9 @@ async function getEncryptionKey(userId: string): Promise<CryptoKey> {
         false,
         ['encrypt', 'decrypt']
     );
+
+    keyCache.set(userId, key);
+    return key;
 }
 
 export async function encryptData(data: string, userId: string): Promise<string> {

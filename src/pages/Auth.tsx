@@ -76,10 +76,12 @@ export default function Auth() {
       if (isLogin) {
         const { error } = await signIn(email, password, captchaToken);
         if (error) {
-          if (error.message.includes('Invalid login')) {
+          if (error.message.toLowerCase().includes('invalid login') || error.message.toLowerCase().includes('invalid credentials')) {
             setError('Email ou senha incorretos');
+          } else if (error.message.toLowerCase().includes('email not confirmed')) {
+            setError('Por favor, confirme seu email antes de fazer login');
           } else {
-            setError('Erro ao fazer login. Tente novamente.');
+            setError(`Erro ao fazer login: ${error.message}`);
           }
         } else {
           navigate('/home');
@@ -116,7 +118,11 @@ export default function Auth() {
     try {
       const { error } = await sendPasswordResetEmail(email, captchaToken);
       if (error) {
-        setError('Erro ao enviar email de recuperação');
+        if (error.message.toLowerCase().includes('rate limit')) {
+          setError('Muitas solicitações. Tente novamente em alguns minutos.');
+        } else {
+          setError(`Erro ao enviar email de recuperação: ${error.message}`);
+        }
       } else {
         setIsResetSent(true);
       }
@@ -185,8 +191,17 @@ export default function Auth() {
               className="w-full h-12 rounded-xl border-input bg-background hover:bg-accent hover:text-accent-foreground items-center gap-2 text-base font-semibold"
               onClick={async () => {
                 setLoading(true);
-                await signInWithGoogle();
-                setLoading(false);
+                setError('');
+                try {
+                  const { error } = await signInWithGoogle();
+                  if (error) {
+                    setError(`Erro ao conectar com Google: ${error.message}`);
+                  }
+                } catch (err) {
+                  setError('Erro inesperado ao conectar com Google');
+                } finally {
+                  setLoading(false);
+                }
               }}
               disabled={loading}
             >
