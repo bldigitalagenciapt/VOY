@@ -74,8 +74,10 @@ export default function Auth() {
 
     try {
       if (isLogin) {
+        console.log('Tentativa de login:', email);
         const { error } = await signIn(email, password, captchaToken);
         if (error) {
+          console.error('Erro no login:', error);
           if (error.message.toLowerCase().includes('invalid login') || error.message.toLowerCase().includes('invalid credentials')) {
             setError('Email ou senha incorretos');
           } else if (error.message.toLowerCase().includes('email not confirmed')) {
@@ -84,20 +86,25 @@ export default function Auth() {
             setError(`Erro ao fazer login: ${error.message}`);
           }
         } else {
+          console.log('Login bem-sucedido');
           navigate('/home');
         }
       } else {
         const { error } = await signUp(email, password, captchaToken);
         if (error) {
-          if (error.message.includes('already registered')) {
+          console.error('Erro no cadastro:', error);
+          if (error.message.toLowerCase().includes('already registered')) {
             setError('Este email já está cadastrado');
           } else {
-            setError('Erro ao criar conta. Tente novamente.');
+            setError(`Erro ao criar conta: ${error.message}`);
           }
         } else {
           navigate('/home');
         }
       }
+    } catch (err) {
+      console.error('Erro inesperado:', err);
+      setError('Ocorreu um erro inesperado. Verifique sua conexão.');
     } finally {
       setLoading(false);
     }
@@ -193,13 +200,16 @@ export default function Auth() {
                 setLoading(true);
                 setError('');
                 try {
+                  console.log('Iniciando login com Google');
                   const { error } = await signInWithGoogle();
                   if (error) {
+                    console.error('Erro Google Auth:', error);
                     setError(`Erro ao conectar com Google: ${error.message}`);
+                    setLoading(false);
                   }
                 } catch (err) {
+                  console.error('Erro inesperado Google Auth:', err);
                   setError('Erro inesperado ao conectar com Google');
-                } finally {
                   setLoading(false);
                 }
               }}
