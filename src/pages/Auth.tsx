@@ -77,13 +77,15 @@ export default function Auth() {
         console.log('Tentativa de login:', email);
         const { error } = await signIn(email, password, captchaToken);
         if (error) {
-          console.error('Erro no login:', error);
-          if (error.message.toLowerCase().includes('invalid login') || error.message.toLowerCase().includes('invalid credentials')) {
+          console.error('[Auth DEBUG] Erro completo do Supabase:', error);
+          const errorMessage = error.message.toLowerCase();
+
+          if (errorMessage.includes('invalid login') || errorMessage.includes('invalid credentials')) {
             setError('Email ou senha incorretos');
-          } else if (error.message.toLowerCase().includes('email not confirmed')) {
+          } else if (errorMessage.includes('email not confirmed')) {
             setError('Por favor, confirme seu email antes de fazer login');
           } else {
-            setError(`Erro ao fazer login: ${error.message}`);
+            setError(`Erro (${error.name || 'Auth'}): ${error.message}`);
           }
         } else {
           console.log('Login bem-sucedido');
@@ -92,7 +94,7 @@ export default function Auth() {
       } else {
         const { error } = await signUp(email, password, captchaToken);
         if (error) {
-          console.error('Erro no cadastro:', error);
+          console.error('[Auth DEBUG] Erro completo do cadastro:', error);
           if (error.message.toLowerCase().includes('already registered')) {
             setError('Este email já está cadastrado');
           } else {
@@ -366,7 +368,7 @@ export default function Auth() {
                 </div>
               )}
 
-              {/* Cloudflare Turnstile */}
+              {/* Cloudflare Turnstile (Desativado para Depuração)
               {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
                 <div className="flex justify-center">
                   <Turnstile
@@ -376,7 +378,8 @@ export default function Auth() {
                     onExpire={() => setCaptchaToken('')}
                   />
                 </div>
-              )}
+              )} 
+              */}
 
               <Button
                 type="submit"
