@@ -22,8 +22,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('[Auth] Inicializando estado de autenticação...');
-    console.log('[Auth] Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('[VOY-DIAGNOSTICO] Inicializando estado...');
+    console.log('[VOY-DIAGNOSTICO] Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
 
     // Failsafe: Se em 8 segundos não inicializar, força loading para false
     const timeout = setTimeout(() => {
