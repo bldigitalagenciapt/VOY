@@ -22,23 +22,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+    console.log('[Auth] Inicializando estado de autenticação...');
+
+    // Failsafe: Se em 8 segundos não inicializar, força loading para false
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('[Auth] Tempo limite de inicialização atingido. Forçando desbloqueio.');
+        setLoading(false);
+      }
+    }, 8000);
+
+    try {
+      // Set up auth state listener FIRST
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          console.log('[Auth] Mudança de estado:', event);
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          clearTimeout(timeout);
+        }
+      );
+
+      // THEN check for existing session
+      supabase.auth.getSession().then(({ data: { session }, error }) => {
+        if (error) {
+          console.error('[Auth] Erro ao buscar sessão:', error);
+        }
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-      }
-    );
+        clearTimeout(timeout);
+      }).catch(err => {
+        console.error('[Auth] Erro crítico na Promise de sessão:', err);
+        setLoading(false);
+        clearTimeout(timeout);
+      });
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+      return () => {
+        subscription.unsubscribe();
+        clearTimeout(timeout);
+      };
+    } catch (err) {
+      console.error('[Auth] Erro ao configurar listeners de auth:', err);
       setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+      clearTimeout(timeout);
+    }
   }, []);
 
 
