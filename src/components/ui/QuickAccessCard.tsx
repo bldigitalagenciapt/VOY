@@ -50,7 +50,7 @@ export function QuickAccessCard({
     <div
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col p-5 rounded-[2rem] bg-card border border-border shadow-soft transition-all duration-300 hover:shadow-lg cursor-pointer min-w-[200px] overflow-hidden",
+        "group relative flex flex-col p-4 rounded-[2rem] bg-card border border-border shadow-soft transition-all duration-300 hover:shadow-lg cursor-pointer min-w-[200px] overflow-hidden",
         className
       )}
     >

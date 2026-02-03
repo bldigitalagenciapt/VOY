@@ -159,7 +159,7 @@ export default function Home() {
         </header>
 
         {/* Seu Progresso Section */}
-        <section className="mb-10">
+        <section className="mb-8">
           <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider">Seu Progresso</h2>
           <div className="grid grid-cols-2 gap-4">
             <CircularProgress
@@ -178,7 +178,7 @@ export default function Home() {
         </section>
 
         {/* Acesso Rápido Section */}
-        <section className="mb-10">
+        <section className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Acesso Rápido</h2>
             <button
@@ -195,21 +195,21 @@ export default function Home() {
               value={profile?.nif || ''}
               placeholder="Adicionar NIF"
               onClick={() => openNumberDialog('nif', profile?.nif || '')}
-              className="w-[280px]"
+              className="w-[85vw] max-w-[280px]"
             />
             <QuickAccessCard
               label="NISS"
               value={profile?.niss || ''}
               placeholder="Adicionar NISS"
               onClick={() => openNumberDialog('niss', profile?.niss || '')}
-              className="w-[280px]"
+              className="w-[85vw] max-w-[280px]"
             />
           </div>
         </section>
 
         {/* Anotações Section */}
         {notes.filter(n => n.is_important).length > 0 && (
-          <section className="mb-10">
+          <section className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Anotações</h2>
               <button
@@ -293,12 +293,12 @@ export default function Home() {
         </Dialog>
 
         {/* Comunidade Voy Section */}
-        <section className="mb-10">
+        <section className="mb-8">
           <CommunityCard />
         </section>
 
         {/* Serviços Grid */}
-        <section className="mb-10">
+        <section className="mb-8">
           <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider">Serviços</h2>
           <div className="grid grid-cols-2 gap-4">
             <ActionCard

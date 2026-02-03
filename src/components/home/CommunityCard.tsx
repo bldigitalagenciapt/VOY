@@ -68,7 +68,7 @@ export function CommunityCard({ className }: CommunityCardProps) {
 
     return (
         <div className={cn(
-            "relative overflow-hidden rounded-[2.5rem] bg-card border border-border p-8 text-center shadow-soft group transition-all duration-300 hover:shadow-glow",
+            "relative overflow-hidden rounded-[2rem] bg-card border border-border p-5 text-center shadow-soft group transition-all duration-300 hover:shadow-glow",
             className
         )}>
             {/* Background Decor */}

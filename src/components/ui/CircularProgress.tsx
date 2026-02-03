@@ -25,10 +25,10 @@ export function CircularProgress({
   const offset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col items-center justify-center p-6 rounded-[2rem] bg-card border border-border shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer",
+        "group relative flex flex-col items-center justify-center p-4 rounded-[2rem] bg-card border border-border shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer",
         className
       )}
     >
