@@ -82,16 +82,16 @@ export function QuickAccessCard({
 
       <div className="mt-auto relative z-10">
         {value ? (
-          <div className="flex items-center justify-between bg-muted/30 p-3 rounded-2xl border border-border/50">
-            <span className="text-lg font-black text-foreground tracking-[0.1em] font-mono">
+          <div className="flex items-center justify-between bg-muted/30 p-2 rounded-xl border border-border/50">
+            <span className="text-sm font-black text-foreground tracking-tight font-mono whitespace-nowrap">
               {displayValue}
             </span>
             {isVisible && (
               <button
                 onClick={handleCopy}
-                className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                className="p-1 text-primary hover:bg-primary/10 rounded-lg transition-colors ml-1"
               >
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             )}
           </div>
