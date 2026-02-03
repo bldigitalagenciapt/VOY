@@ -189,20 +189,20 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
+          <div className="grid grid-cols-2 gap-4">
             <QuickAccessCard
               label="NIF"
               value={profile?.nif || ''}
               placeholder="Adicionar NIF"
               onClick={() => openNumberDialog('nif', profile?.nif || '')}
-              className="w-[85vw] max-w-[280px]"
+              className="w-full"
             />
             <QuickAccessCard
               label="NISS"
               value={profile?.niss || ''}
               placeholder="Adicionar NISS"
               onClick={() => openNumberDialog('niss', profile?.niss || '')}
-              className="w-[85vw] max-w-[280px]"
+              className="w-full"
             />
           </div>
         </section>

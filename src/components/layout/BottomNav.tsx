@@ -43,13 +43,13 @@ export function BottomNav() {
                   </SheetHeader>
                   <div className="grid grid-cols-2 gap-4 pb-8">
                     <button
-                      onClick={() => { navigate('/settings/quick-access'); }}
+                      onClick={() => { navigate('/documents', { state: { openAddDialog: true } }); }}
                       className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-center"
                     >
                       <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400">
-                        <Plus className="w-6 h-6" />
+                        <FileText className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-bold text-white">Novo Cartão</span>
+                      <span className="text-sm font-bold text-white">Add Documento</span>
                     </button>
                     <button
                       onClick={() => { navigate('/notes'); }}

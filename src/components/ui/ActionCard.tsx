@@ -20,7 +20,7 @@ export function ActionCard({
     <button
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center justify-center p-4 rounded-[2rem] bg-card border border-border shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lg active:scale-95 text-center group",
+        "flex flex-col items-center justify-center p-3 rounded-[1.5rem] bg-card border border-border shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lg active:scale-95 text-center group",
         className
       )}
     >

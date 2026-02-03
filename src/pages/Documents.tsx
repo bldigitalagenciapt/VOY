@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Plus, FileText, Briefcase, Heart, Home as HomeIcon, Camera, Upload, File, MoreVertical, Eye, Download, Pencil, Trash2, Loader2, X, Image, FileSpreadsheet, Search } from 'lucide-react';
@@ -39,9 +40,18 @@ const getFileTypeInfo = (fileType: string | null) => {
 export default function Documents() {
   const { documents, loading: docsLoading, addDocument, updateDocument, deleteDocument } = useDocuments();
   const { categories: customCategories, loading: catsLoading } = useCategories();
+  const location = useLocation();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('immigration');
   const [documentName, setDocumentName] = useState('');
+
+  useEffect(() => {
+    if (location.state?.openAddDialog) {
+      setShowAddDialog(true);
+      // Clean up state so it doesn't reopen contentiously if we navigate around
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
