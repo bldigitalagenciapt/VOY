@@ -17,7 +17,7 @@ export function BottomNav() {
     { path: '/home', icon: Home, label: 'INÍCIO' },
     { path: '/documents', icon: FileText, label: 'DOCS' },
     { isFAB: true },
-    { path: '/community', icon: MessageCircle, label: 'CHAT' },
+    { path: '/community', icon: MessageCircle, label: 'MURAL' },
     { path: '/profile', icon: User, label: 'PERFIL' },
   ];
 
