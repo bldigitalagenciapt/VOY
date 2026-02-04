@@ -80,56 +80,10 @@ export function ContentManagement() {
         try {
             toast.loading('Buscando notícias no site da AIMA...', { id: toastId });
 
-            const proxyUrl = 'https://api.allorigins.win/get?url=';
-            const targetUrl = encodeURIComponent('https://aima.gov.pt/pt/noticias');
+            const { data: newsItems, error } = await supabase.functions.invoke('scrape-aima-news');
 
-            const response = await fetch(`${proxyUrl}${targetUrl}`);
-            if (!response.ok) throw new Error('Falha ao acessar proxy');
-
-            const data = await response.json();
-            const html = data.contents;
-
-            // Improved parsing logic: split by card class instead of fragile regex
-            const chunks = html.split('<div class="uk-card uk-margin-remove-first-child"');
-            if (chunks.length <= 1) throw new Error('Estrutura do site da AIMA mudou ou nenhuma notícia na página');
-
-            const newsItems = [];
-            // Skip the first chunk as it's the HTML before the first card
-            for (const cardHtml of chunks.slice(1, 6)) {
-                // Extract fields with more flexible regex
-                const titleMatch = cardHtml.match(/<h3[^>]*>[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/);
-                const linkMatch = cardHtml.match(/href="([^"]+)"/);
-                const summaryMatch = cardHtml.match(/<p class="uk-margin-remove-top">([\s\S]*?)<\/p>/);
-                // Look for images in both <img> tags and <source> tags if needed, but <img> is usually enough
-                const imgMatch = cardHtml.match(/<img[^>]*src="([^"]+)"/);
-
-                if (titleMatch && linkMatch) {
-                    const rawTitle = titleMatch[1].trim();
-                    const cleanTitle = rawTitle
-                        .replace(/&amp;/g, '&')
-                        .replace(/&quot;/g, '"')
-                        .replace(/&nbsp;/g, ' ')
-                        .replace(/<[^>]*>/g, ''); // Remove any nested tags in title
-
-                    const link = linkMatch[1];
-                    const fullLink = link.startsWith('http') ? link : `https://aima.gov.pt${link}`;
-
-                    const rawSummary = summaryMatch ? summaryMatch[1].trim() : '';
-                    const cleanSummary = rawSummary
-                        .replace(/&amp;/g, '&')
-                        .replace(/&quot;/g, '"')
-                        .replace(/<[^>]*>/g, '');
-
-                    newsItems.push({
-                        titulo: cleanTitle,
-                        link: fullLink,
-                        resumo: cleanSummary,
-                        imagem_url: imgMatch ? imgMatch[1].replace(/&amp;/g, '&') : '',
-                    });
-                }
-            }
-
-            if (newsItems.length === 0) throw new Error('Falha ao extrair campos das notícias');
+            if (error) throw error;
+            if (!newsItems || newsItems.length === 0) throw new Error('Nenhuma notícia encontrada');
 
             let newCount = 0;
             for (const item of newsItems) {
@@ -147,9 +101,9 @@ export function ContentManagement() {
 
             toast.success(`Sincronização concluída! ${newCount} novas notícias.`, { id: toastId });
             queryClient.invalidateQueries({ queryKey: ['noticias'] });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Sync Error:', error);
-            toast.error('Erro ao sincronizar. Tente novamente.', { id: toastId });
+            toast.error(`Erro ao sincronizar: ${error.message || 'Falha na conexão'}`, { id: toastId });
         }
     };
 
