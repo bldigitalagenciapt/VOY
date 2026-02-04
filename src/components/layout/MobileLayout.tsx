@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { BottomNav } from './BottomNav';
 import { cn } from '@/lib/utils';
+import { ChatFloatingButton } from './ChatFloatingButton';
 
 interface MobileLayoutProps {
   children: ReactNode;
@@ -18,7 +19,12 @@ export function MobileLayout({ children, showNav = true, className }: MobileLayo
       )}>
         {children}
       </main>
-      {showNav && <BottomNav />}
+      {showNav && (
+        <>
+          <ChatFloatingButton />
+          <BottomNav />
+        </>
+      )}
     </div>
   );
 }
