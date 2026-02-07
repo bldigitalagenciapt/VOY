@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bot, ChevronRight, AlertCircle, Sparkles, Send, X } from 'lucide-react';
+import { Bot, ChevronRight, AlertCircle, Sparkles, Send, X, ClipboardCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { visaFaqQuestions } from '@/data/visaTypes';
 
@@ -190,6 +191,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -269,8 +271,34 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                             </p>
                         </div>
 
+                        {/* Featured Actions */}
+                        <div className="space-y-3">
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">
+                                Recomendado para você
+                            </p>
+                            <button
+                                onClick={() => {
+                                    if (onClose) onClose();
+                                    navigate('/aima');
+                                }}
+                                className="w-full flex items-center gap-4 p-4 text-left bg-blue-600 rounded-[1.5rem] active:scale-[0.98] transition-all shadow-lg shadow-blue-500/20 group relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 p-4 opacity-10">
+                                    <ClipboardCheck className="w-16 h-16 text-white" />
+                                </div>
+                                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0 text-white">
+                                    <ClipboardCheck className="w-6 h-6" />
+                                </div>
+                                <div className="relative z-10">
+                                    <h3 className="font-black text-white text-base">Checklist de Visto</h3>
+                                    <p className="text-blue-100 text-xs font-medium">Documentos para D1, D2, D7, D8...</p>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-white/50 ml-auto group-hover:text-white transition-colors" />
+                            </button>
+                        </div>
+
                         {/* FAQ Questions */}
-                        <div className="space-y-2">
+                        <div className="space-y-2 pb-10">
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3 px-1">
                                 Perguntas frequentes
                             </p>
