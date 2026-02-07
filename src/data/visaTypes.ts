@@ -165,7 +165,7 @@ export const visaTypes: VisaType[] = [
   }
 ];
 
-export const visaFaqQuestions = visaTypes.map(visa => ({
+export const visaFaqQuestions = (visaTypes ?? []).map(visa => ({
   question: `O que é o ${visa.name}?`,
   answer: `**${visa.name}**
 
@@ -180,15 +180,15 @@ ${visa.duration}
 **📋 CHECKLIST DE DOCUMENTOS:**
 
 **1. Documentos Comuns (Obrigatórios para todos):**
-${commonAimaDocuments.map(doc => `• **${doc.name}**: ${doc.description}
-  *Requisitos:* ${doc.requirements.join(', ')}`).join('\n\n')}
+${(commonAimaDocuments ?? []).map(doc => `• **${doc.name}**: ${doc.description}
+  *Requisitos:* ${(doc.requirements ?? []).join(', ')}`).join('\n\n')}
 
 **2. Documentos Específicos para ${visa.name}:**
-${visa.specificDocuments.map(doc => `• **${doc.name}**: ${doc.description}
-  *Requisitos:* ${doc.requirements.join(', ')}`).join('\n\n')}
+${(visa.specificDocuments ?? []).map(doc => `• **${doc.name}**: ${doc.description}
+  *Requisitos:* ${(doc.requirements ?? []).join(', ')}`).join('\n\n')}
 
 **Observações importantes:**
-${visa.observations.map(obs => `• ${obs}`).join('\n')}
+${(visa.observations ?? []).map(obs => `• ${obs}`).join('\n')}
 
 ⚠️ **Nota de Transparência:** A AIMA pode solicitar documentos adicionais ou dispensar alguns, dependendo do caso concreto e do balcão de atendimento.`
 }));

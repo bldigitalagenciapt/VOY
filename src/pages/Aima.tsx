@@ -123,8 +123,8 @@ export default function Aima() {
   const [selectedVisa, setSelectedVisa] = useState<VisaType | null>(null);
 
   // Consider process as a visa if it matches any specific visa ID
-  const isSpecificVisa = visaTypes.some(v => v.id === process?.process_type);
-  const activeVisa = visaTypes.find(v => v.id === process?.process_type);
+  const isSpecificVisa = (visaTypes ?? []).some(v => v.id === process?.process_type);
+  const activeVisa = (visaTypes ?? []).find(v => v.id === process?.process_type);
 
   const handleSelectProcess = async (type: string) => {
     setSaving(true);
@@ -259,7 +259,7 @@ export default function Aima() {
               </h2>
               <p className="text-xs text-muted-foreground mb-4">Obrigatórios para todos os tipos de autorização de residência.</p>
               <div className="space-y-3">
-                {commonAimaDocuments.map((doc: any, index: number) => (
+                {(commonAimaDocuments ?? []).map((doc: any, index: number) => (
                   <div key={index} className="glass-card p-4 rounded-2xl border-primary/5">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -273,7 +273,7 @@ export default function Aima() {
                           <p className="text-[11px] text-foreground/80">{doc.why}</p>
                         </div>
                         <div className="mt-2 text-[11px] space-y-1">
-                          {doc.requirements.map((req: string, rIdx: number) => (
+                          {(doc.requirements ?? []).map((req: string, rIdx: number) => (
                             <div key={rIdx} className="flex items-center gap-2">
                               <div className="w-1 h-1 rounded-full bg-primary/40" />
                               <span className="text-muted-foreground">{req}</span>
@@ -294,7 +294,7 @@ export default function Aima() {
               </h2>
               <p className="text-xs text-muted-foreground mb-4">Adicionais necessários para o visto {selectedVisa.name}.</p>
               <div className="space-y-3">
-                {selectedVisa.specificDocuments.map((doc: any, index: number) => (
+                {(selectedVisa.specificDocuments ?? []).map((doc: any, index: number) => (
                   <div key={index} className="glass-card p-4 rounded-2xl border-info/20 bg-info/5">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -308,7 +308,7 @@ export default function Aima() {
                           <p className="text-[11px] text-foreground/80">{doc.why}</p>
                         </div>
                         <div className="mt-2 text-[11px] space-y-1">
-                          {doc.requirements.map((req: string, rIdx: number) => (
+                          {(doc.requirements ?? []).map((req: string, rIdx: number) => (
                             <div key={rIdx} className="flex items-center gap-2">
                               <div className="w-1 h-1 rounded-full bg-info/40" />
                               <span className="text-muted-foreground">{req}</span>
@@ -397,7 +397,7 @@ export default function Aima() {
           </p>
 
           <div className="space-y-3">
-            {visaTypes.map((visa, index) => {
+            {(visaTypes ?? []).map((visa, index) => {
               const Icon = visaIcons[visa.id] || Plane;
               const isSaved = process?.process_type === visa.id;
 
@@ -666,7 +666,7 @@ export default function Aima() {
                 <FileCheck className="w-4 h-4" /> 1. Documentos Comuns
               </h2>
               <div className="space-y-3">
-                {commonAimaDocuments.map((doc, index) => {
+                {(commonAimaDocuments ?? []).map((doc, index) => {
                   const isCompleted = userDocuments.some(ud => ud.document_name === doc.name && ud.is_completed);
                   const hasUpload = documents.some(d =>
                     d.name.toLowerCase().includes(doc.name.toLowerCase()) ||
@@ -717,7 +717,7 @@ export default function Aima() {
                 <Plus className="w-4 h-4" /> 2. Documentos Específicos
               </h2>
               <div className="space-y-3">
-                {activeVisa.specificDocuments.map((doc, index) => {
+                {(activeVisa.specificDocuments ?? []).map((doc, index) => {
                   const isCompleted = userDocuments.some(ud => ud.document_name === doc.name && ud.is_completed);
                   const hasUpload = documents.some(d =>
                     d.name.toLowerCase().includes(doc.name.toLowerCase()) ||

@@ -347,10 +347,10 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                                             : 'bg-card border border-border rounded-bl-none'
                                     )}
                                 >
-                                    {message.role === 'assistant' && visaTypes.some(v => message.content.includes(`**${v.name}**`)) ? (
+                                    {message.role === 'assistant' && (message.content ?? '').includes('**') && (visaTypes ?? []).some(v => (message.content ?? '').includes(`**${v.name}**`)) ? (
                                         <div className="space-y-6 text-foreground">
                                             {(() => {
-                                                const visa = visaTypes.find(v => message.content.includes(`**${v.name}**`));
+                                                const visa = (visaTypes ?? []).find(v => (message.content ?? '').includes(`**${v.name}**`));
                                                 if (!visa) return <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>;
 
                                                 return (
@@ -372,7 +372,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                                                             </h4>
                                                             <p className="text-[10px] text-muted-foreground -mt-3 mb-3">Obrigatórios para todos os tipos de autorização de residência.</p>
                                                             <div className="space-y-3">
-                                                                {commonAimaDocuments.map((doc, idx) => (
+                                                                {(commonAimaDocuments ?? []).map((doc, idx) => (
                                                                     <div key={idx} className="bg-card border border-border/60 p-4 rounded-2xl shadow-sm">
                                                                         <div className="flex items-start gap-3">
                                                                             <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 border border-primary/20">
@@ -388,7 +388,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                                                                                 </div>
 
                                                                                 <ul className="space-y-1.5">
-                                                                                    {doc.requirements.map((req, rIdx) => (
+                                                                                    {(doc.requirements ?? []).map((req, rIdx) => (
                                                                                         <li key={rIdx} className="flex items-start gap-2 text-[10px] text-muted-foreground">
                                                                                             <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
                                                                                             <span>{req}</span>
@@ -408,7 +408,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                                                                 <Plus className="w-3 h-3" /> 2. DOCUMENTOS ESPECÍFICOS
                                                             </h4>
                                                             <div className="space-y-3">
-                                                                {visa.specificDocuments.map((doc, idx) => (
+                                                                {(visa.specificDocuments ?? []).map((doc, idx) => (
                                                                     <div key={idx} className="bg-blue-600/5 border border-blue-600/10 p-4 rounded-2xl shadow-sm">
                                                                         <div className="flex items-start gap-3">
                                                                             <div className="w-6 h-6 rounded-full bg-blue-600/10 flex items-center justify-center flex-shrink-0 mt-0.5 border border-blue-600/20">
@@ -424,7 +424,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                                                                                 </div>
 
                                                                                 <ul className="space-y-1.5">
-                                                                                    {doc.requirements.map((req, rIdx) => (
+                                                                                    {(doc.requirements ?? []).map((req, rIdx) => (
                                                                                         <li key={rIdx} className="flex items-start gap-2 text-[10px] text-muted-foreground">
                                                                                             <span className="w-1 h-1 rounded-full bg-blue-400 mt-1.5 flex-shrink-0" />
                                                                                             <span>{req}</span>

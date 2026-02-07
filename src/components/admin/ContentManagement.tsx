@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Trash2, Edit2, GripVertical, Save, X, RefreshCw, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, Edit2, GripVertical, Save, X, RefreshCw, ExternalLink, FileText, Code, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +21,8 @@ export function ContentManagement() {
     const queryClient = useQueryClient();
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({ label: '', url: '', description: '', category: 'Geral' });
+    const [showManualSync, setShowManualSync] = useState(false);
+    const [manualHtml, setManualHtml] = useState('');
 
     const { data: links = [], isLoading } = useQuery({
         queryKey: ['admin-links'],
@@ -75,42 +77,12 @@ export function ContentManagement() {
         },
     });
 
-    const syncAimaNews = async () => {
-        const toastId = 'sync-news';
-        try {
-            toast.loading('Buscando notícias no site da AIMA...', { id: toastId });
 
-            const { data: newsItems, error } = await supabase.functions.invoke('scrape-aima-news');
-
-            if (error) throw error;
-            if (!newsItems || newsItems.length === 0) throw new Error('Nenhuma notícia encontrada');
-
-            let newCount = 0;
-            for (const item of newsItems) {
-                const { data: existing } = await supabase
-                    .from('noticias')
-                    .select('id')
-                    .eq('titulo', item.titulo)
-                    .maybeSingle();
-
-                if (!existing) {
-                    const { error } = await supabase.from('noticias').insert(item);
-                    if (!error) newCount++;
-                }
-            }
-
-            toast.success(`Sincronização concluída! ${newCount} novas notícias.`, { id: toastId });
-            queryClient.invalidateQueries({ queryKey: ['noticias'] });
-        } catch (error: any) {
-            console.error('Sync Error:', error);
-            toast.error(`Erro ao sincronizar: ${error.message || 'Falha na conexão'}`, { id: toastId });
-        }
-    };
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
             {/* Add Link Form */}
-            <div className="p-5 bg-card border border-border rounded-3xl space-y-4">
+            <div className="p-5 bg-card border border-border rounded-3xl space-y-4 shadow-sm">
                 <h3 className="font-bold text-lg">Adicionar Link Útil</h3>
                 <div className="space-y-3">
                     <Input
@@ -143,47 +115,16 @@ export function ContentManagement() {
                 </div>
             </div>
 
-            {/* AIMA News Sync Section */}
-            <div className="p-5 bg-card border border-border rounded-3xl space-y-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <RefreshCw className="w-5 h-5 text-primary" />
-                        <h3 className="font-bold text-lg">Notícias AIMA Oficial</h3>
-                    </div>
-                    <span className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-lg uppercase">Auto-Scraper</span>
-                </div>
 
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                    Clique no botão abaixo para buscar automaticamente as últimas 4 notícias postadas no site oficial da AIMA (aima.gov.pt) e atualizar o aplicativo.
-                </p>
-
-                <Button
-                    onClick={syncAimaNews}
-                    variant="outline"
-                    className="w-full h-12 rounded-xl border-primary/20 hover:bg-primary/5 hover:border-primary transition-all group"
-                >
-                    <RefreshCw className="w-5 h-5 mr-3 group-hover:rotate-180 transition-transform duration-500" />
-                    Sincronizar com AIMA.GOV.PT
-                </Button>
-
-                <div className="p-4 bg-muted/30 rounded-2xl border border-white/5">
-                    <div className="flex items-center gap-2 mb-2">
-                        <ExternalLink className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Fonte das Notícias</span>
-                    </div>
-                    <a href="https://aima.gov.pt/pt/noticias" target="_blank" className="text-primary hover:underline text-xs truncate block">
-                        https://aima.gov.pt/pt/noticias
-                    </a>
-                </div>
-            </div>
 
             {/* Links List */}
             <div className="space-y-3">
-                <h3 className="font-bold px-1 uppercase text-xs text-muted-foreground tracking-widest">
-                    Links Ativos ({links.length})
+                <h3 className="font-bold px-1 uppercase text-xs text-muted-foreground tracking-widest flex items-center justify-between">
+                    Links Ativos
+                    <span className="bg-muted px-2 py-0.5 rounded-full text-[10px]">{links.length}</span>
                 </h3>
                 {links.map((link) => (
-                    <div key={link.id} className="p-4 bg-card border border-border rounded-2xl space-y-3">
+                    <div key={link.id} className="p-4 bg-card border border-border rounded-2xl shadow-sm space-y-3">
                         {editingId === link.id ? (
                             <div className="space-y-3">
                                 <Input
@@ -222,15 +163,18 @@ export function ContentManagement() {
                             </div>
                         ) : (
                             <>
-                                <div className="flex items-start justify-between">
+                                <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0 flex-1">
-                                        <p className="font-bold truncate">{link.label}</p>
-                                        <p className="text-xs text-muted-foreground truncate">{link.url}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-bold truncate">{link.label}</p>
+                                            <span className="px-1.5 py-0.5 bg-muted text-[8px] font-bold rounded uppercase">{link.category}</span>
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground truncate font-mono mt-0.5">{link.url}</p>
                                         {link.description && (
-                                            <p className="text-xs text-muted-foreground mt-1">{link.description}</p>
+                                            <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{link.description}</p>
                                         )}
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-1 shrink-0">
                                         <button
                                             onClick={() => {
                                                 setEditingId(link.id);
@@ -241,13 +185,13 @@ export function ContentManagement() {
                                                     category: link.category,
                                                 });
                                             }}
-                                            className="p-2 hover:bg-muted rounded-xl transition-colors"
+                                            className="p-2.5 hover:bg-muted rounded-xl transition-colors text-muted-foreground hover:text-foreground"
                                         >
                                             <Edit2 className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => deleteLinkMutation.mutate(link.id)}
-                                            className="p-2 text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
+                                            className="p-2.5 text-destructive/60 hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -258,9 +202,10 @@ export function ContentManagement() {
                     </div>
                 ))}
                 {links.length === 0 && (
-                    <p className="text-center py-10 text-muted-foreground text-sm">
-                        Nenhum link cadastrado
-                    </p>
+                    <div className="text-center py-12 bg-muted/10 rounded-3xl border border-dashed border-border/50">
+                        <FileText className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+                        <p className="text-muted-foreground text-sm font-medium">Nenhum link cadastrado</p>
+                    </div>
                 )}
             </div>
         </div>

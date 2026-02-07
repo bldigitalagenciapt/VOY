@@ -36,7 +36,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { useUserDocuments } from '@/hooks/useUserDocuments';
 import { toast } from 'sonner';
-import { NewsSlider } from '@/components/home/NewsSlider';
 import { CommunityCard } from '@/components/home/CommunityCard';
 
 type NumberField = 'nif' | 'niss' | 'sns' | 'passport';
@@ -355,7 +354,7 @@ export default function Home() {
           </div>
         </section>
 
-        <NewsSlider className="mt-6" />
+
 
       </div>
 
