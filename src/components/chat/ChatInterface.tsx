@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Bot, ChevronRight, AlertCircle, Sparkles, Send, X, ClipboardCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { visaFaqQuestions } from '@/data/visaTypes';
+import { visaFaqQuestions, visaTypes, commonAimaDocuments } from '@/data/visaTypes';
+import { Check, FileCheck, Plus, AlertTriangle } from 'lucide-react';
 
 interface Message {
     id: string;
@@ -340,13 +341,82 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                                 </div>
                                 <div
                                     className={cn(
-                                        'max-w-[85%] p-4 rounded-[1.5rem] shadow-sm',
+                                        'max-w-[90%] p-4 rounded-[1.5rem] shadow-sm',
                                         message.role === 'user'
                                             ? 'bg-primary text-primary-foreground rounded-br-none'
                                             : 'bg-card border border-border rounded-bl-none'
                                     )}
                                 >
-                                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                                    {message.role === 'assistant' && visaTypes.some(v => message.content.includes(`**${v.name}**`)) ? (
+                                        <div className="space-y-4 text-foreground">
+                                            {(() => {
+                                                const visa = visaTypes.find(v => message.content.includes(`**${v.name}**`));
+                                                if (!visa) return <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>;
+
+                                                return (
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <h3 className="font-black text-base text-primary">{visa.name}</h3>
+                                                            <p className="text-xs text-muted-foreground mt-1">{visa.shortDescription}</p>
+                                                        </div>
+
+                                                        <div className="space-y-3">
+                                                            <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                                                                <FileCheck className="w-3 h-3 text-primary" /> 1. Documentos Comuns
+                                                            </h4>
+                                                            <div className="space-y-2">
+                                                                {commonAimaDocuments.map((doc, idx) => (
+                                                                    <div key={idx} className="bg-muted/30 p-3 rounded-xl border border-border/50">
+                                                                        <p className="text-xs font-bold flex items-center gap-2">
+                                                                            <Check className="w-3 h-3 text-success" /> {doc.name}
+                                                                        </p>
+                                                                        <p className="text-[10px] text-muted-foreground mt-0.5">{doc.description}</p>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="space-y-3">
+                                                            <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                                                                <Plus className="w-3 h-3 text-blue-500" /> 2. Específicos para este Visto
+                                                            </h4>
+                                                            <div className="space-y-2">
+                                                                {visa.specificDocuments.map((doc, idx) => (
+                                                                    <div key={idx} className="bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
+                                                                        <p className="text-xs font-bold flex items-center gap-2">
+                                                                            <Check className="w-3 h-3 text-blue-500" /> {doc.name}
+                                                                        </p>
+                                                                        <p className="text-[10px] text-muted-foreground mt-0.5">{doc.description}</p>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="p-3 bg-warning/10 border border-warning/20 rounded-xl">
+                                                            <div className="flex gap-2">
+                                                                <AlertTriangle className="w-3 h-3 text-warning shrink-0 mt-0.5" />
+                                                                <p className="text-[10px] text-foreground/80 leading-tight">
+                                                                    A AIMA pode solicitar documentos adicionais ou dispensar alguns conforme o caso.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <button
+                                                            onClick={() => {
+                                                                if (onClose) onClose();
+                                                                navigate('/aima');
+                                                            }}
+                                                            className="w-full py-3 bg-primary text-primary-foreground rounded-xl text-xs font-black shadow-lg shadow-primary/20 active:scale-95 transition-all"
+                                                        >
+                                                            ABRIR CHECKLIST INTERATIVO
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                                    )}
                                 </div>
                             </div>
                         ))}
