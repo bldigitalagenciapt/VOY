@@ -15,6 +15,7 @@ import { Loader2, AlertTriangle } from "lucide-react";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Home from "./pages/Home";
+import Landing from "./pages/Landing";
 
 // Onboarding
 const Welcome = lazy(() => import("./pages/onboarding/Welcome"));
@@ -127,7 +128,7 @@ function AppRoutes() {
     <ErrorBoundary>
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
-          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+          <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
 
           {/* Onboarding Routes */}
