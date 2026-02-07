@@ -11,13 +11,13 @@ export default function About() {
             id: 'about-voy',
             icon: Info,
             label: 'Sobre o VOY',
-            onClick: () => window.open('https://voyapp.com', '_blank'),
+            onClick: () => navigate('/about/info'),
         },
         {
             id: 'privacy',
             icon: ShieldCheck,
             label: 'Privacidade e Termos',
-            onClick: () => window.open('https://voyapp.com/privacy', '_blank'),
+            onClick: () => navigate('/about/privacy'),
         },
     ];
 
