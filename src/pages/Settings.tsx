@@ -115,14 +115,8 @@ export default function Settings() {
     {
       id: 'about',
       icon: Info,
-      label: 'Sobre o VOY',
-      onClick: () => { window.open('https://voyapp.com', '_blank') },
-    },
-    {
-      id: 'privacy',
-      icon: ShieldCheck,
-      label: 'Privacidade e Termos',
-      onClick: () => { window.open('https://voyapp.com/privacy', '_blank') },
+      label: 'Sobre',
+      onClick: () => navigate('/about'),
     },
   ];
 

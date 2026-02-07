@@ -339,12 +339,7 @@ export default function Home() {
               description="Seu Processo"
               onClick={() => navigate('/aima')}
             />
-            <ActionCard
-              icon={<Bot className="w-8 h-8 text-pink-500" />}
-              title="Assistente"
-              description="Chat de Dúvidas"
-              onClick={() => navigate('/assistant')}
-            />
+
             <ActionCard
               icon={<Wallet className="w-8 h-8 text-amber-500" />}
               title="Meu Bolso"

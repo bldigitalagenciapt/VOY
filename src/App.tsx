@@ -43,6 +43,7 @@ const Emprego = lazy(() => import("./pages/Emprego"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Admin = lazy(() => import("./pages/Admin"));
+const About = lazy(() => import("./pages/About"));
 
 const queryClient = new QueryClient();
 
@@ -154,6 +155,7 @@ function AppRoutes() {
           <Route path="/emprego" element={<ProtectedRoute><Emprego /></ProtectedRoute>} />
           <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
 
           {/* Catch-all */}
           <Route path="*" element={<Suspense fallback={<LoadingScreen />}><NotFound /></Suspense>} />
