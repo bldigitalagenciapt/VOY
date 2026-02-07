@@ -177,8 +177,18 @@ ${visa.forWho}
 **Duração:**
 ${visa.duration}
 
+**📋 CHECKLIST DE DOCUMENTOS:**
+
+**1. Documentos Comuns (Obrigatórios para todos):**
+${commonAimaDocuments.map(doc => `• **${doc.name}**: ${doc.description}
+  *Requisitos:* ${doc.requirements.join(', ')}`).join('\n\n')}
+
+**2. Documentos Específicos para ${visa.name}:**
+${visa.specificDocuments.map(doc => `• **${doc.name}**: ${doc.description}
+  *Requisitos:* ${doc.requirements.join(', ')}`).join('\n\n')}
+
 **Observações importantes:**
 ${visa.observations.map(obs => `• ${obs}`).join('\n')}
 
-⚠️ **Aviso:** Esta informação é orientativa. As regras podem mudar. Consulte sempre o site oficial da AIMA.`
+⚠️ **Nota de Transparência:** A AIMA pode solicitar documentos adicionais ou dispensar alguns, dependendo do caso concreto e do balcão de atendimento.`
 }));
