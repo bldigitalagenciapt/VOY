@@ -29,7 +29,7 @@ import { cn } from '@/lib/utils';
 import { useAimaProcess } from '@/hooks/useAimaProcess';
 import { useUserDocuments } from '@/hooks/useUserDocuments';
 import { useDocuments } from '@/hooks/useDocuments';
-import { visaTypes, VisaType } from '@/data/visaTypes';
+import { visaTypes, VisaType, commonAimaDocuments } from '@/data/visaTypes';
 import { toast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
 
@@ -225,14 +225,14 @@ export default function Aima() {
     );
   }
 
-  // Show visa detail
+  // Show visa detail (Dynamic Checklist)
   if (selectedVisa) {
     const Icon = visaIcons[selectedVisa.id] || Plane;
     const isSaved = process?.process_type === selectedVisa.id;
 
     return (
       <MobileLayout>
-        <div className="px-5 py-6 safe-area-top">
+        <div className="px-5 py-6 safe-area-top pb-24">
           <button
             onClick={() => setSelectedVisa(null)}
             className="flex items-center gap-2 text-primary font-medium mb-6"
@@ -247,99 +247,128 @@ export default function Aima() {
             </div>
             <div className="flex-1">
               <h1 className="text-xl font-bold">{selectedVisa.name}</h1>
-              <p className="text-sm text-muted-foreground">{selectedVisa.duration}</p>
+              <p className="text-sm text-muted-foreground">Checklist padrão AIMA</p>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                O que é
+          <div className="space-y-8">
+            {/* 1. Documentos Comuns */}
+            <section>
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
+                <FileCheck className="w-4 h-4" /> 1. Documentos Comuns
               </h2>
-              <p className="text-foreground">{selectedVisa.shortDescription}</p>
-            </div>
-
-            <div>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                Para quem é indicado
-              </h2>
-              <p className="text-foreground">{selectedVisa.forWho}</p>
-            </div>
-
-            <div>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                Documentos geralmente exigidos
-              </h2>
-              <div className="space-y-2">
-                {selectedVisa.requiredDocuments.map((doc, index) => {
-                  const isSavedDoc = userDocuments.find(ud => ud.document_name === doc)?.is_completed;
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => toggleDocument(doc, !!isSavedDoc)}
-                      className={cn(
-                        "w-full flex items-start gap-3 p-3 rounded-xl border transition-all text-left",
-                        isSavedDoc
-                          ? "bg-success/10 border-success/30"
-                          : "bg-card border-border hover:border-primary/30"
-                      )}
-                    >
-                      <div className={cn(
-                        "w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 border-2 transition-all",
-                        isSavedDoc ? "bg-success border-success" : "border-muted-foreground/30"
-                      )}>
-                        {isSavedDoc && <Check className="w-3.5 h-3.5 text-success-foreground" />}
+              <p className="text-xs text-muted-foreground mb-4">Obrigatórios para todos os tipos de autorização de residência.</p>
+              <div className="space-y-3">
+                {commonAimaDocuments.map((doc: any, index: number) => (
+                  <div key={index} className="glass-card p-4 rounded-2xl border-primary/5">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-4 h-4 text-primary" />
                       </div>
-                      <span className={cn("text-sm", isSavedDoc && "line-through text-muted-foreground")}>
-                        {doc}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                Observações importantes
-              </h2>
-              <div className="space-y-2">
-                {selectedVisa.observations.map((obs, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-warning/10 rounded-xl border border-warning/20">
-                    <AlertCircle className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">{obs}</span>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-sm">{doc.name}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">{doc.description}</p>
+                        <div className="mt-3 bg-muted/30 p-2 rounded-lg">
+                          <p className="text-[10px] font-bold uppercase text-primary mb-1">Por que a AIMA exige:</p>
+                          <p className="text-[11px] text-foreground/80">{doc.why}</p>
+                        </div>
+                        <div className="mt-2 text-[11px] space-y-1">
+                          {doc.requirements.map((req: string, rIdx: number) => (
+                            <div key={rIdx} className="flex items-center gap-2">
+                              <div className="w-1 h-1 rounded-full bg-primary/40" />
+                              <span className="text-muted-foreground">{req}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
 
-            {/* Disclaimer */}
-            <div className="p-4 bg-muted rounded-xl">
+            {/* 2. Documentos Específicos */}
+            <section>
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
+                <Plus className="w-4 h-4" /> 2. Documentos Específicos
+              </h2>
+              <p className="text-xs text-muted-foreground mb-4">Adicionais necessários para o visto {selectedVisa.name}.</p>
+              <div className="space-y-3">
+                {selectedVisa.specificDocuments.map((doc: any, index: number) => (
+                  <div key={index} className="glass-card p-4 rounded-2xl border-info/20 bg-info/5">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-4 h-4 text-info" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-sm">{doc.name}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">{doc.description}</p>
+                        <div className="mt-3 bg-info/10 p-2 rounded-lg">
+                          <p className="text-[10px] font-bold uppercase text-info mb-1">Quando é exigido:</p>
+                          <p className="text-[11px] text-foreground/80">{doc.why}</p>
+                        </div>
+                        <div className="mt-2 text-[11px] space-y-1">
+                          {doc.requirements.map((req: string, rIdx: number) => (
+                            <div key={rIdx} className="flex items-center gap-2">
+                              <div className="w-1 h-1 rounded-full bg-info/40" />
+                              <span className="text-muted-foreground">{req}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* 3. Nota de Transparência */}
+            <div className="p-4 bg-warning/10 border border-warning/20 rounded-2xl animate-pulse">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-muted-foreground">
-                  <strong>Aviso:</strong> Esta informação é orientativa. As regras podem mudar.
-                  Consulte sempre o site oficial do consulado ou da VFS Global.
-                </p>
+                <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-xs font-bold text-warning uppercase mb-1">Nota de Transparência AIMA</h4>
+                  <p className="text-[11px] text-foreground/80 leading-relaxed">
+                    A AIMA pode solicitar documentos adicionais ou dispensar alguns documentos, dependendo do caso concreto, do balcão de atendimento e da análise do processo. Este checklist representa a documentação padrão normalmente exigida, mas não substitui a análise individual do processo.
+                  </p>
+                </div>
               </div>
             </div>
 
+            {/* 4. Campo de Observações do Caso */}
+            <section>
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
+                <FileText className="w-4 h-4" /> 4. Observações do Caso
+              </h2>
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Registre exigências específicas feitas pela AIMA ou solicitações do balcão.</p>
+                <textarea
+                  className="w-full h-32 p-4 rounded-2xl bg-muted/50 border border-border focus:border-primary/50 transition-all text-sm outline-none resize-none"
+                  placeholder="Ex: Documento X solicitado pelo balcão de Lisboa..."
+                  value={process?.notes || ''}
+                  onChange={(e) => updateProcess({ notes: e.target.value })}
+                />
+              </div>
+            </section>
+
             {/* Save/Clear Button */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-4">
               {isSaved ? (
                 <Button
                   variant="outline"
                   onClick={handleClearVisa}
                   className="flex-1 h-12 rounded-xl"
+                  disabled={saving}
                 >
-                  Remover seleção
+                  Remover do meu perfil
                 </Button>
               ) : (
                 <Button
                   onClick={() => handleSaveVisa(selectedVisa.id)}
-                  className="flex-1 h-12 rounded-xl"
+                  className="flex-1 h-12 rounded-xl shadow-lg border-b-4 border-primary-dark active:border-b-0 active:translate-y-1 transition-all"
+                  disabled={saving}
                 >
-                  Salvar este visto
+                  Salvar este processo
                 </Button>
               )}
             </div>
@@ -629,55 +658,138 @@ export default function Aima() {
           </div>
         </div>
 
-        {/* Documentation Checklist for Visas */}
+        {/* Documentation Checklist for Visas (Dynamic) */}
         {isSpecificVisa && activeVisa && (
-          <div className="mb-10">
-            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-6 px-1">
-              Documentação Necessária
-            </h2>
-            <div className="space-y-3">
-              {activeVisa.requiredDocuments.map((docName, index) => {
-                const isCompleted = userDocuments.some(ud => ud.document_name === docName && ud.is_completed);
-                const hasUpload = documents.some(d =>
-                  d.name.toLowerCase().includes(docName.toLowerCase()) ||
-                  docName.toLowerCase().includes(d.name.toLowerCase())
-                );
+          <div className="mb-10 space-y-8">
+            <section>
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-6 px-1 flex items-center gap-2">
+                <FileCheck className="w-4 h-4" /> 1. Documentos Comuns
+              </h2>
+              <div className="space-y-3">
+                {commonAimaDocuments.map((doc, index) => {
+                  const isCompleted = userDocuments.some(ud => ud.document_name === doc.name && ud.is_completed);
+                  const hasUpload = documents.some(d =>
+                    d.name.toLowerCase().includes(doc.name.toLowerCase()) ||
+                    doc.name.toLowerCase().includes(d.name.toLowerCase())
+                  );
 
-                return (
-                  <div
-                    key={index}
-                    className={cn(
-                      "flex items-center gap-4 p-4 rounded-2xl border-2 transition-all",
-                      isCompleted || hasUpload ? "border-success/20 bg-success/5" : "border-border bg-card"
-                    )}
-                  >
-                    <button
-                      onClick={() => toggleDocument(docName, isCompleted)}
+                  return (
+                    <div
+                      key={index}
                       className={cn(
-                        "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors",
-                        isCompleted || hasUpload
-                          ? "bg-success border-success text-white"
-                          : "border-muted-foreground/30 hover:border-primary"
+                        "p-4 rounded-2xl border-2 transition-all",
+                        isCompleted || hasUpload ? "border-success/20 bg-success/5" : "border-border bg-card"
                       )}
                     >
-                      {(isCompleted || hasUpload) && <Check className="w-4 h-4 stroke-[3px]" />}
-                    </button>
-                    <div className="flex-1">
-                      <p className={cn(
-                        "font-semibold text-sm leading-tight",
-                        (isCompleted || hasUpload) && "text-muted-foreground line-through opacity-70"
-                      )}>
-                        {docName}
-                      </p>
-                      {hasUpload && !isCompleted && (
-                        <p className="text-[10px] text-success font-bold uppercase mt-1">Detectado em Meus Documentos</p>
-                      )}
+                      <div className="flex items-start gap-4">
+                        <button
+                          onClick={() => toggleDocument(doc.name, isCompleted)}
+                          className={cn(
+                            "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors mt-0.5",
+                            isCompleted || hasUpload
+                              ? "bg-success border-success text-white"
+                              : "border-muted-foreground/30 hover:border-primary"
+                          )}
+                        >
+                          {(isCompleted || hasUpload) && <Check className="w-4 h-4 stroke-[3px]" />}
+                        </button>
+                        <div className="flex-1">
+                          <p className={cn(
+                            "font-semibold text-sm leading-tight",
+                            (isCompleted || hasUpload) && "text-muted-foreground line-through opacity-70"
+                          )}>
+                            {doc.name}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-1">{doc.description}</p>
+                          {hasUpload && !isCompleted && (
+                            <p className="text-[10px] text-success font-bold uppercase mt-1">Detectado em Meus Documentos</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    {hasUpload && <FileText className="w-4 h-4 text-success opacity-50" />}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-6 px-1 flex items-center gap-2">
+                <Plus className="w-4 h-4" /> 2. Documentos Específicos
+              </h2>
+              <div className="space-y-3">
+                {activeVisa.specificDocuments.map((doc, index) => {
+                  const isCompleted = userDocuments.some(ud => ud.document_name === doc.name && ud.is_completed);
+                  const hasUpload = documents.some(d =>
+                    d.name.toLowerCase().includes(doc.name.toLowerCase()) ||
+                    doc.name.toLowerCase().includes(d.name.toLowerCase())
+                  );
+
+                  return (
+                    <div
+                      key={index}
+                      className={cn(
+                        "p-4 rounded-2xl border-2 transition-all",
+                        isCompleted || hasUpload ? "border-success/20 bg-success/5" : "border-info/20 bg-info/5"
+                      )}
+                    >
+                      <div className="flex items-start gap-4">
+                        <button
+                          onClick={() => toggleDocument(doc.name, isCompleted)}
+                          className={cn(
+                            "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors mt-0.5",
+                            isCompleted || hasUpload
+                              ? "bg-success border-success text-white"
+                              : "border-info/30 hover:border-info"
+                          )}
+                        >
+                          {(isCompleted || hasUpload) && <Check className="w-4 h-4 stroke-[3px]" />}
+                        </button>
+                        <div className="flex-1">
+                          <p className={cn(
+                            "font-semibold text-sm leading-tight",
+                            (isCompleted || hasUpload) && "text-muted-foreground line-through opacity-70"
+                          )}>
+                            {doc.name}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-1">{doc.description}</p>
+                          {hasUpload && !isCompleted && (
+                            <p className="text-[10px] text-success font-bold uppercase mt-1">Detectado em Meus Documentos</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* 3. Nota de Transparência */}
+            <div className="p-4 bg-warning/10 border border-warning/20 rounded-2xl">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-xs font-bold text-warning uppercase mb-1">Nota de Transparência AIMA</h4>
+                  <p className="text-[11px] text-foreground/80 leading-relaxed">
+                    A AIMA pode solicitar documentos adicionais ou dispensar alguns documentos, dependendo do caso concreto, do balcão de atendimento e da análise do processo. Este checklist representa a documentação padrão normalmente exigida, mas não substitui a análise individual do processo.
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* 4. Campo de Observações do Caso */}
+            <section>
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
+                <FileText className="w-4 h-4" /> 4. Observações do Caso
+              </h2>
+              <div className="space-y-2">
+                <textarea
+                  className="w-full h-32 p-4 rounded-2xl bg-muted/50 border border-border focus:border-primary/50 transition-all text-sm outline-none resize-none"
+                  placeholder="Ex: Documento X solicitado pelo balcão de Lisboa..."
+                  value={process?.notes || ''}
+                  onChange={(e) => updateProcess({ notes: e.target.value })}
+                />
+              </div>
+            </section>
           </div>
         )}
 
