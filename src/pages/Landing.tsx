@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import appScreenshot from '../assets/app-screenshot.png';
+import appScreenshot from '../assets/app-screenshot.jpg';
+import logo from '../assets/logo.png';
 import {
     ShieldCheck,
     Smartphone,
@@ -22,7 +23,10 @@ import {
     Star,
     Plus,
     Minus,
-    Quote
+    Quote,
+    Instagram,
+    Facebook,
+    Linkedin
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -33,7 +37,6 @@ export default function Landing() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showIosModal, setShowIosModal] = useState(false);
     const [isIos, setIsIos] = useState(false);
-    const [currency, setCurrency] = useState<'EUR' | 'BRL'>('EUR');
     const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
     useEffect(() => {
@@ -103,16 +106,10 @@ export default function Landing() {
         }
     ];
 
-    const pricing = {
-        EUR: [
-            { name: "Explorador", price: "Grátis", features: ["Guia de Chegada", "Gestão de 3 Docs", "Simulador Salarial", "Mural da Comunidade"], popular: false },
-            { name: "Residente Pro", price: "€19.90", period: "/ taxa única", features: ["Documentos Ilimitados", "Tracking AIMA Manual", "Cofre Criptografado", "Sem Anúncios", "Suporte VIP"], popular: true }
-        ],
-        BRL: [
-            { name: "Explorador", price: "Grátis", features: ["Guia de Chegada", "Gestão de 3 Docs", "Simulador Salarial", "Mural da Comunidade"], popular: false },
-            { name: "Residente Pro", price: "R$ 119,90", period: "/ taxa única", features: ["Documentos Ilimitados", "Tracking AIMA Manual", "Cofre Criptografado", "Sem Anúncios", "Suporte VIP"], popular: true }
-        ]
-    };
+    const pricing = [
+        { name: "Explorador", price: "Grátis", features: ["Guia de Chegada", "Gestão de 3 Docs", "Simulador Salarial", "Mural da Comunidade"], popular: false },
+        { name: "Residente Pro", price: "€19.90", period: "/ taxa única", features: ["Documentos Ilimitados", "Tracking AIMA Manual", "Cofre Criptografado", "Sem Anúncios", "Suporte VIP"], popular: true }
+    ];
 
     const faqs = [
         { q: "Como o Voy ajuda na minha imigração?", a: "O Voy centraliza todas as ferramentas que você precisa: desde guias passo-a-passo, simuladores financeiros, até a organização segura de documentos essenciais como NIF e NISS." },
@@ -126,11 +123,8 @@ export default function Landing() {
             {/* Nav */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-[#0A0D14]/80 backdrop-blur-xl border-b border-white/5">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-[#0066FF] rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
-                            <span className="text-white font-black text-lg italic pt-0.5">V</span>
-                        </div>
-                        <span className="text-xl font-black tracking-tight text-white uppercase italic">Voy</span>
+                    <div className="flex items-center">
+                        <img src={logo} alt="Voy Logo" className="h-14 w-auto" />
                     </div>
 
                     <nav className="hidden md:flex items-center gap-10">
@@ -207,11 +201,11 @@ export default function Landing() {
                             {/* Center Phone */}
                             <div className="relative z-30 p-2.5 bg-slate-950 rounded-[3rem] border-[8px] border-slate-900 shadow-[0_50px_100px_-20px_rgba(0,102,255,0.4)]">
                                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-slate-900 rounded-b-xl z-20" />
-                                <div className="bg-white rounded-[2.5rem] overflow-hidden aspect-[9/19.5] w-[240px] md:w-[300px] relative">
+                                <div className="bg-[#FAFBFF] rounded-[2.5rem] overflow-hidden aspect-[9/19.5] w-[240px] md:w-[300px] relative">
                                     <img
                                         src={appScreenshot}
                                         alt="Voy App Interface"
-                                        className="w-full h-full object-contain bg-[#FAFBFF]"
+                                        className="w-full h-full object-cover object-top"
                                         loading="eager"
                                     />
                                 </div>
@@ -234,22 +228,7 @@ export default function Landing() {
                 </div>
             </section>
 
-            {/* Stats/Logo Bar */}
-            <section className="py-16 border-y border-white/5 bg-white/2 backdrop-blur-sm">
-                <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-                    {[
-                        { val: "30k+", label: "Download no App" },
-                        { val: "805+", label: "Residências Emitidas" },
-                        { val: "98%", label: "Taxa de Sucesso" },
-                        { val: "24/7", label: "Suporte VIP" }
-                    ].map((stat, i) => (
-                        <div key={i} className="space-y-1">
-                            <h4 className="text-3xl font-black text-white">{stat.val}</h4>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.label}</p>
-                        </div>
-                    ))}
-                </div>
-            </section>
+
 
             {/* Features/Services Section */}
             <section id="serviços" className="py-32 px-6">
@@ -283,13 +262,13 @@ export default function Landing() {
             <section className="py-32 px-6 bg-blue-600/5 overflow-hidden">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-20">
                     <div className="flex-1 space-y-8">
-                        <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-xs">Simulador Salarial</h2>
-                        <h3 className="text-4xl md:text-6xl font-black leading-[1.1]">Descubra seu real poder de compra.</h3>
+                        <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-xs">Gestão Documental</h2>
+                        <h3 className="text-4xl md:text-6xl font-black leading-[1.1]">Toda sua vida em Portugal, protegida.</h3>
                         <p className="text-lg text-slate-400 font-medium leading-relaxed">
-                            Não se deixe enganar pelo salário bruto. Nosso simulador avançado calcula impostos, segurança social e retenção na fonte em segundos.
+                            Armazene NIF, NISS, contratos e comprovativos em um ambiente criptografado e sempre à mão. Organize sua burocracia de imigração sem estresse.
                         </p>
                         <ul className="space-y-4">
-                            {['Cálculo de SS e IRS', 'Ajuste de dependentes', 'Sugestão de custo de vida'].map((item, i) => (
+                            {['Criptografia de ponta a ponta', 'Validação inteligente de documentos', 'Acesso offline seguro'].map((item, i) => (
                                 <li key={i} className="flex items-center gap-3 font-bold text-sm">
                                     <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center">
                                         <CheckCircle2 className="w-3 h-3 text-blue-500" />
@@ -306,14 +285,33 @@ export default function Landing() {
                                 <div className="space-y-6 pt-4">
                                     <div className="flex justify-between items-center">
                                         <div className="w-20 h-3 bg-white/20 rounded" />
-                                        <div className="w-8 h-8 rounded-full bg-blue-600 shadow-lg shadow-blue-500/40" />
+                                        <ShieldCheck className="w-6 h-6 text-blue-500" />
                                     </div>
-                                    <div className="h-40 bg-white/5 rounded-3xl border border-white/10 flex flex-col items-center justify-center">
-                                        <span className="text-[10px] font-black text-slate-500 uppercase">Salário Líquido</span>
-                                        <span className="text-4xl font-black">€1.240,50</span>
+                                    <div className="h-40 bg-white/5 rounded-3xl border border-white/10 p-5 flex flex-col justify-center gap-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                                                    <FileText className="w-4 h-4 text-blue-500" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-[10px] font-black text-white/50 uppercase">Documento</p>
+                                                    <p className="text-xs font-bold">Residência_AIMA.pdf</p>
+                                                </div>
+                                            </div>
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                                        </div>
+                                        <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                                            <div className="h-full w-3/4 bg-blue-500" />
+                                        </div>
+                                        <p className="text-[9px] font-bold text-white/30 uppercase text-center">Armazenamento: 75% utilized</p>
                                     </div>
-                                    <div className="space-y-3">
-                                        {[1, 2, 3].map(i => <div key={i} className="h-4 w-full bg-white/5 rounded" />)}
+                                    <div className="space-y-2">
+                                        {[1, 2].map(i => (
+                                            <div key={i} className="h-12 bg-white/5 rounded-2xl border border-white/5 flex items-center px-4 gap-3">
+                                                <div className="w-6 h-6 rounded-md bg-white/10" />
+                                                <div className="h-2 w-24 bg-white/10 rounded" />
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -328,19 +326,10 @@ export default function Landing() {
                     <div className="text-center space-y-8 mb-20">
                         <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-xs">Planos Sob Medida</h2>
                         <h3 className="text-4xl md:text-5xl font-black">Invista no seu sonho.</h3>
-
-                        <div className="inline-flex p-1.5 bg-white/5 border border-white/10 rounded-2xl">
-                            <button onClick={() => setCurrency('EUR')} className={cn("px-10 py-3 rounded-xl text-xs font-black transition-all", currency === 'EUR' ? "bg-white text-black" : "text-white/40 hover:text-white")}>
-                                EURO €
-                            </button>
-                            <button onClick={() => setCurrency('BRL')} className={cn("px-10 py-3 rounded-xl text-xs font-black transition-all", currency === 'BRL' ? "bg-white text-black" : "text-white/40 hover:text-white")}>
-                                REAL R$
-                            </button>
-                        </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                        {pricing[currency].map((p, i) => (
+                        {pricing.map((p, i) => (
                             <div key={i} className={cn(
                                 "p-12 rounded-[3.5rem] relative group border transition-all duration-300",
                                 p.popular ? "bg-[#0066FF] border-blue-400 text-white shadow-2xl shadow-blue-500/20 -translate-y-2" : "bg-white/5 border-white/10 text-white hover:bg-white/[0.08]"
@@ -464,22 +453,24 @@ export default function Landing() {
             {/* Footer */}
             <footer className="py-20 px-6 border-t border-white/5">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#0066FF] rounded-xl flex items-center justify-center">
-                            <span className="text-white font-black text-xl italic">V</span>
-                        </div>
-                        <span className="text-2xl font-black text-white uppercase italic">Voy</span>
+                    <div className="flex items-center">
+                        <img src={logo} alt="Voy Logo" className="h-20 w-auto" />
                     </div>
 
                     <nav className="flex flex-wrap justify-center gap-x-12 gap-y-4">
-                        {['Termos', 'Privacidade', 'Cookies', 'Contato'].map(item => (
+                        {['Termos de Uso', 'Política de Privacidade', 'Política de Cookies'].map(item => (
                             <a key={item} href="#" className="text-xs font-black text-slate-500 hover:text-white uppercase tracking-widest transition-colors">{item}</a>
                         ))}
                     </nav>
 
                     <div className="flex gap-6">
-                        {['IG', 'FB', 'LI'].map(s => (
-                            <div key={s} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-slate-500 font-black text-[10px] hover:border-white hover:text-white cursor-pointer transition-all">{s}</div>
+                        {[
+                            { icon: <Instagram className="w-5 h-5" />, label: 'Instagram' },
+                            { icon: <Facebook className="w-5 h-5" />, label: 'Facebook' }
+                        ].map((s, i) => (
+                            <div key={i} className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-slate-500 hover:border-blue-500 hover:text-white hover:bg-blue-500/10 cursor-pointer transition-all" title={s.label}>
+                                {s.icon}
+                            </div>
                         ))}
                     </div>
                 </div>
