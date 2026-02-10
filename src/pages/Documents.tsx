@@ -166,15 +166,15 @@ export default function Documents() {
       >
         <input {...getInputProps()} />
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Meus Documentos</h1>
+        <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+          <h1 className="text-2xl font-bold text-foreground text-center md:text-left">Meus Documentos</h1>
           <Button
             onClick={() => setShowAddDialog(true)}
             size="sm"
-            className="rounded-xl gap-2"
+            className="w-full md:w-auto rounded-xl gap-2 h-12 md:h-9"
           >
             <Plus className="w-4 h-4" />
-            Adicionar
+            Adicionar Documento
           </Button>
         </div>
 

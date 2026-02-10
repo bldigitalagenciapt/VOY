@@ -57,12 +57,12 @@ export function QuickAccessCard({
       {/* Background Decor (optional gradient indicator) */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[40px] -mr-10 -mt-10" />
 
-      <div className="flex items-center justify-between mb-4 relative z-10">
+      <div className="flex items-center justify-between gap-2 mb-4 relative z-10">
         <div className="flex flex-col">
-          <span className="text-xl font-black text-foreground tracking-tight">{label}</span>
-          <div className="flex items-center gap-1.5 mt-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-success" />
-            <span className="text-[10px] uppercase font-bold text-success/80">Validado</span>
+          <span className="text-lg md:text-xl font-black text-foreground tracking-tight line-clamp-1">{label}</span>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+            <span className="text-[9px] md:text-[10px] uppercase font-bold text-success/80">Validado</span>
           </div>
         </div>
 

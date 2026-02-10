@@ -458,8 +458,8 @@ export default function Aima() {
     return (
       <MobileLayout>
         <div className="px-5 py-6 safe-area-top">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Imigração / AIMA</h1>
-          <p className="text-muted-foreground mb-8">Qual é o seu processo?</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2 text-center md:text-left">Imigração / AIMA</h1>
+          <p className="text-muted-foreground mb-8 text-center md:text-left">Qual é o seu processo?</p>
 
           <div className="space-y-4 mb-8">
             {processTypes.map((processType, index) => {

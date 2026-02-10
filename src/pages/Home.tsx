@@ -161,7 +161,7 @@ export default function Home() {
 
         {/* Seu Progresso Section */}
         <section className="mb-8">
-          <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider">Seu Progresso</h2>
+          <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider text-center md:text-left">Seu Progresso</h2>
           <div className="grid grid-cols-2 gap-4">
             <CircularProgress
               percentage={completionPercentage}
@@ -180,7 +180,7 @@ export default function Home() {
 
         {/* Acesso Rápido Section */}
         <section className="mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between md:justify-start gap-4 mb-6">
             <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Acesso Rápido</h2>
             <button
               onClick={() => setShowAllQuickAccess(true)}
@@ -211,7 +211,7 @@ export default function Home() {
         {/* Anotações Section */}
         {notes.filter(n => n.is_important).length > 0 && (
           <section className="mb-8">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between md:justify-start gap-4 mb-6">
               <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Anotações</h2>
               <button
                 onClick={() => navigate('/notes')}
@@ -300,8 +300,8 @@ export default function Home() {
 
         {/* Serviços Grid */}
         <section className="mb-8">
-          <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider">Serviços</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider text-center md:text-left">Serviços</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             <ActionCard
               icon={<ClipboardCheck className="w-8 h-8 text-blue-500" />}
               title="Primeiros Passos"

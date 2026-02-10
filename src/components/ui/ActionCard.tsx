@@ -24,12 +24,12 @@ export function ActionCard({
         className
       )}
     >
-      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 bg-muted/50 text-foreground transition-transform group-hover:scale-110">
+      <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-3 bg-muted/30 text-foreground transition-transform group-hover:scale-110">
         {icon}
       </div>
-      <p className="font-bold text-sm text-foreground mb-1 leading-tight">{title}</p>
+      <p className="font-bold text-xs md:text-sm text-foreground mb-1 leading-tight">{title}</p>
       {description && (
-        <p className="text-[10px] uppercase font-bold text-muted-foreground/60 tracking-wider">
+        <p className="text-[8px] md:text-[10px] uppercase font-black text-muted-foreground/50 tracking-widest">
           {description}
         </p>
       )}

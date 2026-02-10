@@ -158,7 +158,7 @@ export default function Landing() {
             )}
 
             {/* Hero Section */}
-            <section className="relative pt-40 pb-20 px-6">
+            <section className="relative pt-32 md:pt-40 pb-16 md:pb-20 px-6">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] -z-10" />
 
                 <div className="max-w-7xl mx-auto text-center space-y-10">
@@ -167,8 +167,8 @@ export default function Landing() {
                         PLATAFORMA Nº1 PARA IMIGRANTES EM PORTUGAL
                     </div>
 
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tight leading-[0.95] max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                        Sua Vida em <br />
+                    <h1 className="text-4xl md:text-8xl font-black tracking-tight leading-[1.1] md:leading-[0.95] max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                        Sua Vida em <br className="sm:hidden" />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600 italic">Portugal</span> Simplificada.
                     </h1>
 
@@ -177,11 +177,11 @@ export default function Landing() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-4 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-300">
-                        <Button className="h-16 px-12 rounded-2xl bg-[#0066FF] hover:bg-blue-600 text-lg font-black shadow-2xl shadow-blue-500/30 group">
+                        <Button className="w-full sm:w-auto h-16 px-12 rounded-2xl bg-[#0066FF] hover:bg-blue-600 text-lg font-black shadow-2xl shadow-blue-500/30 group">
                             COMEÇAR AGORA
                             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Button>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.2em]">Sem custos iniciais</p>
+                        <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-[0.2em]">Sem custos iniciais</p>
                     </div>
 
                     {/* Triple Mockup Hero */}
@@ -231,27 +231,27 @@ export default function Landing() {
 
 
             {/* Features/Services Section */}
-            <section id="serviços" className="py-32 px-6">
+            <section id="serviços" className="py-20 md:py-32 px-6">
                 <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
-                        <div className="space-y-4 text-left max-w-xl">
-                            <h2 className="text-blue-500 font-black uppercase tracking-[0.25em] text-xs">Recursos Inclusos</h2>
-                            <h3 className="text-4xl md:text-5xl font-black text-white leading-tight">Muitas ferramentas. <br />Uma experiência única.</h3>
+                    <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-16 md:mb-20 gap-8 text-center md:text-left">
+                        <div className="space-y-4 max-w-xl">
+                            <h2 className="text-blue-500 font-black uppercase tracking-[0.25em] text-[10px] md:text-xs">Recursos Inclusos</h2>
+                            <h3 className="text-3xl md:text-5xl font-black text-white leading-tight">Muitas ferramentas. <br />Uma experiência única.</h3>
                         </div>
-                        <p className="text-slate-400 font-bold max-w-xs text-sm leading-relaxed pb-2 border-l-2 border-blue-600 pl-6">
+                        <p className="text-slate-400 font-bold max-w-xs text-sm leading-relaxed pb-2 border-t-2 md:border-t-0 md:border-l-2 border-blue-600 pt-6 md:pt-0 md:pl-6">
                             Tudo o que você precisa para uma imigração organizada e sem dores de cabeça.
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {services.map((s, i) => (
-                            <div key={i} className="p-10 rounded-[2.5rem] bg-white/5 border border-white/5 hover:border-blue-500/50 hover:bg-white/[0.07] transition-all group">
-                                <div className="w-14 h-14 bg-white/5 rounded-[1.25rem] flex items-center justify-center mb-8 border border-white/10 group-hover:scale-110 transition-transform">
+                            <div key={i} className="p-8 md:p-10 rounded-[2rem] md:rounded-[2.5rem] bg-white/5 border border-white/5 hover:border-blue-500/50 hover:bg-white/[0.07] transition-all group flex flex-col items-center md:items-start text-center md:text-left">
+                                <div className="w-12 h-12 md:w-14 md:h-14 bg-white/5 rounded-2xl md:rounded-[1.25rem] flex items-center justify-center mb-6 md:mb-8 border border-white/10 group-hover:scale-110 transition-transform">
                                     {s.icon}
                                 </div>
                                 <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest block mb-2">{s.subtitle}</span>
-                                <h4 className="text-xl font-bold mb-4">{s.title}</h4>
-                                <p className="text-slate-500 text-sm leading-relaxed">{s.description}</p>
+                                <h4 className="text-lg md:text-xl font-bold mb-3 md:mb-4">{s.title}</h4>
+                                <p className="text-slate-500 text-xs md:text-sm leading-relaxed">{s.description}</p>
                             </div>
                         ))}
                     </div>
@@ -259,15 +259,15 @@ export default function Landing() {
             </section>
 
             {/* Showcase Section 1 */}
-            <section className="py-32 px-6 bg-blue-600/5 overflow-hidden">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-20">
-                    <div className="flex-1 space-y-8">
-                        <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-xs">Gestão Documental</h2>
-                        <h3 className="text-4xl md:text-6xl font-black leading-[1.1]">Toda sua vida em Portugal, protegida.</h3>
-                        <p className="text-lg text-slate-400 font-medium leading-relaxed">
+            <section className="py-20 md:py-32 px-6 bg-blue-600/5 overflow-hidden">
+                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16 md:gap-20">
+                    <div className="flex-1 space-y-8 text-center md:text-left">
+                        <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-[10px] md:text-xs">Gestão Documental</h2>
+                        <h3 className="text-3xl md:text-6xl font-black leading-[1.2] md:leading-[1.1]">Toda sua vida em Portugal, protegida.</h3>
+                        <p className="text-base md:text-lg text-slate-400 font-medium leading-relaxed">
                             Armazene NIF, NISS, contratos e comprovativos em um ambiente criptografado e sempre à mão. Organize sua burocracia de imigração sem estresse.
                         </p>
-                        <ul className="space-y-4">
+                        <ul className="space-y-4 inline-block text-left">
                             {['Criptografia de ponta a ponta', 'Validação inteligente de documentos', 'Acesso offline seguro'].map((item, i) => (
                                 <li key={i} className="flex items-center gap-3 font-bold text-sm">
                                     <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center">
@@ -321,11 +321,11 @@ export default function Landing() {
             </section>
 
             {/* Pricing Section */}
-            <section id="preços" className="py-32 px-6">
+            <section id="preços" className="py-20 md:py-32 px-6">
                 <div className="max-w-7xl mx-auto">
-                    <div className="text-center space-y-8 mb-20">
-                        <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-xs">Planos Sob Medida</h2>
-                        <h3 className="text-4xl md:text-5xl font-black">Invista no seu sonho.</h3>
+                    <div className="text-center space-y-6 md:space-y-8 mb-16 md:mb-20">
+                        <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-[10px] md:text-xs">Planos Sob Medida</h2>
+                        <h3 className="text-3xl md:text-5xl font-black">Invista no seu sonho.</h3>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -398,11 +398,11 @@ export default function Landing() {
             </section>
 
             {/* FAQ Accordion */}
-            <section id="faq" className="py-32 px-6">
+            <section id="faq" className="py-20 md:py-32 px-6">
                 <div className="max-w-3xl mx-auto space-y-12">
                     <div className="text-center space-y-4">
-                        <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-xs">Dúvidas Frequentes</h2>
-                        <h3 className="text-4xl font-black">Você pergunta, nós respondemos.</h3>
+                        <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-[10px] md:text-xs">Dúvidas Frequentes</h2>
+                        <h3 className="text-3xl md:text-4xl font-black">Você pergunta, nós respondemos.</h3>
                     </div>
 
                     <div className="space-y-4">
@@ -429,10 +429,10 @@ export default function Landing() {
             </section>
 
             {/* Call to Action Footer */}
-            <section className="py-32 px-6">
-                <div className="max-w-7xl mx-auto bg-gradient-to-br from-blue-600 to-blue-800 rounded-[4rem] p-12 md:p-24 text-center space-y-10 relative overflow-hidden">
+            <section className="py-20 md:py-32 px-6">
+                <div className="max-w-7xl mx-auto bg-gradient-to-br from-blue-600 to-blue-800 rounded-[3rem] md:rounded-[4rem] p-10 md:p-24 text-center space-y-10 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                    <h3 className="text-4xl md:text-7xl font-black text-white leading-tight max-w-4xl mx-auto">
+                    <h3 className="text-3xl md:text-7xl font-black text-white leading-tight max-w-4xl mx-auto">
                         A jornada dos seus sonhos <br />começa com um clique.
                     </h3>
                     <p className="text-xl text-blue-100 font-medium max-w-xl mx-auto">
