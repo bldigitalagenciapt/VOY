@@ -186,7 +186,7 @@ export default function Landing() {
 
                     {/* Triple Mockup Hero */}
                     <div className="relative mt-24 max-w-5xl mx-auto animate-in fade-in zoom-in duration-1000 delay-500">
-                        <div className="flex items-end justify-center -space-x-16 md:-space-x-32 px-10">
+                        <div className="flex items-end justify-center space-x-0 sm:-space-x-16 md:-space-x-32 px-6 md:px-10">
                             {/* Left Phone */}
                             <div className="relative z-10 hidden sm:block rotate-[-8deg] scale-90 translate-y-20 p-2 bg-slate-950 rounded-[2.5rem] border-4 border-slate-800 shadow-2xl">
                                 <div className="bg-slate-900 rounded-[2rem] overflow-hidden aspect-[9/19] w-[180px] md:w-[220px]">
