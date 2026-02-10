@@ -177,10 +177,10 @@ export default function Auth() {
         <div className="w-full max-w-sm glass-card p-8 rounded-[2.5rem] shadow-2xl shadow-primary/5">
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="w-24 h-24 flex items-center justify-center mx-auto mb-4 animate-float">
-              <img src="/logo.png" alt="VOY Logo" className="w-full h-full object-contain drop-shadow-2xl" />
+            <div className="w-32 h-32 flex items-center justify-center mx-auto mb-6 animate-float">
+              <img src="/logo.png" alt="VOY Logo" className="w-full h-full object-contain drop-shadow-2xl brightness-110" />
             </div>
-            <p className="text-xl font-black text-primary tracking-tighter uppercase mb-1">
+            <p className="text-2xl font-black text-primary tracking-tighter uppercase mb-1">
               VOY App
             </p>
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-6">
