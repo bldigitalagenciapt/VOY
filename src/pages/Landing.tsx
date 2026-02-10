@@ -122,9 +122,9 @@ export default function Landing() {
         <div className="min-h-screen bg-[#0A0D14] text-white font-['Inter'] selection:bg-blue-500/30 selection:text-white overflow-x-hidden">
             {/* Nav */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-[#0A0D14]/80 backdrop-blur-xl border-b border-white/5">
-                <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-6 h-20 md:h-24 flex items-center justify-between">
                     <div className="flex items-center">
-                        <img src={logo} alt="Voy Logo" className="h-18 md:h-20 w-auto transition-all" />
+                        <img src={logo} alt="Voy Logo" className="h-14 md:h-20 w-auto transition-all" />
                     </div>
 
                     <nav className="hidden md:flex items-center gap-10">
@@ -454,7 +454,7 @@ export default function Landing() {
             <footer className="py-20 px-6 border-t border-white/5">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left">
                     <div className="flex items-center">
-                        <img src={logo} alt="Voy Logo" className="h-28 md:h-32 w-auto grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all" />
+                        <img src={logo} alt="Voy Logo" className="h-20 md:h-32 w-auto grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all" />
                     </div>
 
                     <nav className="flex flex-wrap justify-center gap-x-12 gap-y-4">
