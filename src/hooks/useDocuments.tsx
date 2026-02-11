@@ -11,6 +11,7 @@ export interface Document {
   category: string;
   file_url: string | null;
   file_type: string | null;
+  expiry_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -45,7 +46,7 @@ export function useDocuments() {
   });
 
   const addDocumentMutation = useMutation({
-    mutationFn: async ({ name, category, file, isSecure = false }: { name: string; category: string; file?: File, isSecure?: boolean }) => {
+    mutationFn: async ({ name, category, file, isSecure = false, expiry_date }: { name: string; category: string; file?: File, isSecure?: boolean, expiry_date?: string }) => {
       if (!user) throw new Error('Not authenticated');
 
       let fileUrl = null;
@@ -129,6 +130,7 @@ export function useDocuments() {
           category,
           file_url: fileUrl,
           file_type: fileType,
+          expiry_date: expiry_date || null
         })
         .select()
         .single();
@@ -171,15 +173,15 @@ export function useDocuments() {
   });
 
   const updateDocumentMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string, updates: { name?: string; category?: string } }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Document> }) => {
       if (!user) throw new Error('Not authenticated');
 
-      const { error } = await supabase
-        .schema('public')
+      const { data, error } = await supabase
         .from('documents')
         .update(updates)
         .eq('id', id)
-        .eq('user_id', user.id);
+        .select()
+        .single();
 
       if (error) throw error;
       return { id, updates };

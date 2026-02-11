@@ -31,8 +31,11 @@ import {
   Upload,
   ShieldCheck,
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle,
+  Archive
 } from 'lucide-react';
+import { useDocuments } from '@/hooks/useDocuments';
 import { EmergencyModal } from '@/components/modals/EmergencyModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -64,6 +67,7 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showWelcome, setShowWelcome] = useState(false);
+  const { documents } = useDocuments();
   const isPremium = profile?.plan_status === 'premium';
 
   useEffect(() => {
@@ -389,6 +393,71 @@ export default function Home() {
         <section className="mb-8">
           <CommunityCard />
         </section>
+
+        {/* Alertas de Validade */}
+        {isPremium && documents.filter(doc => {
+          if (!doc.expiry_date) return false;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const expiry = new Date(doc.expiry_date);
+          const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          return diffDays <= 30;
+        }).length > 0 && (
+            <section className="mb-8">
+              <h2 className="text-lg font-black text-foreground mb-4 uppercase tracking-wider flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-orange-500" />
+                Alertas de Validade
+              </h2>
+              <div className="space-y-3">
+                {documents
+                  .filter(doc => {
+                    if (!doc.expiry_date) return false;
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const expiry = new Date(doc.expiry_date);
+                    const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                    return diffDays <= 30;
+                  })
+                  .sort((a, b) => new Date(a.expiry_date!).getTime() - new Date(b.expiry_date!).getTime())
+                  .slice(0, 3)
+                  .map((doc) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const expiry = new Date(doc.expiry_date!);
+                    const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                    const isExpired = diffDays < 0;
+
+                    return (
+                      <div
+                        key={doc.id}
+                        onClick={() => navigate('/documents')}
+                        className={cn(
+                          "p-4 rounded-2xl border flex items-center gap-4 cursor-pointer transition-all active:scale-[0.98]",
+                          isExpired ? "bg-red-500/5 border-red-500/20" : "bg-orange-500/5 border-orange-500/20"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-10 h-10 rounded-xl flex items-center justify-center",
+                          isExpired ? "bg-red-500/10 text-red-500" : "bg-orange-500/10 text-orange-500"
+                        )}>
+                          <Archive className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm truncate">{doc.name}</p>
+                          <p className={cn(
+                            "text-[11px] font-black uppercase tracking-wider mt-0.5",
+                            isExpired ? "text-red-500" : "text-orange-500"
+                          )}>
+                            {isExpired ? 'Expirado' : `Expira em ${diffDays} dias`}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground opacity-30" />
+                      </div>
+                    );
+                  })}
+              </div>
+            </section>
+          )}
 
         {/* Serviços Grid */}
         <section className="mb-8">

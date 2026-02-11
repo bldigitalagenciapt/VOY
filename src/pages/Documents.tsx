@@ -39,6 +39,22 @@ const getFileTypeInfo = (fileType: string | null) => {
   return { icon: File, label: 'Arquivo' };
 };
 
+const getExpiryStatus = (expiryDate: string | null) => {
+  if (!expiryDate) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expiry = new Date(expiryDate);
+  const diffTime = expiry.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return { label: 'Expirado', color: 'text-destructive bg-destructive/10' };
+  if (diffDays === 0) return { label: 'Expira hoje', color: 'text-warning bg-warning/10' };
+  if (diffDays <= 7) return { label: `Expira em ${diffDays} dias`, color: 'text-warning bg-warning/10' };
+  if (diffDays <= 30) return { label: `Expira em ${diffDays} dias`, color: 'text-info bg-info/10' };
+
+  return { label: `Válido até ${new Date(expiryDate).toLocaleDateString('pt-BR')}`, color: 'text-muted-foreground bg-muted' };
+};
+
 export default function Documents() {
   const { documents, loading: docsLoading, addDocument, updateDocument, deleteDocument } = useDocuments();
   const { categories: customCategories, loading: catsLoading } = useCategories();
@@ -48,6 +64,7 @@ export default function Documents() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('immigration');
   const [documentName, setDocumentName] = useState('');
+  const [expiryDate, setExpiryDate] = useState<string>('');
 
   useEffect(() => {
     if (location.state?.openAddDialog) {
@@ -60,7 +77,7 @@ export default function Documents() {
   const [saving, setSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [editingDoc, setEditingDoc] = useState<{ id: string; name: string } | null>(null);
+  const [editingDoc, setEditingDoc] = useState<{ id: string; name: string; expiry_date: string | null } | null>(null);
   const [isSecure, setIsSecure] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -70,9 +87,10 @@ export default function Documents() {
   const handleAddDocument = async () => {
     if (documentName) {
       setSaving(true);
-      await addDocument(documentName, selectedCategory, selectedFile || undefined, isSecure);
+      await addDocument(documentName, selectedCategory, selectedFile || undefined, isSecure, expiryDate || undefined);
       setSaving(false);
       setDocumentName('');
+      setExpiryDate('');
       setSelectedFile(null);
       setIsSecure(false);
       setShowAddDialog(false);
@@ -126,7 +144,10 @@ export default function Documents() {
 
   const handleEditSave = async () => {
     if (editingDoc && editingDoc.name) {
-      await updateDocument(editingDoc.id, { name: editingDoc.name });
+      await updateDocument(editingDoc.id, {
+        name: editingDoc.name,
+        expiry_date: editingDoc.expiry_date
+      });
       setEditingDoc(null);
     }
   };
@@ -380,7 +401,14 @@ export default function Documents() {
                     <Icon className="w-6 h-6" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground truncate">{doc.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-foreground truncate">{doc.name}</p>
+                      {getExpiryStatus(doc.expiry_date) && (
+                        <div className={cn("px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider", getExpiryStatus(doc.expiry_date)?.color)}>
+                          {getExpiryStatus(doc.expiry_date)?.label}
+                        </div>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       {fileInfo.label} • {new Date(doc.created_at).toLocaleDateString('pt-BR')}
                     </p>
@@ -421,11 +449,11 @@ export default function Documents() {
                         className="gap-2"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setEditingDoc({ id: doc.id, name: doc.name });
+                          setEditingDoc({ id: doc.id, name: doc.name, expiry_date: doc.expiry_date });
                         }}
                       >
                         <Pencil className="w-4 h-4" />
-                        Editar nome
+                        Editar documento
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="gap-2 text-destructive focus:text-destructive"
@@ -552,7 +580,6 @@ export default function Documents() {
               />
             </div>
 
-            {/* Document Name */}
             <div className="space-y-2">
               <Label htmlFor="docName">Nome do documento</Label>
               <Input
@@ -560,6 +587,18 @@ export default function Documents() {
                 value={documentName}
                 onChange={(e) => setDocumentName(e.target.value)}
                 placeholder="Ex: Passaporte, Contrato..."
+                className="h-12 rounded-xl"
+              />
+            </div>
+
+            {/* Expiry Date */}
+            <div className="space-y-2">
+              <Label htmlFor="expiryDate">Data de Validade (Opcional)</Label>
+              <Input
+                id="expiryDate"
+                type="date"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
                 className="h-12 rounded-xl"
               />
             </div>
@@ -625,30 +664,46 @@ export default function Documents() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Name Dialog */}
-      <Dialog open={!!editingDoc} onOpenChange={() => setEditingDoc(null)}>
-        <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl">
+      {/* Edit Dialog */}
+      <Dialog open={!!editingDoc} onOpenChange={(open) => !open && setEditingDoc(null)}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] p-8">
           <DialogHeader>
-            <DialogTitle>Editar nome</DialogTitle>
+            <DialogTitle>Editar Documento</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <Input
-              value={editingDoc?.name || ''}
-              onChange={(e) => setEditingDoc(prev => prev ? { ...prev, name: e.target.value } : null)}
-              placeholder="Nome do documento"
-              className="h-12 rounded-xl"
-            />
-            <div className="flex gap-3">
+          <div className="space-y-6 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="editName">Nome do documento</Label>
+              <Input
+                id="editName"
+                value={editingDoc?.name || ''}
+                onChange={(e) => setEditingDoc(prev => prev ? { ...prev, name: e.target.value } : null)}
+                className="h-12 rounded-xl"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="editExpiry">Data de Validade</Label>
+              <Input
+                id="editExpiry"
+                type="date"
+                value={editingDoc?.expiry_date || ''}
+                onChange={(e) => setEditingDoc(prev => prev ? { ...prev, expiry_date: e.target.value } : null)}
+                className="h-12 rounded-xl"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
               <Button
                 variant="outline"
-                onClick={() => setEditingDoc(null)}
                 className="flex-1 h-12 rounded-xl"
+                onClick={() => setEditingDoc(null)}
               >
                 Cancelar
               </Button>
               <Button
-                onClick={handleEditSave}
                 className="flex-1 h-12 rounded-xl"
+                onClick={handleEditSave}
+                disabled={!editingDoc?.name}
               >
                 Salvar
               </Button>
