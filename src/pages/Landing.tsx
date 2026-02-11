@@ -107,8 +107,26 @@ export default function Landing() {
     ];
 
     const pricing = [
-        { name: "Explorador", price: "Grátis", features: ["Guia de Chegada", "Gestão de 3 Docs", "Simulador Salarial", "Mural da Comunidade"], popular: false },
-        { name: "Residente Pro", price: "€19.90", period: "/ taxa única", features: ["Documentos Ilimitados", "Tracking AIMA Manual", "Cofre Criptografado", "Sem Anúncios", "Suporte VIP"], popular: true }
+        {
+            name: "Explorador",
+            price: "Grátis",
+            features: ["Guia de Chegada", "Gestão de 3 Docs", "Simulador Salarial", "Mural da Comunidade"],
+            popular: false
+        },
+        {
+            name: "Residente Pro",
+            price: "€19.90",
+            period: "/ taxa única",
+            features: [
+                "Acesso Vitalício (Sem Mensalidades)",
+                "Documentos Ilimitados",
+                "Tracking AIMA Manual",
+                "Cofre Criptografado",
+                "Suporte VIP",
+                "Garantia de 7 Dias ou Reembolso"
+            ],
+            popular: true
+        }
     ];
 
     const faqs = [
@@ -361,6 +379,12 @@ export default function Landing() {
                                 </Button>
                             </div>
                         ))}
+                    </div>
+
+                    <div className="mt-12 text-center text-slate-500 font-bold text-xs uppercase tracking-[0.2em] flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8">
+                        <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Cartão de Crédito</span>
+                        <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> MB WAY</span>
+                        <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Multibanco</span>
                     </div>
                 </div>
             </section>

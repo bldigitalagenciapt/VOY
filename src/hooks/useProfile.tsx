@@ -21,6 +21,8 @@ export interface Profile {
   avatar_url?: string | null;
   is_admin?: boolean;
   custom_quick_access?: { id: string; label: string; value: string }[] | null;
+  plan_status?: string | null;
+  payment_date?: string | null;
 }
 
 export function useProfile() {

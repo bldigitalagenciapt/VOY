@@ -5,6 +5,10 @@ import { Download, X, FileText, Image, FileSpreadsheet, File, Loader2 } from 'lu
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useProfile } from '@/hooks/useProfile';
+import { ShieldAlert, Sparkles } from 'lucide-react';
+import { PremiumWelcomeModal } from '../PremiumWelcomeModal';
+import { useSearchParams } from 'react-router-dom';
 
 interface DocumentViewerProps {
   isOpen: boolean;
@@ -58,9 +62,22 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
   const [imageLoading, setImageLoading] = useState(true);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [loadingUrl, setLoadingUrl] = useState(false);
+  const { profile } = useProfile();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
-    if (isOpen && document?.file_url) {
+    if (searchParams.get('payment') === 'success') {
+      setShowWelcome(true);
+      searchParams.delete('payment');
+      setSearchParams(searchParams);
+    }
+  }, [searchParams]);
+
+  const isPremium = profile?.plan_status === 'premium';
+
+  useEffect(() => {
+    if (isOpen && document?.file_url && isPremium) {
       generateSignedUrl();
     } else {
       setSignedUrl(null);
@@ -75,7 +92,7 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
     try {
       const bucket = 'voy_secure_docs';
       let filePath = '';
-      
+
       if (document.file_url.includes(`/${bucket}/`)) {
         filePath = decodeURIComponent(document.file_url.split(`/${bucket}/`)[1]);
       } else {
@@ -153,7 +170,25 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
         </DialogHeader>
 
         <div className="flex-1 overflow-auto p-4 min-h-[300px] flex flex-col items-center justify-center">
-          {loadingUrl ? (
+          {!isPremium ? (
+            <div className="flex flex-col items-center justify-center py-12 px-6 text-center animate-in fade-in zoom-in duration-500">
+              <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6 border border-blue-500/20">
+                <ShieldAlert className="w-10 h-10 text-blue-500" />
+              </div>
+              <h3 className="text-2xl font-black mb-4">Acesso Bloqueado</h3>
+              <p className="text-slate-400 font-medium mb-8 max-w-xs">
+                A visualização e download de documentos são recursos exclusivos do plano <span className="text-blue-500 font-bold">VOY Premium</span>.
+              </p>
+              <Button
+                onClick={() => supabase.functions.invoke('stripe-checkout', { body: { user_id: profile?.user_id, user_email: profile?.user_profile } }).then(res => { if (res.data?.url) window.location.href = res.data.url; })}
+                className="h-14 px-8 rounded-2xl bg-[#0066FF] hover:bg-blue-600 font-black tracking-widest gap-2 shadow-lg shadow-blue-500/20"
+              >
+                <Sparkles className="w-5 h-5" />
+                DESBLOQUEAR TUDO
+              </Button>
+              <p className="mt-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">Pagamento Único de 19,90€</p>
+            </div>
+          ) : loadingUrl ? (
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground animate-pulse">Obtendo acesso seguro...</p>
@@ -232,6 +267,8 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
               </p>
             </div>
           )}
+
+          <PremiumWelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
         </div>
 
         <div className="p-4 border-t border-border flex gap-3">
@@ -242,7 +279,7 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
           >
             Fechar
           </Button>
-          {document.file_url && signedUrl && (
+          {isPremium && document.file_url && signedUrl && (
             <Button
               onClick={handleDownload}
               disabled={downloading}

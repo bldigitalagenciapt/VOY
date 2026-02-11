@@ -53,15 +53,27 @@ export default function Settings() {
     if (!user) return;
     setDeletingAccount(true);
     try {
-      // 1. Delete profile (cascades to other tables)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('user_id', user.id);
+      // 1. Delete all storage files first
+      const bucket = 'voy_secure_docs';
+      const { data: files } = await supabase.storage.from(bucket).list(user.id);
 
-      if (profileError) throw profileError;
+      if (files && files.length > 0) {
+        const filePaths = files.map(f => `${user.id}/${f.name}`);
+        await supabase.storage.from(bucket).remove(filePaths);
+      }
 
-      // 2. Sign Out
+      // 2. Clear database data via RPC
+      const { error: deleteError } = await (supabase.rpc as any)('handle_user_data_deletion', { user_uuid: user.id });
+
+      if (deleteError) {
+        console.warn('RPC deletion failed, falling back to profile deletion:', deleteError);
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('user_id', user.id);
+        if (profileError) throw profileError;
+      }
+
       await signOut();
       toast.success('Sua conta e dados foram removidos com sucesso.');
       navigate('/auth');
@@ -71,6 +83,10 @@ export default function Settings() {
       setDeletingAccount(false);
     }
   };
+
+  const isRefundEligible = profile?.plan_status === 'premium' && profile?.payment_date && (
+    (new Date().getTime() - new Date(profile.payment_date).getTime()) < (7 * 24 * 60 * 60 * 1000)
+  );
 
   const settingsItems = [
     {
@@ -216,6 +232,24 @@ export default function Settings() {
             </div>
             <span className="font-medium text-foreground">Sair da conta</span>
           </button>
+
+          {isRefundEligible && (
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="w-full flex flex-col items-center gap-2 p-6 rounded-[2rem] bg-orange-500/10 border-2 border-orange-500/30 hover:bg-orange-500/20 transition-all text-center group"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-orange-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Shield className="w-6 h-6 text-orange-500" />
+              </div>
+              <div className="space-y-1">
+                <span className="font-black text-orange-500 text-sm tracking-widest uppercase">Solicitar Reembolso</span>
+                <p className="text-[10px] text-orange-400/80 font-bold uppercase tracking-widest leading-none">Válido por 7 dias (Garantia)</p>
+              </div>
+              <p className="text-xs text-orange-200/50 font-medium px-4">
+                Ao clicar aqui, você receberá o reembolso total e sua conta será bloqueada e excluída permanentemente.
+              </p>
+            </button>
+          )}
 
           <button
             onClick={() => setShowDeleteDialog(true)}
