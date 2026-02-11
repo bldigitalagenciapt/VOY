@@ -110,7 +110,7 @@ export default function Landing() {
         {
             name: "Explorador",
             price: "Grátis",
-            features: ["Guia de Chegada", "Gestão de 3 Docs", "Simulador Salarial", "Mural da Comunidade"],
+            features: ["Guia de Chegada", "Simulador Salarial", "Checklist Básico", "Mural da Comunidade"],
             popular: false
         },
         {
@@ -118,12 +118,11 @@ export default function Landing() {
             price: "€19.90",
             period: "/ taxa única",
             features: [
-                "Acesso Vitalício (Sem Mensalidades)",
-                "Documentos Ilimitados",
+                "Cofre de Documentos Ilimitados",
+                "Alertas de Validade",
                 "Tracking AIMA Manual",
-                "Cofre Criptografado",
-                "Suporte VIP",
-                "Garantia de 7 Dias ou Reembolso"
+                "Sem Anúncios",
+                "Acesso Vitalício"
             ],
             popular: true
         }
@@ -374,7 +373,7 @@ export default function Landing() {
                                     "w-full h-16 rounded-2xl font-black uppercase tracking-widest group",
                                     p.popular ? "bg-white text-[#0066FF] hover:bg-slate-100" : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
                                 )}>
-                                    Assinar Agora
+                                    {p.price === "Grátis" ? "Explorar Agora" : "Assinar Agora"}
                                     <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </div>
