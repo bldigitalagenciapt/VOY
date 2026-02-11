@@ -176,8 +176,8 @@ export default function Profile() {
             <div className="w-28 h-28 rounded-full bg-muted flex items-center justify-center overflow-hidden border-4 border-background shadow-lg">
               {uploadingPhoto ? (
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              ) : avatarUrl ? (
-                <img src={avatarUrl} alt="Perfil" className="w-full h-full object-cover" />
+              ) : profile?.signedAvatarUrl ? (
+                <img src={profile.signedAvatarUrl} alt="Perfil" className="w-full h-full object-cover" />
               ) : (
                 <User className="w-12 h-12 text-muted-foreground" />
               )}

@@ -40,7 +40,8 @@ export function useProfile() {
         .maybeSingle();
 
       if (data) {
-        const decryptedDoc = { ...data };
+        // cast to any to allow accessing fields not yet in types.ts (like avatar_url)
+        const decryptedDoc = { ...data } as any;
         const sensitiveFields = ['nif', 'niss', 'sns', 'passport'] as const;
 
         for (const field of sensitiveFields) {
@@ -48,7 +49,34 @@ export function useProfile() {
             decryptedDoc[field] = await decryptData(decryptedDoc[field] as string, user.id);
           }
         }
-        return decryptedDoc as unknown as Profile;
+
+        // Generate signed URL for avatar if it exists
+        let signedAvatarUrl = null;
+        if (decryptedDoc.avatar_url) {
+          try {
+            const bucket = 'voy_secure_docs';
+            let filePath = '';
+
+            if (decryptedDoc.avatar_url.includes(`/${bucket}/`)) {
+              filePath = decodeURIComponent(decryptedDoc.avatar_url.split(`/${bucket}/`)[1]);
+            } else {
+              const urlParts = decryptedDoc.avatar_url.split('/');
+              filePath = urlParts[urlParts.length - 1];
+            }
+
+            const { data: signedData, error: signedError } = await supabase.storage
+              .from(bucket)
+              .createSignedUrl(filePath, 3600);
+
+            if (!signedError && signedData) {
+              signedAvatarUrl = signedData.signedUrl;
+            }
+          } catch (err) {
+            console.error('Error signing avatar URL:', err);
+          }
+        }
+
+        return { ...decryptedDoc, signedAvatarUrl } as unknown as Profile & { signedAvatarUrl?: string | null };
       }
       return null;
     },
@@ -59,7 +87,7 @@ export function useProfile() {
     mutationFn: async (updates: Partial<Profile>) => {
       if (!user) throw new Error('Not authenticated');
 
-      const encryptedUpdates = { ...updates };
+      const encryptedUpdates = { ...updates } as any;
       const sensitiveFields = ['nif', 'niss', 'sns', 'passport'] as const;
 
       for (const field of sensitiveFields) {

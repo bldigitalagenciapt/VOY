@@ -73,13 +73,19 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
 
     setLoadingUrl(true);
     try {
-      const urlParts = document.file_url.split('/');
-      const fileName = urlParts[urlParts.length - 1];
       const bucket = 'voy_secure_docs';
+      let filePath = '';
+      
+      if (document.file_url.includes(`/${bucket}/`)) {
+        filePath = decodeURIComponent(document.file_url.split(`/${bucket}/`)[1]);
+      } else {
+        const urlParts = document.file_url.split('/');
+        filePath = urlParts[urlParts.length - 1];
+      }
 
       const { data, error } = await supabase.storage
         .from(bucket)
-        .createSignedUrl(fileName, 60);
+        .createSignedUrl(filePath, 3600); // 1 hour
 
       if (error) throw error;
       setSignedUrl(data.signedUrl);
