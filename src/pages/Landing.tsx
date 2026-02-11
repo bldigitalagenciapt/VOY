@@ -108,12 +108,6 @@ export default function Landing() {
 
     const pricing = [
         {
-            name: "Explorador",
-            price: "Grátis",
-            features: ["Guia de Chegada", "Simulador Salarial", "Checklist Básico", "Mural da Comunidade"],
-            popular: false
-        },
-        {
             name: "Residente Pro",
             price: "€19.90",
             period: "/ taxa única",
@@ -345,7 +339,7 @@ export default function Landing() {
                         <h3 className="text-3xl md:text-5xl font-black">Invista no seu sonho.</h3>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <div className="max-w-lg mx-auto">
                         {pricing.map((p, i) => (
                             <div key={i} className={cn(
                                 "p-12 rounded-[3.5rem] relative group border transition-all duration-300",

@@ -25,7 +25,13 @@ import {
   StickyNote,
   Star,
   HelpCircle,
-  Bot
+  Bot,
+  Shield,
+  Sparkles,
+  Upload,
+  ShieldCheck,
+  CheckCircle2,
+  ChevronRight
 } from 'lucide-react';
 import { EmergencyModal } from '@/components/modals/EmergencyModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -38,6 +44,8 @@ import { useUserDocuments } from '@/hooks/useUserDocuments';
 import { toast } from 'sonner';
 import { CommunityCard } from '@/components/home/CommunityCard';
 import { PremiumWelcomeModal } from '@/components/PremiumWelcomeModal';
+import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
 type NumberField = 'nif' | 'niss' | 'sns' | 'passport';
 
@@ -56,6 +64,7 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showWelcome, setShowWelcome] = useState(false);
+  const isPremium = profile?.plan_status === 'premium';
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -63,7 +72,79 @@ export default function Home() {
       searchParams.delete('success');
       setSearchParams(searchParams, { replace: true });
     }
-  }, []);
+  }, [searchParams, setSearchParams]);
+
+  // ─── PAYWALL: Full sales page for non-premium users ───
+  if (profile && !isPremium && !profileLoading) {
+    const handleCheckout = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+          body: { user_id: profile?.user_id, user_email: profile?.user_profile }
+        });
+        if (error) throw error;
+        if (data?.url) window.location.href = data.url;
+      } catch (err) {
+        toast.error('Erro ao iniciar pagamento. Tente novamente.');
+        console.error('Checkout error:', err);
+      }
+    };
+
+    return (
+      <MobileLayout>
+        <div className="px-5 py-8 safe-area-top min-h-full flex flex-col items-center text-center">
+          <div className="relative mb-6">
+            <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center border border-blue-500/20 shadow-lg shadow-blue-500/10">
+              <Shield className="w-12 h-12 text-blue-500" />
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shadow-lg">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+          </div>
+
+          <h1 className="text-[1.6rem] font-black text-foreground leading-tight mb-3 max-w-xs tracking-tight">
+            Tenha seu cofre digital de imigrante por apenas{' '}
+            <span className="text-blue-500">19,90€</span>
+          </h1>
+
+          <p className="text-sm text-muted-foreground font-medium mb-8 max-w-[280px]">
+            Pagamento único. Acesso vitalício. Sem mensalidades.
+          </p>
+
+          <div className="w-full max-w-sm space-y-3 mb-8">
+            {[
+              { icon: Upload, text: 'Uploads ilimitados de documentos', sub: 'PDF, fotos, scans e mais' },
+              { icon: ShieldCheck, text: 'Cofre criptografado', sub: 'Seus documentos seguros e privados' },
+              { icon: Bell, text: 'Alertas de validade', sub: 'Nunca perca um prazo importante' },
+              { icon: FileText, text: 'Acesso vitalício garantido', sub: 'Pague uma vez, use para sempre' },
+            ].map((benefit, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border text-left">
+                <div className="w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                  <benefit.icon className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  <p className="font-bold text-foreground text-sm">{benefit.text}</p>
+                  <p className="text-[11px] text-muted-foreground">{benefit.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            onClick={handleCheckout}
+            className="w-full max-w-sm h-16 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-black text-lg tracking-wider gap-3 shadow-xl shadow-blue-500/25 transition-all active:scale-[0.98]"
+          >
+            <Sparkles className="w-5 h-5" />
+            DESBLOQUEAR TUDO — 19,90€
+          </Button>
+
+          <p className="mt-4 text-xs text-muted-foreground font-bold flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            Garantia de reembolso de 7 dias
+          </p>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   const handleSaveNumber = async () => {
     if (showNumberDialog) {
