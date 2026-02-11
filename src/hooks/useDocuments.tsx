@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useProfile } from './useProfile';
 import { toast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 
@@ -17,7 +18,10 @@ export interface Document {
 
 export function useDocuments() {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const queryClient = useQueryClient();
+
+  const isPremium = profile?.plan_status === 'premium';
 
   const { data: documents = [], isLoading: loading, refetch } = useQuery({
     queryKey: ['documents', user?.id],
@@ -47,6 +51,14 @@ export function useDocuments() {
   const addDocumentMutation = useMutation({
     mutationFn: async ({ name, category, file, isSecure = false }: { name: string; category: string; file?: File, isSecure?: boolean }) => {
       if (!user) throw new Error('Not authenticated');
+      if (!isPremium) {
+        toast({
+          title: "Acesso Restrito",
+          description: "Você precisa do VOY Premium para adicionar documentos.",
+          variant: "destructive",
+        });
+        throw new Error('Premium access required');
+      }
 
       let fileUrl = null;
       let fileType = null;
@@ -221,12 +233,12 @@ export function useDocuments() {
       if (doc?.file_url) {
         try {
           const bucket = 'voy_secure_docs';
-          
+
           // Parse correct path from URL, handling both root and folder paths
           // URL format: .../voy_secure_docs/path/to/file
           let filePath = '';
           const urlParts = doc.file_url.split(`/${bucket}/`);
-          
+
           if (urlParts.length > 1) {
             // Decodes URI components to handle potential %20 spaces etc, though less likely with our naming
             filePath = decodeURIComponent(urlParts[1]);

@@ -53,33 +53,19 @@ export default function Settings() {
     if (!user) return;
     setDeletingAccount(true);
     try {
-      // 1. Delete all storage files first
-      const bucket = 'voy_secure_docs';
-      const { data: files } = await supabase.storage.from(bucket).list(user.id);
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        body: { user_id: user.id }
+      });
 
-      if (files && files.length > 0) {
-        const filePaths = files.map(f => `${user.id}/${f.name}`);
-        await supabase.storage.from(bucket).remove(filePaths);
-      }
-
-      // 2. Clear database data via RPC
-      const { error: deleteError } = await (supabase.rpc as any)('handle_user_data_deletion', { user_uuid: user.id });
-
-      if (deleteError) {
-        console.warn('RPC deletion failed, falling back to profile deletion:', deleteError);
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .delete()
-          .eq('user_id', user.id);
-        if (profileError) throw profileError;
-      }
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Deletion failed');
 
       await signOut();
-      toast.success('Sua conta e dados foram removidos com sucesso.');
+      toast.success('Sua conta e dados foram removidos com sucesso. Reembolso será processado pelo Stripe.');
       navigate('/auth');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Delete account error:', error);
-      toast.error('Erro ao excluir conta. Contacte o suporte.');
+      toast.error(error?.message || 'Erro ao excluir conta. Contacte o suporte.');
       setDeletingAccount(false);
     }
   };

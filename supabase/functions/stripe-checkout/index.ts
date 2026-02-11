@@ -35,7 +35,7 @@ serve(async (req) => {
                 },
             ],
             mode: "payment",
-            success_url: `${req.headers.get("origin")}/home?payment=success`,
+            success_url: `${req.headers.get("origin")}/home?success=true`,
             cancel_url: `${req.headers.get("origin")}/home?payment=cancelled`,
             customer_email: user_email,
             client_reference_id: user_id,

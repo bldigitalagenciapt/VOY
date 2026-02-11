@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useAimaProcess } from '@/hooks/useAimaProcess';
 import { MobileLayout } from '@/components/layout/MobileLayout';
@@ -37,6 +37,7 @@ import { useNotes } from '@/hooks/useNotes';
 import { useUserDocuments } from '@/hooks/useUserDocuments';
 import { toast } from 'sonner';
 import { CommunityCard } from '@/components/home/CommunityCard';
+import { PremiumWelcomeModal } from '@/components/PremiumWelcomeModal';
 
 type NumberField = 'nif' | 'niss' | 'sns' | 'passport';
 
@@ -53,6 +54,16 @@ export default function Home() {
   const [showEmergency, setShowEmergency] = useState(false);
   const [tempNumber, setTempNumber] = useState('');
   const [saving, setSaving] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      setShowWelcome(true);
+      searchParams.delete('success');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
 
   const handleSaveNumber = async () => {
     if (showNumberDialog) {
@@ -400,6 +411,9 @@ export default function Home() {
 
       {/* Emergency Modal */}
       <EmergencyModal open={showEmergency} onOpenChange={setShowEmergency} />
+
+      {/* Premium Welcome Modal */}
+      <PremiumWelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
 
     </MobileLayout>
   );

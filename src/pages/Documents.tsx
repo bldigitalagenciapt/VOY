@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
-import { Plus, FileText, Briefcase, Heart, Home as HomeIcon, Camera, Upload, File, MoreVertical, Eye, Download, Pencil, Trash2, Loader2, X, Image, FileSpreadsheet, Search } from 'lucide-react';
+import { Plus, FileText, Briefcase, Heart, Home as HomeIcon, Camera, Upload, File, MoreVertical, Eye, Download, Pencil, Trash2, Loader2, X, Image, FileSpreadsheet, Search, Bell } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +15,9 @@ import { useCategories } from '@/hooks/useCategories';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
-import { Shield, ShieldCheck } from 'lucide-react';
+import { Shield, ShieldCheck, Sparkles, ShieldAlert } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
+import { supabase } from '@/integrations/supabase/client';
 
 const defaultCategories = [
   { id: 'immigration' as const, icon: FileText, label: 'Imigração', color: 'bg-primary/15 text-primary' },
@@ -40,6 +42,8 @@ const getFileTypeInfo = (fileType: string | null) => {
 export default function Documents() {
   const { documents, loading: docsLoading, addDocument, updateDocument, deleteDocument } = useDocuments();
   const { categories: customCategories, loading: catsLoading } = useCategories();
+  const { profile } = useProfile();
+  const isPremium = profile?.plan_status === 'premium';
   const location = useLocation();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('immigration');
@@ -76,6 +80,11 @@ export default function Documents() {
   };
 
   const onDrop = (acceptedFiles: File[]) => {
+    if (!isPremium) {
+      toast.error('Recurso exclusivo do VOY Premium');
+      setViewingDoc({ id: 'barrier', name: 'Premium Required', file_url: null, file_type: null } as any);
+      return;
+    }
     const file = acceptedFiles[0];
     if (file) {
       setSelectedFile(file);
@@ -155,6 +164,134 @@ export default function Documents() {
     );
   }
 
+  // ─── PAYWALL: Full sales page for non-premium users ───
+  if (!isPremium) {
+    const handleCheckout = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+          body: { user_id: profile?.user_id, user_email: profile?.user_profile }
+        });
+        if (error) throw error;
+        if (data?.url) window.location.href = data.url;
+      } catch (err) {
+        toast.error('Erro ao iniciar pagamento. Tente novamente.');
+        console.error('Checkout error:', err);
+      }
+    };
+
+    return (
+      <MobileLayout>
+        <div className="px-5 py-8 safe-area-top min-h-full flex flex-col items-center text-center">
+
+          {/* Hero Icon */}
+          <div className="relative mb-6">
+            <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center border border-blue-500/20 shadow-lg shadow-blue-500/10">
+              <Shield className="w-12 h-12 text-blue-500" />
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shadow-lg">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+          </div>
+
+          {/* Title */}
+          <h1 className="text-[1.6rem] font-black text-foreground leading-tight mb-3 max-w-xs tracking-tight">
+            Tenha seu cofre digital de imigrante por apenas{' '}
+            <span className="text-blue-500">19,90€</span>
+          </h1>
+
+          <p className="text-sm text-muted-foreground font-medium mb-8 max-w-[280px]">
+            Pagamento único. Acesso vitalício. Sem mensalidades.
+          </p>
+
+          {/* Benefits */}
+          <div className="w-full max-w-sm space-y-3 mb-8">
+            {[
+              { icon: Upload, text: 'Uploads ilimitados de documentos', sub: 'PDF, fotos, scans e mais' },
+              { icon: ShieldCheck, text: 'Cofre criptografado', sub: 'Seus documentos seguros e privados' },
+              { icon: Bell, text: 'Alertas de validade', sub: 'Nunca perca um prazo importante' },
+              { icon: FileText, text: 'Acesso vitalício garantido', sub: 'Pague uma vez, use para sempre' },
+            ].map((benefit, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border text-left animate-slide-up"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className="w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                  <benefit.icon className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  <p className="font-bold text-foreground text-sm">{benefit.text}</p>
+                  <p className="text-[11px] text-muted-foreground">{benefit.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <Button
+            onClick={handleCheckout}
+            className="w-full max-w-sm h-16 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-black text-lg tracking-wider gap-3 shadow-xl shadow-blue-500/25 transition-all active:scale-[0.98]"
+          >
+            <Sparkles className="w-5 h-5" />
+            DESBLOQUEAR COFRE — 19,90€
+          </Button>
+
+          {/* Guarantee */}
+          <p className="mt-4 text-xs text-muted-foreground font-bold flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            Garantia de reembolso de 7 dias
+          </p>
+
+          {/* Payment Methods (Trust Badges) */}
+          <div className="mt-8 w-full max-w-sm">
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-4">Métodos de pagamento aceitos</p>
+            <div className="flex items-center justify-center gap-6">
+
+              {/* Cartão (Visa/MC icon placeholder) */}
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="w-14 h-10 rounded-lg bg-card border border-border flex items-center justify-center shadow-sm">
+                  <svg viewBox="0 0 24 24" className="w-7 h-7 text-blue-600" fill="currentColor">
+                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM4 0h16v2H4zm0 22h16v2H4z" opacity=".3" />
+                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12z" />
+                  </svg>
+                </div>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Cartão</span>
+              </div>
+
+              {/* MB WAY */}
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="w-14 h-10 rounded-lg bg-card border border-border flex items-center justify-center shadow-sm px-1.5">
+                  <svg viewBox="0 0 120 40" className="w-full h-full">
+                    <rect x="2" y="2" width="36" height="36" rx="8" fill="#D4002A" />
+                    <text x="20" y="26" textAnchor="middle" fill="white" fontSize="16" fontWeight="900" fontFamily="Arial">MB</text>
+                    <text x="80" y="22" textAnchor="middle" fill="#D4002A" fontSize="11" fontWeight="900" fontFamily="Arial">WAY</text>
+                  </svg>
+                </div>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">MB WAY</span>
+              </div>
+
+              {/* Multibanco */}
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="w-14 h-10 rounded-lg bg-card border border-border flex items-center justify-center shadow-sm px-1.5">
+                  <svg viewBox="0 0 100 40" className="w-full h-full">
+                    <rect x="2" y="2" width="96" height="36" rx="6" fill="#004B87" />
+                    <text x="50" y="24" textAnchor="middle" fill="white" fontSize="9" fontWeight="800" fontFamily="Arial">MULTIBANCO</text>
+                  </svg>
+                </div>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Multibanco</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Subtle footer */}
+          <p className="mt-8 text-[10px] text-muted-foreground/50 font-medium max-w-[250px]">
+            Pagamento seguro processado pelo Stripe. Os seus dados financeiros nunca são armazenados.
+          </p>
+        </div>
+      </MobileLayout>
+    );
+  }
+
   return (
     <MobileLayout>
       <div
@@ -169,7 +306,14 @@ export default function Documents() {
         <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
           <h1 className="text-2xl font-bold text-foreground text-center md:text-left">Meus Documentos</h1>
           <Button
-            onClick={() => setShowAddDialog(true)}
+            onClick={() => {
+              if (!isPremium) {
+                toast.error('Recurso exclusivo do VOY Premium');
+                setViewingDoc({ id: 'barrier', name: 'Premium Required', file_url: null, file_type: null } as any);
+                return;
+              }
+              setShowAddDialog(true);
+            }}
             size="sm"
             className="w-full md:w-auto rounded-xl gap-2 h-12 md:h-9"
           >

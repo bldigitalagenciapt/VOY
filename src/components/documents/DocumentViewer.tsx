@@ -7,8 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useProfile } from '@/hooks/useProfile';
 import { ShieldAlert, Sparkles } from 'lucide-react';
-import { PremiumWelcomeModal } from '../PremiumWelcomeModal';
-import { useSearchParams } from 'react-router-dom';
 
 interface DocumentViewerProps {
   isOpen: boolean;
@@ -63,16 +61,6 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [loadingUrl, setLoadingUrl] = useState(false);
   const { profile } = useProfile();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [showWelcome, setShowWelcome] = useState(false);
-
-  useEffect(() => {
-    if (searchParams.get('payment') === 'success') {
-      setShowWelcome(true);
-      searchParams.delete('payment');
-      setSearchParams(searchParams);
-    }
-  }, [searchParams]);
 
   const isPremium = profile?.plan_status === 'premium';
 
@@ -268,7 +256,6 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
             </div>
           )}
 
-          <PremiumWelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
         </div>
 
         <div className="p-4 border-t border-border flex gap-3">
