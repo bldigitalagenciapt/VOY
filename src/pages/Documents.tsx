@@ -80,11 +80,6 @@ export default function Documents() {
   };
 
   const onDrop = (acceptedFiles: File[]) => {
-    if (!isPremium) {
-      toast.error('Recurso exclusivo do VOY Premium');
-      setViewingDoc({ id: 'barrier', name: 'Premium Required', file_url: null, file_type: null } as any);
-      return;
-    }
     const file = acceptedFiles[0];
     if (file) {
       setSelectedFile(file);
@@ -306,14 +301,7 @@ export default function Documents() {
         <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
           <h1 className="text-2xl font-bold text-foreground text-center md:text-left">Meus Documentos</h1>
           <Button
-            onClick={() => {
-              if (!isPremium) {
-                toast.error('Recurso exclusivo do VOY Premium');
-                setViewingDoc({ id: 'barrier', name: 'Premium Required', file_url: null, file_type: null } as any);
-                return;
-              }
-              setShowAddDialog(true);
-            }}
+            onClick={() => setShowAddDialog(true)}
             size="sm"
             className="w-full md:w-auto rounded-xl gap-2 h-12 md:h-9"
           >
