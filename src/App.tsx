@@ -128,7 +128,7 @@ function AppRoutes() {
     <ErrorBoundary>
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
-          <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
+          <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
 
           {/* Onboarding Routes */}

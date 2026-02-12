@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
   const signUp = async (email: string, password: string, captchaToken?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/home`;
 
     const { error } = await supabase.auth.signUp({
       email,
