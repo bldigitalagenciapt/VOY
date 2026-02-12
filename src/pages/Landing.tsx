@@ -192,7 +192,6 @@ export default function Landing() {
                             COMEÇAR AGORA
                             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Button>
-                        <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-[0.2em]">Sem custos iniciais</p>
                     </div>
 
                     {/* Triple Mockup Hero */}
