@@ -83,7 +83,7 @@ export default function Home() {
     const handleCheckout = async () => {
       try {
         const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-          body: { user_id: profile?.user_id, user_email: profile?.user_profile }
+          body: { user_id: profile?.user_id, user_email: profile?.email }
         });
         if (error) throw error;
         if (data?.url) window.location.href = data.url;

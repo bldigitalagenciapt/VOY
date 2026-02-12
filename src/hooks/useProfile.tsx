@@ -23,6 +23,7 @@ export interface Profile {
   custom_quick_access?: { id: string; label: string; value: string }[] | null;
   plan_status?: string | null;
   payment_date?: string | null;
+  email?: string | null;
 }
 
 export function useProfile() {
