@@ -20,7 +20,7 @@ serve(async (req) => {
         const { user_id, user_email } = await req.json();
 
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card", "multibanco", "mbway"],
+            payment_method_types: ["card", "multibanco", "mb_way"],
             line_items: [
                 {
                     price_data: {

@@ -71,6 +71,8 @@ export default function Home() {
   const { documents } = useDocuments();
   const isPremium = profile?.plan_status === 'premium';
 
+  const { handleCheckout, loading: checkoutLoading } = useSubscription();
+
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
       setShowWelcome(true);
@@ -81,7 +83,6 @@ export default function Home() {
 
   // ─── PAYWALL: Full sales page for non-premium users ───
   if (profile && !isPremium && !profileLoading) {
-    const { handleCheckout, loading: checkoutLoading } = useSubscription();
 
     return (
       <MobileLayout>

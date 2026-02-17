@@ -18,7 +18,21 @@ export function useSubscription() {
 
         try {
             setLoading(true);
+
+            // Get current session to ensure we have a valid token
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError || !session) {
+                console.error('Session error:', sessionError);
+                throw new Error('Sessão inválida. Por favor, faça login novamente.');
+            }
+
+            console.log('[DEBUG] Calling stripe-checkout with token:', session.access_token.substring(0, 10) + '...');
+
             const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`
+                },
                 body: {
                     user_id: user.id,
                     user_email: user.email
