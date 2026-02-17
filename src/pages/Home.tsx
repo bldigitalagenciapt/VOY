@@ -56,7 +56,7 @@ type NumberField = 'nif' | 'niss' | 'sns' | 'passport';
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { profile, updateNumber, updateProfile, loading: profileLoading } = useProfile();
+  const { profile, updateNumber, updateProfile, loading: profileLoading, refetch } = useProfile();
   const { process: aimaProcess } = useAimaProcess();
   const { notes } = useNotes();
   const { userDocuments } = useUserDocuments();
@@ -76,13 +76,15 @@ export default function Home() {
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
       setShowWelcome(true);
+      refetch(); // Forçar atualização do perfil para verificar status premium
       searchParams.delete('success');
       setSearchParams(searchParams, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, refetch]);
 
   // ─── PAYWALL: Full sales page for non-premium users ───
-  if (profile && !isPremium && !profileLoading) {
+  // Só mostra o paywall se NÃO estiver mostrando o modal de boas-vindas
+  if (profile && !isPremium && !profileLoading && !showWelcome) {
 
     return (
       <MobileLayout>
