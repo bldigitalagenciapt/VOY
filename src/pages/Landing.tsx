@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSubscription } from '@/hooks/useSubscription';
 import appScreenshot from '../assets/app-screenshot.jpg';
 import logo from '../assets/logo.png';
 import {
@@ -38,6 +39,7 @@ export default function Landing() {
     const [showIosModal, setShowIosModal] = useState(false);
     const [isIos, setIsIos] = useState(false);
     const [activeFaq, setActiveFaq] = useState<number | null>(0);
+    const { handleCheckout, loading } = useSubscription();
 
     useEffect(() => {
         const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -362,12 +364,15 @@ export default function Landing() {
                                         </li>
                                     ))}
                                 </ul>
-                                <Button className={cn(
-                                    "w-full h-16 rounded-2xl font-black uppercase tracking-widest group",
-                                    p.popular ? "bg-white text-[#0066FF] hover:bg-slate-100" : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
-                                )}>
-                                    {p.price === "Grátis" ? "Explorar Agora" : "Assinar Agora"}
-                                    <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                <Button
+                                    onClick={() => p.price === "Grátis" ? navigate('/auth') : handleCheckout()}
+                                    disabled={loading}
+                                    className={cn(
+                                        "w-full h-16 rounded-2xl font-black uppercase tracking-widest group",
+                                        p.popular ? "bg-white text-[#0066FF] hover:bg-slate-100" : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
+                                    )}>
+                                    {loading ? "Processando..." : (p.price === "Grátis" ? "Explorar Agora" : "Assinar Agora")}
+                                    {!loading && <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                                 </Button>
                             </div>
                         ))}

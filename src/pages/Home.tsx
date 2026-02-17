@@ -42,6 +42,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { useNotes } from '@/hooks/useNotes';
 import { useUserDocuments } from '@/hooks/useUserDocuments';
 import { toast } from 'sonner';
@@ -80,18 +81,7 @@ export default function Home() {
 
   // ─── PAYWALL: Full sales page for non-premium users ───
   if (profile && !isPremium && !profileLoading) {
-    const handleCheckout = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-          body: { user_id: profile?.user_id, user_email: profile?.email }
-        });
-        if (error) throw error;
-        if (data?.url) window.location.href = data.url;
-      } catch (err) {
-        toast.error('Erro ao iniciar pagamento. Tente novamente.');
-        console.error('Checkout error:', err);
-      }
-    };
+    const { handleCheckout, loading: checkoutLoading } = useSubscription();
 
     return (
       <MobileLayout>
@@ -135,10 +125,11 @@ export default function Home() {
 
           <Button
             onClick={handleCheckout}
+            disabled={checkoutLoading}
             className="w-full max-w-sm h-16 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-black text-lg tracking-wider gap-3 shadow-xl shadow-blue-500/25 transition-all active:scale-[0.98]"
           >
-            <Sparkles className="w-5 h-5" />
-            DESBLOQUEAR TUDO — 19,90€
+            {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+            {checkoutLoading ? "PROCESSANDO..." : "DESBLOQUEAR TUDO — 19,90€"}
           </Button>
 
           <p className="mt-4 text-xs text-muted-foreground font-bold flex items-center gap-2">

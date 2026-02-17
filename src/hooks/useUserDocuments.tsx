@@ -16,17 +16,17 @@ export function useUserDocuments() {
     const queryClient = useQueryClient();
 
     const { data: userDocuments = [], isLoading: loading } = useQuery({
-        queryKey: ['user_documents', user?.id],
+        queryKey: ['documents', user?.id],
         queryFn: async () => {
             if (!user) return [];
 
             // Debugging connection as requested
             const baseUrl = import.meta.env.VITE_SUPABASE_URL;
-            console.log(`[DEBUG] Attempting fetch to: ${baseUrl}/rest/v1/user_documents?user_id=eq.${user.id}`);
+            console.log(`[DEBUG] Attempting fetch to: ${baseUrl}/rest/v1/documents?user_id=eq.${user.id}`);
 
             const { data, error } = await (supabase as any)
                 .schema('public')
-                .from('user_documents')
+                .from('documents')
                 .select('*')
                 .eq('user_id', user.id);
 
@@ -50,7 +50,7 @@ export function useUserDocuments() {
 
             const { data, error } = await (supabase as any)
                 .schema('public')
-                .from('user_documents')
+                .from('documents')
                 .upsert(
                     {
                         user_id: user.id,
@@ -75,7 +75,7 @@ export function useUserDocuments() {
             return data as UserDocument;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user_documents', user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['documents', user?.id] });
         },
         onError: (error: any) => {
             console.error('Error updating document status:', {
