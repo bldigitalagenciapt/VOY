@@ -41,12 +41,16 @@ serve(async (req) => {
                     .eq("user_id", userId);
 
                 if (error) {
-                    console.error("Error updating profile:", error);
-                    return new Response("Error updating profile", { status: 500 });
+                    console.error(`Error updating profile for user ${userId}:`, error);
+                    return new Response(JSON.stringify({ error: "Error updating profile", details: error }), { status: 500 });
                 }
 
-                console.log(`User ${userId} upgraded to premium.`);
+                console.log(`SUCCESS: User ${userId} upgraded to premium.`);
+            } else {
+                console.error("No user_id found in session.client_reference_id");
             }
+        } else {
+            console.log(`Received event type: ${event.type}`);
         }
 
         return new Response(JSON.stringify({ received: true }), {
