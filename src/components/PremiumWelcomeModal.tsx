@@ -36,37 +36,37 @@ export function PremiumWelcomeModal({ isOpen, onClose }: PremiumWelcomeModalProp
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md bg-[#161B22] border-white/10 text-white rounded-[2rem]">
-                <DialogHeader className="pt-8 flex flex-col items-center gap-4">
-                    <div className="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/20">
-                        <Trophy className="w-10 h-10 text-blue-500 animate-bounce" />
+            <DialogContent className="sm:max-w-md bg-[#161B22] border-white/10 text-white rounded-[2rem] max-h-[85vh] overflow-y-auto scrollbar-hide">
+                <DialogHeader className="pt-6 flex flex-col items-center gap-3">
+                    <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/20">
+                        <Trophy className="w-8 h-8 text-blue-500 animate-bounce" />
                     </div>
-                    <DialogTitle className="text-3xl font-black text-center leading-tight">
+                    <DialogTitle className="text-2xl font-black text-center leading-tight">
                         Bem-vindo ao <span className="text-blue-500">VOY Premium</span>!
                     </DialogTitle>
-                    <DialogDescription className="text-slate-400 text-center text-lg font-medium px-4">
+                    <DialogDescription className="text-slate-400 text-center text-sm font-medium px-4">
                         Seu acesso vitalício foi confirmado com sucesso. Prepare-se para uma experiência sem limites!
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="py-6 space-y-4">
+                <div className="py-4 space-y-2">
                     {[
                         "Documentos ilimitados liberados",
                         "Cofre criptografado ativado",
                         "Suporte VIP prioritário",
                         "Acesso Vitalício garantido"
                     ].map((text, i) => (
-                        <div key={i} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                        <div key={i} className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                             <p className="text-sm font-bold text-slate-200">{text}</p>
                         </div>
                     ))}
                 </div>
 
-                <DialogFooter className="pb-8 sm:justify-center">
+                <DialogFooter className="pb-6 sm:justify-center">
                     <Button
                         onClick={onClose}
-                        className="h-14 px-12 rounded-2xl bg-blue-600 hover:bg-blue-700 text-lg font-black shadow-lg shadow-blue-500/20 w-full"
+                        className="h-12 px-8 rounded-2xl bg-blue-600 hover:bg-blue-700 text-base font-black shadow-lg shadow-blue-500/20 w-full"
                     >
                         VAMOS COMEÇAR!
                     </Button>
