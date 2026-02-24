@@ -132,7 +132,7 @@ export default function Landing() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#0A0D14] text-white font-['Inter'] selection:bg-blue-500/30 selection:text-white overflow-x-hidden">
+        <div className="dark min-h-screen bg-[#0A0D14] text-white font-['Inter'] selection:bg-blue-500/30 selection:text-white overflow-x-hidden">
             {/* Nav */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-[#0A0D14]/80 backdrop-blur-xl border-b border-white/5">
                 <div className="max-w-7xl mx-auto px-6 h-20 md:h-24 flex items-center justify-between">
@@ -145,7 +145,7 @@ export default function Landing() {
                             <a key={item} href={`#${item.toLowerCase()}`} className="text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-widest">{item}</a>
                         ))}
                         <div className="h-4 w-[1px] bg-white/10 mx-2" />
-                        <Button onClick={() => navigate('/auth')} variant="ghost" className="text-xs font-bold text-white hover:bg-white/5 uppercase tracking-widest">Login</Button>
+                        <Button onClick={() => navigate('/auth')} variant="ghost" className="text-xs font-bold uppercase tracking-widest hover:bg-white/5">Login</Button>
                         <Button onClick={handleInstallClick} className="bg-[#0066FF] hover:bg-blue-600 rounded-lg px-6 text-xs font-black uppercase tracking-widest h-11">Instalar</Button>
                     </nav>
 
@@ -163,7 +163,7 @@ export default function Landing() {
                             <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setIsMenuOpen(false)} className="text-2xl font-black text-white py-2 border-b border-white/5">{item}</a>
                         ))}
                         <div className="grid grid-cols-1 gap-4 mt-8">
-                            <Button onClick={() => navigate('/auth')} variant="outline" className="h-14 font-black rounded-xl border-white/10">LOGIN</Button>
+                            <Button onClick={() => navigate('/auth')} variant="outline" className="h-14 font-black rounded-xl border-white/10 hover:bg-white/5">LOGIN</Button>
                             <Button onClick={handleInstallClick} className="h-14 bg-[#0066FF] font-black rounded-xl text-white">INSTALAR APP</Button>
                         </div>
                     </nav>
