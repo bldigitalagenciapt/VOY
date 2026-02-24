@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Shield, ShieldCheck, Sparkles, ShieldAlert } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 const defaultCategories = [
@@ -59,6 +60,7 @@ export default function Documents() {
   const { documents, loading: docsLoading, addDocument, updateDocument, deleteDocument } = useDocuments();
   const { categories: customCategories, loading: catsLoading } = useCategories();
   const { profile } = useProfile();
+  const { user } = useAuth();
   const isPremium = profile?.plan_status === 'premium';
   const location = useLocation();
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -184,8 +186,21 @@ export default function Documents() {
   if (!isPremium) {
     const handleCheckout = async () => {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session) {
+          toast.error('Sessão expirada. Por favor, faça login novamente.');
+          return;
+        }
+
         const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-          body: { user_id: profile?.user_id, user_email: profile?.user_profile }
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: {
+            user_id: user?.id,
+            user_email: user?.email
+          }
         });
         if (error) throw error;
         if (data?.url) window.location.href = data.url;
