@@ -9,21 +9,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import {
-    ChevronLeft,
-    Plus,
-    TrendingUp,
-    TrendingDown,
-    Wallet,
-    Trash2,
-    Loader2,
-    ArrowUpCircle,
-    ArrowDownCircle,
-    PieChart as PieChartIcon
+import { 
+    ChevronLeft, 
+    Plus, 
+    TrendingUp, 
+    TrendingDown, 
+    Wallet, 
+    Trash2, 
+    Loader2, 
+    ArrowUpCircle, 
+    ArrowDownCircle, 
+    PieChart as PieChartIcon,
+    Calendar as CalendarIcon,
+    Bell,
+    CheckCircle2,
+    Clock,
+    AlertCircle,
+    Repeat
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface Transaction {
     id: string;
@@ -31,6 +44,9 @@ interface Transaction {
     categoria: string;
     tipo: 'entrada' | 'saida';
     data: string;
+    due_date?: string;
+    is_recurring?: boolean;
+    status?: 'pago' | 'pendente';
 }
 
 const EXPENSE_CATEGORIES = [
@@ -55,6 +71,9 @@ export default function MeuBolso() {
     const [newVal, setNewVal] = useState('');
     const [newCat, setNewCat] = useState('Outros');
     const [newTipo, setNewTipo] = useState<'entrada' | 'saida'>('saida');
+    const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+    const [isRecurring, setIsRecurring] = useState(false);
+    const [isPending, setIsPending] = useState(false);
 
     // Reset category when switching type to avoid invalid selections
     const handleTipoChange = (tipo: 'entrada' | 'saida') => {
@@ -89,7 +108,10 @@ export default function MeuBolso() {
                 valor: parseFloat(newVal),
                 categoria: newCat,
                 tipo: newTipo,
-                data: new Date().toISOString()
+                data: new Date().toISOString(),
+                due_date: dueDate ? dueDate.toISOString() : null,
+                is_recurring: isRecurring,
+                status: isPending ? 'pendente' : 'pago'
             });
 
         if (!error) {
@@ -98,6 +120,9 @@ export default function MeuBolso() {
             setShowAddDialog(false);
             setNewVal('');
             setNewCat('Outros');
+            setDueDate(undefined);
+            setIsRecurring(false);
+            setIsPending(false);
         } else {
             toast.error("Erro ao salvar.");
         }
@@ -112,6 +137,19 @@ export default function MeuBolso() {
         }
     };
 
+    const handleToggleStatus = async (transaction: Transaction) => {
+        const newStatus = transaction.status === 'pago' ? 'pendente' : 'pago';
+        const { error } = await supabase
+            .from('transactions')
+            .update({ status: newStatus })
+            .eq('id', transaction.id);
+
+        if (!error) {
+            toast.success(newStatus === 'pago' ? "Marcado como pago" : "Marcado como pendente");
+            setTransactions(prev => prev.map(t => t.id === transaction.id ? { ...t, status: newStatus } : t));
+        }
+    };
+
     const totals = transactions.reduce((acc, t) => {
         if (t.tipo === 'entrada') acc.entrada += Number(t.valor);
         else acc.saida += Number(t.valor);
@@ -123,9 +161,19 @@ export default function MeuBolso() {
     const chartData = EXPENSE_CATEGORIES.map(cat => ({
         name: cat,
         value: transactions
-            .filter(t => t.categoria === cat && t.tipo === 'saida')
+            .filter(t => t.categoria === cat && t.tipo === 'saida' && t.status !== 'pendente') // Only show paid or non-status expenses in chart
             .reduce((sum, t) => sum + Number(t.valor), 0)
     })).filter(d => d.value > 0);
+
+    const pendingTransactions = transactions.filter(t => t.status === 'pendente');
+    const upcomingExpenses = pendingTransactions.filter(t => {
+        if (!t.due_date) return false;
+        const due = new Date(t.due_date);
+        const today = new Date();
+        const diffTime = due.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 5; // Alert for next 5 days
+    });
 
     return (
         <MobileLayout showNav={false}>
@@ -141,6 +189,41 @@ export default function MeuBolso() {
                     <h1 className="text-2xl font-bold text-foreground">Meu Bolso</h1>
                 </div>
 
+                {/* Alerts Section */}
+                {upcomingExpenses.length > 0 && (
+                    <div className="mb-6 space-y-3">
+                        {upcomingExpenses.map(expense => {
+                            const isOverdue = new Date(expense.due_date!) < new Date();
+                            return (
+                                <Alert key={expense.id} variant={isOverdue ? "destructive" : "default"} className="rounded-2xl border-none bg-opacity-10 bg-current">
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn(
+                                            "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                                            isOverdue ? "bg-destructive/20 text-destructive" : "bg-primary/20 text-primary"
+                                        )}>
+                                            {isOverdue ? <AlertCircle className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
+                                        </div>
+                                        <AlertDescription className="flex-1 text-xs font-medium">
+                                            <span className="font-bold block text-sm">
+                                                {isOverdue ? 'Atrasado: ' : 'Vencendo logo: '} {expense.categoria}
+                                            </span>
+                                            Vencimento: {format(new Date(expense.due_date!), "dd 'de' MMMM", { locale: ptBR })}
+                                        </AlertDescription>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-8 rounded-lg text-[10px] font-bold"
+                                            onClick={() => handleToggleStatus(expense)}
+                                        >
+                                            Pagar
+                                        </Button>
+                                    </div>
+                                </Alert>
+                            );
+                        })}
+                    </div>
+                )}
+
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 gap-4 mb-8">
                     <Card className="p-6 bg-gradient-to-br from-primary to-primary/80 border-none shadow-xl shadow-primary/20 text-white">
@@ -149,6 +232,12 @@ export default function MeuBolso() {
                             <Wallet className="w-5 h-5 opacity-80" />
                         </div>
                         <div className="text-3xl font-bold">€ {saldo.toFixed(2)}</div>
+                        {pendingTransactions.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-[10px] opacity-90">
+                                <span>Comprometido (Pendentes):</span>
+                                <span className="font-bold">€ {pendingTransactions.reduce((acc, t) => acc + Number(t.valor), 0).toFixed(2)}</span>
+                            </div>
+                        )}
                     </Card>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -215,20 +304,32 @@ export default function MeuBolso() {
                         ) : (
                             transactions.map((t) => (
                                 <div key={t.id} className="flex items-center gap-4 p-4 bg-card border rounded-2xl group active:scale-95 transition-all">
-                                    <div className={cn(
-                                        "w-10 h-10 rounded-xl flex items-center justify-center",
-                                        t.tipo === 'entrada' ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
+                                    <div 
+                                        onClick={() => handleToggleStatus(t)}
+                                        className={cn(
+                                        "w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-transform hover:scale-110",
+                                        t.status === 'pendente' ? "bg-muted text-muted-foreground" : (t.tipo === 'entrada' ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive")
                                     )}>
-                                        {t.tipo === 'entrada' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                                        {t.status === 'pendente' ? <Clock className="w-5 h-5" /> : (t.tipo === 'entrada' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />)}
                                     </div>
                                     <div className="flex-1">
-                                        <p className="font-bold text-sm">{t.categoria}</p>
-                                        <p className="text-[10px] text-muted-foreground">
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-bold text-sm">{t.categoria}</p>
+                                            {t.is_recurring && <Repeat className="w-3 h-3 text-primary" />}
+                                            {t.status === 'pendente' && <Badge variant="outline" className="text-[8px] h-4 py-0 border-destructive/30 text-destructive bg-destructive/5">Pendente</Badge>}
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                                             {new Date(t.data).toLocaleDateString('pt-BR')}
+                                            {t.due_date && (
+                                                <span className="flex items-center gap-1 before:content-['•'] before:mx-1">
+                                                    Vence {format(new Date(t.due_date), "dd/MM")}
+                                                </span>
+                                            )}
                                         </p>
                                     </div>
-                                    <div className={cn("font-bold text-sm", t.tipo === 'entrada' ? "text-success" : "text-destructive")}>
-                                        {t.tipo === 'entrada' ? '+' : '-'} € {Number(t.valor).toFixed(2)}
+                                    <div className={cn("font-bold text-sm text-right", t.status === 'pendente' ? "text-muted-foreground" : (t.tipo === 'entrada' ? "text-success" : "text-destructive"))}>
+                                        <p>{t.tipo === 'entrada' ? '+' : '-'} € {Number(t.valor).toFixed(2)}</p>
+                                        {t.status === 'pendente' && <p className="text-[10px] font-normal underline cursor-pointer" onClick={() => handleToggleStatus(t)}>Marcar pago</p>}
                                     </div>
                                     <button onClick={() => handleDelete(t.id)} className="p-2 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all">
                                         <Trash2 className="w-4 h-4" />
@@ -280,6 +381,57 @@ export default function MeuBolso() {
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            {newTipo === 'saida' && (
+                                <div className="space-y-4 p-4 bg-muted/30 rounded-2xl border border-dashed">
+                                    <div className="flex items-center justify-between">
+                                        <div className="space-y-0.5">
+                                            <Label className="text-sm font-bold">Pagamento Pendente</Label>
+                                            <p className="text-[10px] text-muted-foreground">Registar agora e pagar depois</p>
+                                        </div>
+                                        <Switch checked={isPending} onCheckedChange={setIsPending} />
+                                    </div>
+
+                                    {isPending && (
+                                        <>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs">Data de Vencimento</Label>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            className={cn(
+                                                                "w-full h-10 rounded-xl justify-start text-left font-normal",
+                                                                !dueDate && "text-muted-foreground"
+                                                            )}
+                                                        >
+                                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                                            {dueDate ? format(dueDate, "PPP", { locale: ptBR }) : <span>Selecionar data</span>}
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0 rounded-2xl" align="start">
+                                                        <Calendar
+                                                            mode="single"
+                                                            selected={dueDate}
+                                                            onSelect={setDueDate}
+                                                            initialFocus
+                                                            locale={ptBR}
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <div className="space-y-0.5">
+                                                    <Label className="text-sm font-bold">Repetir Mensalmente</Label>
+                                                    <p className="text-[10px] text-muted-foreground">Despesa fixa recorrente</p>
+                                                </div>
+                                                <Switch checked={isRecurring} onCheckedChange={setIsRecurring} />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
 
                             <Button onClick={handleAdd} disabled={saving || !newVal} className="w-full h-12 rounded-xl font-bold">
                                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Registrar'}
