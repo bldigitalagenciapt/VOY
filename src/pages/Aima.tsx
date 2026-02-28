@@ -20,8 +20,21 @@ import {
   Globe,
   Trash2,
   FileText,
-  RefreshCw
+  RefreshCw,
+  ExternalLink,
+  HelpCircle,
+  Coins,
+  ShieldCheck,
+  ChevronDown
 } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from '@/components/ui/accordion';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,10 +55,10 @@ const MOTIVATIONAL_PHRASES = [
 ];
 
 export const processTypes = [
-  { id: 'cplp', title: 'CPLP', icon: Globe, description: 'Autorização de Residência CPLP' },
-  { id: 'manifestation', title: 'Manifestação de Interesse', icon: FileText, description: 'Artigo 88º e 89º' },
+  { id: 'visto', title: 'Visto Consular', icon: Plane, description: 'Para quem entrou com visto de residência' },
+  { id: 'cplp', title: 'CPLP', icon: Globe, description: 'Portal Digital para cidadãos da CPLP' },
+  { id: 'familiar', title: 'Familiar', icon: Users, description: 'Reagrupamento de familiares em Portugal' },
   { id: 'renewal', title: 'Renovação', icon: RefreshCw, description: 'Renovação de Título de Residência' },
-  { id: 'visa', title: 'Vistos', icon: Plane, description: 'Vistos de Longa Duração (D1-D9)' },
 ];
 
 import { LucideIcon } from 'lucide-react';
@@ -59,52 +72,126 @@ const visaIcons: Record<string, LucideIcon> = {
 };
 
 const getStepsForProcess = (type: string) => {
-  const steps: Record<string, { id: string; title: string }[]> = {
+  const steps: Record<string, any[]> = {
     cplp: [
-      { id: 'nif', title: 'Obter NIF' },
-      { id: 'niss', title: 'Obter NISS' },
-      { id: 'junta', title: 'Atestado da Junta de Freguesia' },
-      { id: 'utente', title: 'Número de Utente' },
-      { id: '1', title: 'Reunir documentos do país de origem' },
-      { id: '2', title: 'Agendar marcação AIMA' },
-      { id: '3', title: 'Comparecer à entrevista' },
-      { id: '4', title: 'Aguardar decisão' },
-      { id: '5', title: 'Recolher título de residência' },
+      {
+        id: 'nif',
+        title: 'Obter NIF',
+        description: 'Número de Identificação Fiscal essencial para viver em Portugal.',
+        voyTip: 'Pode ser pedido presencialmente nas Finanças ou online através de representantes.',
+        documents: ['Passaporte', 'Comprovativo de Morada (Origem ou PT)'],
+        actionLink: 'https://www.portaldasfinancas.gov.pt/',
+        cost: 'Gratuito (no balcão)'
+      },
+      {
+        id: 'niss',
+        title: 'Obter NISS',
+        description: 'Número de Identificação de Segurança Social.',
+        voyTip: 'O NISS na hora agora pode ser pedido online pelo portal da Segurança Social Direta.',
+        documents: ['Passaporte', 'NIF'],
+        actionLink: 'https://www.seg-social.pt/pedido-de-formulario-niss-na-hora',
+        cost: 'Gratuito'
+      },
+      {
+        id: 'junta',
+        title: 'Atestado da Junta',
+        description: 'Comprovativo de morada oficial da sua freguesia.',
+        voyTip: 'Precisa de 2 testemunhas que morem na mesma freguesia (algumas juntas aceitam contrato de arrendamento).',
+        documents: ['Passaporte', 'NIF', '2 Testemunhas ou Contrato'],
+        cost: '€5 - €15 (média)'
+      },
+      {
+        id: 'portal_cplp',
+        title: 'Pedido no Portal CPLP',
+        description: 'Submissão digital do pedido de autorização de residência.',
+        voyTip: 'Atenção: Este portal é exclusivo para quem já tem NIF/NISS e manifestação/visto anterior ou entrada legal.',
+        documents: ['Certidão de Antecedentes Criminais', 'NIF', 'NISS'],
+        actionLink: 'https://cplp.aima.gov.pt/',
+        cost: 'Taxa zero para alguns países (verificar DUC)'
+      },
+      {
+        id: 'duc_cplp',
+        title: 'Pagamento DUC',
+        description: 'Documento Único de Cobrança para emissão do título.',
+        voyTip: 'O documento chega por e-mail após a submissão no portal. Pague nas Finanças ou Multibanco.',
+        documents: ['Guia DUC'],
+        cost: '€15 (emissão básica)'
+      },
+      {
+        id: 'certificado',
+        title: 'Certificado Digital',
+        description: 'Download do título de residência digital.',
+        voyTip: 'O certificado digital tem validade legal imediata enquanto o cartão físico não chega.',
+        documents: ['Login Portal AIMA'],
+        actionLink: 'https://cplp.aima.gov.pt/',
+        cost: 'Incluído'
+      }
     ],
-    manifestation: [
-      { id: 'nif', title: 'Obter NIF' },
-      { id: 'niss', title: 'Obter NISS' },
-      { id: 'junta', title: 'Atestado da Junta de Freguesia' },
-      { id: 'utente', title: 'Número de Utente' },
-      { id: '1', title: 'Verificar elegibilidade' },
-      { id: '2', title: 'Reunir contrato de trabalho' },
-      { id: '4', title: 'Submeter manifestação de interesse' },
-      { id: '5', title: 'Aguardar convocação' },
-      { id: '6', title: 'Comparecer à AIMA' },
+    visto: [
+      {
+        id: 'nif',
+        title: 'Obter NIF',
+        description: 'Número Fiscal.',
+        voyTip: 'Se já tem NIF no visto, verifique se está ativo.',
+        documents: ['Passaporte', 'Visto'],
+        cost: 'Gratuito'
+      },
+      {
+        id: 'niss',
+        title: 'Obter NISS',
+        description: 'Segurança Social.',
+        voyTip: 'Muitos vistos D agora já trazem o NISS associado.',
+        documents: ['Passaporte', 'Visto'],
+        cost: 'Gratuito'
+      },
+      {
+        id: 'junta',
+        title: 'Atestado da Junta',
+        description: 'Confirmar morada em Portugal.',
+        voyTip: 'Essencial para a entrevista na AIMA.',
+        documents: ['Passaporte', 'Contrato ou Testemunhas'],
+        cost: '€5 - €15'
+      },
+      {
+        id: 'agendamento_automatico',
+        title: 'Validar Agendamento',
+        description: 'Verificar o agendamento automático no verso do visto.',
+        voyTip: 'Consulte a URL no selo do visto ou o portal da AIMA para confirmar dia e hora.',
+        documents: ['Passaporte com Visto'],
+        actionLink: 'https://aima.gov.pt/',
+        cost: 'Gratuito'
+      },
+      {
+        id: 'ida_aima',
+        title: 'Ida à AIMA',
+        description: 'Entrevista presencial para recolha de dados biométricos.',
+        voyTip: 'Leve todos os originais! Chegue 15 min antes.',
+        documents: ['Passaporte', 'Comprovativo de Morada', 'Meios de Subsistência'],
+        cost: 'Taxa variável (verificar DUC)'
+      },
+      {
+        id: 'recebimento_cartao',
+        title: 'Recebimento do Cartão',
+        description: 'Entrega do Título de Residência físico na sua morada.',
+        voyTip: 'Garanta que o seu nome está na caixa de correio para evitar devolução.',
+        cost: 'Taxa de envio incluída'
+      }
+    ],
+    familiar: [
+      { id: 'prep', title: 'Preparação Documental', voyTip: 'Certidões de nascimento/casamento devem ser apostiladas.', cost: 'Variável' },
+      { id: 'agendamento', title: 'Agendamento AIMA', voyTip: 'Feito por telefone ou portal quando abrem vagas.', actionLink: 'https://aima.gov.pt/' },
+      { id: 'meios', title: 'Meios de Subsistência', voyTip: 'O reagrupante deve provar que pode sustentar a família.', cost: 'Salário Mínimo + Percentagens' },
+      { id: 'entrevista', title: 'Entrevista Familiar', voyTip: 'Presença de todos os membros é obrigatória.', cost: 'Taxas AIMA' },
+      { id: 'cartao', title: 'Recebimento do Titulo', voyTip: 'Enviado por correio registado.', cost: 'Incluído' }
     ],
     renewal: [
-      { id: 'nif', title: 'Verificar NIF' },
-      { id: 'junta', title: 'Atualizar Junta de Freguesia' },
-      { id: '1', title: 'Verificar validade do título atual' },
-      { id: '2', title: 'Reunir documentos atualizados' },
-      { id: '3', title: 'Agendar renovação' },
-      { id: '4', title: 'Pagar taxas' },
-      { id: '5', title: 'Aguardar novo título' },
-    ],
-    visa: [
-      { id: '1', title: 'Escolher tipo de visto' },
-      { id: '2', title: 'Preencher formulário de pedido' },
-      { id: '3', title: 'Reunir documentação' },
-      { id: '4', title: 'Agendar entrega (VFS/Consulado)' },
-      { id: '5', title: 'Aguardar processamento' },
-    ],
+      { id: '1', title: 'Verificar Validade', voyTip: 'Inicie o processo 60-90 dias antes de vencer.' },
+      { id: '2', title: 'Documentos Atualizados', voyTip: 'Certidões criminais muitas vezes precisam ser renovadas.' },
+      { id: '3', title: 'Agendar/Pedido Online', actionLink: 'https://aima.gov.pt/' },
+      { id: '4', title: 'Pagar Taxas' },
+      { id: '5', title: 'Aguardar Novo Título' }
+    ]
   };
-
-  // Map specific visa IDs to the generic visa steps
-  if (['study', 'work', 'job-seeking', 'residence', 'schengen'].includes(type)) {
-    return steps.visa;
-  }
-
   return steps[type] || [];
 };
 
@@ -462,7 +549,15 @@ export default function Aima() {
           <p className="text-muted-foreground mb-8 text-center md:text-left">Qual é o seu processo?</p>
 
           <div className="space-y-4 mb-8">
-            {processTypes.map((processType, index) => {
+            <Tabs defaultValue="visto" className="w-full" onValueChange={handleSelectProcess}>
+              <TabsList className="grid grid-cols-3 h-12 bg-muted/50 rounded-xl p-1">
+                <TabsTrigger value="visto" className="rounded-lg text-xs font-bold">Visto</TabsTrigger>
+                <TabsTrigger value="cplp" className="rounded-lg text-xs font-bold">CPLP</TabsTrigger>
+                <TabsTrigger value="familiar" className="rounded-lg text-xs font-bold">Familiar</TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            {processTypes.filter(p => p.id !== 'renewal').map((processType, index) => {
               const Icon = processType.icon;
               return (
                 <button
@@ -595,67 +690,118 @@ export default function Aima() {
           </div>
         </div>
 
-        {/* Professional Vertical Timeline */}
+        {/* Timeline with Accordion */}
         <div className="mb-10">
           <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-6 px-1">
-            Linha do Tempo
+            Meu Caminho em Portugal
           </h2>
-          <div className="space-y-0 ml-4 border-l-2 border-muted">
+
+          <Accordion type="single" collapsible className="space-y-4">
             {steps.map((step, index) => {
               const isCompleted = completedSteps.includes(step.id);
               const isNext = !isCompleted && (index === 0 || completedSteps.includes(steps[index - 1].id));
 
               return (
-                <div key={step.id} className="relative pb-8 pl-8 group">
-                  {/* Timeline Node */}
-                  <div className={cn(
-                    "absolute left-[-11px] top-0 w-5 h-5 rounded-full border-4 transition-all duration-300 z-10",
-                    isCompleted
-                      ? "bg-success border-[#fff] shadow-[0_0_0_2px_rgba(34,197,94,0.3)]"
-                      : isNext
-                        ? "bg-card border-primary animate-pulse shadow-[0_0_15px_rgba(var(--primary),0.2)]"
-                        : "bg-card border-muted"
-                  )}>
-                    {isCompleted && <Check className="w-3 h-3 text-white absolute inset-0 m-auto" />}
-                  </div>
-
-                  {/* Content Card */}
-                  <button
-                    onClick={() => handleToggleStep(step.id)}
-                    className={cn(
-                      'w-full text-left p-4 rounded-2xl border transition-all duration-200',
-                      isCompleted
-                        ? 'bg-success/5 border-success/20 opacity-80'
-                        : isNext
-                          ? 'bg-card border-primary/50 shadow-md scale-[1.02]'
-                          : 'bg-card border-border hover:border-primary/20'
-                    )}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={cn(
-                        "text-xs font-bold tracking-tighter uppercase",
-                        isCompleted ? "text-success" : isNext ? "text-primary" : "text-muted-foreground"
-                      )}>
-                        Etapa {index + 1}
-                      </span>
-                      {isCompleted && <span className="text-[10px] bg-success/20 text-success px-2 py-0.5 rounded-full font-bold">Concluído</span>}
+                <AccordionItem
+                  key={step.id}
+                  value={step.id}
+                  className={cn(
+                    "border rounded-2xl overflow-hidden transition-all duration-300",
+                    isCompleted ? "bg-success/5 border-success/20" : isNext ? "border-primary/50 shadow-md bg-card" : "bg-card border-border"
+                  )}
+                >
+                  <AccordionTrigger className="px-5 hover:no-underline">
+                    <div className="flex items-center gap-4 text-left">
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleStep(step.id);
+                        }}
+                        className={cn(
+                          "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0",
+                          isCompleted ? "bg-success border-success text-white" : "border-muted-foreground/30"
+                        )}
+                      >
+                        {isCompleted && <Check className="w-4 h-4 stroke-[3px]" />}
+                      </div>
+                      <div>
+                        <p className={cn(
+                          "text-[10px] font-black uppercase tracking-tighter",
+                          isCompleted ? "text-success" : isNext ? "text-primary" : "text-muted-foreground"
+                        )}>Etapa {index + 1}</p>
+                        <h3 className={cn(
+                          "font-bold text-base leading-tight",
+                          isCompleted && "text-muted-foreground/70"
+                        )}>{step.title}</h3>
+                      </div>
                     </div>
-                    <span className={cn(
-                      'block font-semibold text-lg leading-tight',
-                      isCompleted && 'text-muted-foreground'
-                    )}>
-                      {step.title}
-                    </span>
-                    {isNext && (
-                      <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                        <ArrowLeft className="w-3 h-3 rotate-180" /> Clique para concluir esta etapa
-                      </p>
-                    )}
-                  </button>
-                </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-5 pb-5">
+                    <div className="space-y-4 pt-2">
+                      {step.description && (
+                        <p className="text-sm text-foreground/80 leading-relaxed">{step.description}</p>
+                      )}
+
+                      {/* VOY TIPS */}
+                      {step.voyTip && (
+                        <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 flex gap-3">
+                          <HelpCircle className="w-5 h-5 text-primary shrink-0" />
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black text-primary uppercase">Dica VOY</p>
+                            <p className="text-xs text-foreground/90 italic">"{step.voyTip}"</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* What to bring */}
+                      {step.documents && step.documents.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase flex items-center gap-2">
+                            <ShieldCheck className="w-3 h-3" /> O que levar / Preparar
+                          </p>
+                          <div className="grid grid-cols-1 gap-2">
+                            {step.documents.map((doc: string, dIdx: number) => (
+                              <div key={dIdx} className="flex items-center gap-2 bg-muted/40 p-2 rounded-lg">
+                                <div className="w-1 h-1 rounded-full bg-primary" />
+                                <span className="text-xs font-medium">{doc}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Cost */}
+                      {step.cost && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Coins className="w-3 h-3" />
+                          <span>Custo estimado: <strong className="text-foreground">{step.cost}</strong></span>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          className="flex-1 h-10 rounded-xl text-xs font-bold"
+                          onClick={() => handleToggleStep(step.id)}
+                        >
+                          {isCompleted ? 'Desmarcar Concluído' : 'Marcar como Feito'}
+                        </Button>
+                        {step.actionLink && (
+                          <Button
+                            variant="outline"
+                            className="h-10 px-4 rounded-xl border-primary text-primary hover:bg-primary/10"
+                            onClick={() => window.open(step.actionLink, '_blank')}
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
               );
             })}
-          </div>
+          </Accordion>
         </div>
 
         {/* Documentation Checklist for Visas (Dynamic) */}
