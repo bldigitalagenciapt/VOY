@@ -180,7 +180,7 @@ export default function Profile() {
                 <img
                   src={profile.signedAvatarUrl || profile.avatar_url || ''}
                   alt="Foto"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-center"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                     const parent = (e.target as HTMLImageElement).parentElement;

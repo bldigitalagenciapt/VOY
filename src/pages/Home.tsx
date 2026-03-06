@@ -211,10 +211,10 @@ export default function Home() {
             <div className="w-12 h-12 rounded-full p-0.5 bg-gradient-to-br from-primary to-blue-400">
               <div className="w-full h-full rounded-full border-2 border-background overflow-hidden bg-muted flex items-center justify-center">
                 {profile?.signedAvatarUrl || profile?.avatar_url ? (
-                  <img 
-                    src={profile.signedAvatarUrl || profile.avatar_url || ''} 
-                    alt="Foto" 
-                    className="w-full h-full object-cover"
+                  <img
+                    src={profile.signedAvatarUrl || profile.avatar_url || ''}
+                    alt="Foto"
+                    className="w-full h-full object-cover object-center"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                       const parent = (e.target as HTMLImageElement).parentElement;
