@@ -60,9 +60,8 @@ interface AppContextType {
 import pt from '../i18n/locales/pt.json';
 import en from '../i18n/locales/en.json';
 
-const translations: Record<Language, Record<string, string>> = { pt, en };
-
 const AppContext = createContext<AppContextType | undefined>(undefined);
+const translations: Record<string, any> = { pt, en };
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -91,14 +90,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (profile) {
+      // Only set language from profile if we don't have a saved preference in localStorage
+      // or if we want to sync it initially. To avoid the toggle-back bug, we check
+      // if the current local state is different from profile.
+      const savedLang = localStorage.getItem('voy-language');
+
       if (profile.language && (profile.language === 'pt' || profile.language === 'en')) {
         const profileLang = profile.language as Language;
-        setLanguageState(profileLang);
-        localStorage.setItem('voy-language', profileLang);
+
+        // Sync with profile only if no local preference exists yet
+        if (!savedLang) {
+          setLanguageState(profileLang);
+          localStorage.setItem('voy-language', profileLang);
+        }
       }
 
-      // If user has a profile type selected (Steps 1-3), we consider onboarding sufficiently advanced/complete
-      // to avoid restarting the flow.
       if (profile.user_profile) {
         setUserProfile(profile.user_profile as UserProfile);
         setHasCompletedOnboarding(true);
@@ -106,9 +112,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [profile]);
 
-  const t = (key: string): string => {
-    return translations[language][key] || key;
-  };
+  const t = React.useCallback((key: string): string => {
+    const data = translations[language] || translations['pt'];
+    return data[key] || key;
+  }, [language]);
 
   const addDocument = (doc: Document) => {
     setDocuments((prev) => [...prev, doc]);

@@ -102,20 +102,20 @@ export default function Home() {
           </div>
 
           <h1 className="text-[1.6rem] font-black text-foreground leading-tight mb-3 max-w-xs tracking-tight">
-            Tenha seu cofre digital de imigrante por apenas{' '}
+            {t('paywall.title')}{' '}
             <span className="text-blue-500">19,90€</span>
           </h1>
 
           <p className="text-sm text-muted-foreground font-medium mb-8 max-w-[280px]">
-            Pagamento único. Acesso vitalício. Sem mensalidades.
+            {t('paywall.subtitle')}
           </p>
 
           <div className="w-full max-w-sm space-y-3 mb-8">
             {[
-              { icon: Upload, text: 'Uploads ilimitados de documentos', sub: 'PDF, fotos, scans e mais' },
-              { icon: ShieldCheck, text: 'Cofre criptografado', sub: 'Seus documentos seguros e privados' },
-              { icon: Bell, text: 'Alertas de validade', sub: 'Nunca perca um prazo importante' },
-              { icon: FileText, text: 'Acesso vitalício garantido', sub: 'Pague uma vez, use para sempre' },
+              { icon: Upload, text: t('paywall.benefit1'), sub: t('paywall.benefit1.sub') },
+              { icon: ShieldCheck, text: t('paywall.benefit2'), sub: t('paywall.benefit2.sub') },
+              { icon: Bell, text: t('paywall.benefit3'), sub: t('paywall.benefit3.sub') },
+              { icon: FileText, text: t('paywall.benefit4'), sub: t('paywall.benefit4.sub') },
             ].map((benefit, i) => (
               <div key={i} className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border text-left">
                 <div className="w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
@@ -135,12 +135,12 @@ export default function Home() {
             className="w-full max-w-sm h-16 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-black text-lg tracking-wider gap-3 shadow-xl shadow-blue-500/25 transition-all active:scale-[0.98]"
           >
             {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-            {checkoutLoading ? "PROCESSANDO..." : "DESBLOQUEAR TUDO — 19,90€"}
+            {checkoutLoading ? t('paywall.processing') : t('paywall.button')}
           </Button>
 
           <p className="mt-4 text-xs text-muted-foreground font-bold flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            Garantia de reembolso de 7 dias
+            {t('paywall.guarantee')}
           </p>
         </div>
       </MobileLayout>
@@ -161,11 +161,11 @@ export default function Home() {
           );
           await updateProfile({ custom_quick_access: updatedBlocks });
         }
-        toast.success(`${getDialogTitle(showNumberDialog)} atualizado!`);
+        toast.success(`${getDialogTitle(showNumberDialog)} ${t('toast.save.success')}`);
         setShowNumberDialog(null);
         setTempNumber('');
       } catch (error) {
-        toast.error('Erro ao salvar número.');
+        toast.error(t('toast.save.error'));
       } finally {
         setSaving(false);
       }
@@ -559,27 +559,22 @@ export default function Home() {
                 className="flex-1 h-14 rounded-full font-bold border-border"
                 disabled={saving}
               >
-                Cancelar
+                {t('cancel')}
               </Button>
               <Button
                 onClick={handleSaveNumber}
                 className="flex-1 h-14 rounded-full font-black bg-primary text-white"
                 disabled={saving}
               >
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Salvar'}
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : t('save')}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-    </div>
 
-      {/* Emergency Modal */ }
-  <EmergencyModal open={showEmergency} onOpenChange={setShowEmergency} />
-
-  {/* Premium Welcome Modal */ }
-  <PremiumWelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
-
-    </MobileLayout >
+      <EmergencyModal open={showEmergency} onOpenChange={setShowEmergency} />
+      <PremiumWelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
+    </MobileLayout>
   );
 }

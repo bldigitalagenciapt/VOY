@@ -63,7 +63,7 @@ export function CommunityCard({ className }: CommunityCardProps) {
             toast.success(t('community.button')); // or a specific success toast key if preferred, but user said translate principal items
             fetchCount();
         } else {
-            toast.error("Erro ao registrar. Tente novamente.");
+            toast.error(t('community.error'));
         }
         setLoading(false);
     };
@@ -92,7 +92,7 @@ export function CommunityCard({ className }: CommunityCardProps) {
 
                 <div className="text-left w-full">
                     <p className="text-foreground text-sm leading-relaxed">
-                        <span className="font-black">{count} {t('community.delivered')}</span> nas últimas 24h. {t('community.next')}
+                        <span className="font-black">{count} {t('community.delivered')}</span> {t('community.last24h')}. {t('community.next')}
                     </p>
                 </div>
 

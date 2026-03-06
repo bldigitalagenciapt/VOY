@@ -107,14 +107,14 @@ export default function Settings() {
       id: 'language',
       icon: Globe,
       label: t('settings.language'),
-      value: language === 'en' ? 'English' : 'Português',
+      value: language === 'en' ? t('language.en') : t('language.pt'),
       onClick: () => setShowLanguageDialog(true),
     },
     {
       id: 'theme',
       icon: Palette,
       label: t('settings.theme'),
-      value: profile?.theme === 'dark' ? 'Escuro' : 'Claro',
+      value: profile?.theme === 'dark' ? t('theme.dark') : t('theme.light'),
       onClick: () => setShowThemeDialog(true),
     },
     {
@@ -275,23 +275,23 @@ export default function Settings() {
               onClick={() => handleLanguageChange('pt')}
               className={cn(
                 'w-full p-4 rounded-xl border-2 text-left transition-all',
-                profile?.language === 'pt'
+                language === 'pt'
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/50'
               )}
             >
-              <span className="font-medium">Português</span>
+              <span className="font-medium">{t('language.pt')}</span>
             </button>
             <button
               onClick={() => handleLanguageChange('en')}
               className={cn(
                 'w-full p-4 rounded-xl border-2 text-left transition-all',
-                profile?.language === 'en'
+                language === 'en'
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/50'
               )}
             >
-              <span className="font-medium">English</span>
+              <span className="font-medium">{t('language.en')}</span>
             </button>
           </div>
         </DialogContent>

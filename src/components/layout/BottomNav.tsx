@@ -42,7 +42,7 @@ export function BottomNav() {
                 </SheetTrigger>
                 <SheetContent side="bottom" className="rounded-t-[2.5rem] border-t-0 bg-[#0D1520] p-8 border-none">
                   <SheetHeader className="mb-8">
-                    <SheetTitle className="text-2xl font-black text-center text-white">Ações Rápidas</SheetTitle>
+                    <SheetTitle className="text-2xl font-black text-center text-white">{t('nav.quickActions')}</SheetTitle>
                   </SheetHeader>
                   <div className="grid grid-cols-2 gap-4 pb-8">
                     <button
@@ -52,7 +52,7 @@ export function BottomNav() {
                       <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400">
                         <FileText className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-bold text-white">Add Documento</span>
+                      <span className="text-sm font-bold text-white">{t('nav.addDoc')}</span>
                     </button>
                     <button
                       onClick={() => { navigate('/notes'); }}
@@ -61,7 +61,7 @@ export function BottomNav() {
                       <div className="w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center text-yellow-400">
                         <StickyNote className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-bold text-white">Add Nota</span>
+                      <span className="text-sm font-bold text-white">{t('nav.addNote')}</span>
                     </button>
                     <button
                       onClick={() => { navigate('/meu-bolso'); }}
@@ -70,7 +70,7 @@ export function BottomNav() {
                       <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center text-red-400">
                         <TrendingDown className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-bold text-white">Add Gasto</span>
+                      <span className="text-sm font-bold text-white">{t('nav.addExpense')}</span>
                     </button>
                     <button
                       onClick={() => { navigate('/meu-bolso'); }}
@@ -79,7 +79,7 @@ export function BottomNav() {
                       <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                         <TrendingUp className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-bold text-white">Add Ganho</span>
+                      <span className="text-sm font-bold text-white">{t('nav.addIncome')}</span>
                     </button>
                   </div>
                 </SheetContent>
