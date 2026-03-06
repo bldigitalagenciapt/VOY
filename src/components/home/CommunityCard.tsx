@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Trophy, PartyPopper, Loader2 } from 'lucide-react';
+import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import confetti from 'canvas-confetti';
@@ -13,6 +14,7 @@ interface CommunityCardProps {
 
 export function CommunityCard({ className }: CommunityCardProps) {
     const { user } = useAuth();
+    const { t } = useApp();
     const [count, setCount] = useState(0);
     const [loading, setLoading] = useState(false);
 
@@ -58,7 +60,7 @@ export function CommunityCard({ className }: CommunityCardProps) {
                 origin: { y: 0.6 },
                 colors: ['#0090FF', '#22C55E', '#FFFFFF']
             });
-            toast.success("Parabéns pela sua conquista! 🎉");
+            toast.success(t('community.button')); // or a specific success toast key if preferred, but user said translate principal items
             fetchCount();
         } else {
             toast.error("Erro ao registrar. Tente novamente.");
@@ -80,17 +82,17 @@ export function CommunityCard({ className }: CommunityCardProps) {
                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                             <Trophy className="w-6 h-6" />
                         </div>
-                        <h3 className="text-xl font-black text-foreground tracking-tight">Comemore seu título</h3>
+                        <h3 className="text-xl font-black text-foreground tracking-tight">{t('community.title')}</h3>
                     </div>
                     <div className="flex items-center gap-1.5 px-3 py-1.5 bg-success/10 rounded-full border border-success/20">
                         <PartyPopper className="w-3.5 h-3.5 text-success" />
-                        <span className="text-[10px] font-black text-success uppercase tracking-wider">{count} VITÓRIAS</span>
+                        <span className="text-[10px] font-black text-success uppercase tracking-wider">{count} {t('community.victories')}</span>
                     </div>
                 </div>
 
                 <div className="text-left w-full">
                     <p className="text-foreground text-sm leading-relaxed">
-                        <span className="font-black">{count} títulos entregues</span> nas últimas 24h. A próxima vitória pode ser a sua!
+                        <span className="font-black">{count} {t('community.delivered')}</span> nas últimas 24h. {t('community.next')}
                     </p>
                 </div>
 
@@ -104,7 +106,7 @@ export function CommunityCard({ className }: CommunityCardProps) {
                         {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                             <>
                                 <PartyPopper className="w-6 h-6" />
-                                Recebi minha Residência! 🎉
+                                {t('community.button')}
                             </>
                         )}
                     </Button>

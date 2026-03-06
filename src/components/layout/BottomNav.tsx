@@ -9,16 +9,19 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+import { useApp } from '@/contexts/AppContext';
+
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useApp();
 
   const navItems = [
-    { path: '/home', icon: Home, label: 'INÍCIO' },
-    { path: '/documents', icon: FileText, label: 'DOCS' },
+    { path: '/home', icon: Home, label: t('nav.home') },
+    { path: '/documents', icon: FileText, label: t('nav.documents') },
     { isFAB: true },
-    { path: '/community', icon: MessageCircle, label: 'MURAL' },
-    { path: '/profile', icon: User, label: 'PERFIL' },
+    { path: '/community', icon: MessageCircle, label: t('nav.community') },
+    { path: '/profile', icon: User, label: t('nav.profile') },
   ];
 
   return (

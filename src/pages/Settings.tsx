@@ -10,11 +10,13 @@ import { useProfile } from '@/hooks/useProfile';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useApp } from '@/contexts/AppContext';
 
 export default function Settings() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { profile, updateProfile, loading } = useProfile();
+  const { t, setLanguage, language } = useApp();
   const [showLanguageDialog, setShowLanguageDialog] = useState(false);
   const [showThemeDialog, setShowThemeDialog] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -29,6 +31,7 @@ export default function Settings() {
   };
 
   const handleLanguageChange = async (lang: string) => {
+    setLanguage(lang as any);
     await updateProfile({ language: lang });
     setShowLanguageDialog(false);
   };
@@ -78,46 +81,46 @@ export default function Settings() {
     {
       id: 'profile-name',
       icon: User,
-      label: 'Nome de Exibição',
+      label: t('settings.displayName'),
       value: profile?.display_name || user?.email?.split('@')[0],
       onClick: () => setShowNameDialog(true),
     },
     {
       id: 'profile',
       icon: User,
-      label: 'Meu Perfil',
+      label: t('settings.myProfile'),
       onClick: () => navigate('/profile', { replace: true }),
     },
     {
       id: 'categories',
       icon: FolderPlus,
-      label: 'Categorias de Documentos',
+      label: t('settings.docCategories'),
       onClick: () => navigate('/settings/categories'),
     },
     {
       id: 'quickaccess',
       icon: Star,
-      label: 'Acesso Rápido',
+      label: t('settings.quickAccess'),
       onClick: () => navigate('/settings/quick-access'),
     },
     {
       id: 'language',
       icon: Globe,
-      label: 'Idioma',
-      value: profile?.language === 'en' ? 'English' : 'Português',
+      label: t('settings.language'),
+      value: language === 'en' ? 'English' : 'Português',
       onClick: () => setShowLanguageDialog(true),
     },
     {
       id: 'theme',
       icon: Palette,
-      label: 'Tema',
+      label: t('settings.theme'),
       value: profile?.theme === 'dark' ? 'Escuro' : 'Claro',
       onClick: () => setShowThemeDialog(true),
     },
     {
       id: 'about',
       icon: Info,
-      label: 'Sobre',
+      label: t('settings.about'),
       onClick: () => navigate('/about'),
     },
   ];
@@ -143,12 +146,12 @@ export default function Settings() {
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-2xl font-bold text-foreground">Configurações</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('settings.title')}</h1>
         </div>
 
         {/* User Info */}
         <div className="mb-8 glass-card p-6 shadow-xl shadow-primary/5 rounded-[2rem] border-primary/10">
-          <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">CONECTADO COMO</p>
+          <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">{t('settings.connectedAs')}</p>
           <p className="text-xl font-black text-foreground tracking-tight">{user?.email}</p>
         </div>
 
@@ -216,7 +219,7 @@ export default function Settings() {
                 <LogOut className="w-5 h-5 text-muted-foreground" />
               )}
             </div>
-            <span className="font-medium text-foreground">Sair da conta</span>
+            <span className="font-medium text-foreground">{t('settings.logout')}</span>
           </button>
 
           {isRefundEligible && (
@@ -244,17 +247,17 @@ export default function Settings() {
             <div className="w-12 h-12 rounded-2xl bg-destructive/10 flex items-center justify-center">
               <Trash2 className="w-5 h-5 text-destructive" />
             </div>
-            <span className="font-medium text-destructive">Excluir minha conta e dados</span>
+            <span className="font-medium text-destructive">{t('settings.deleteAccount')}</span>
           </button>
         </div>
 
         {/* Version */}
         <div className="mt-16 text-center pb-8 animate-fade-in">
-          <p className="text-xs font-black text-primary/40 uppercase tracking-[0.3em]">VOY VERSION 1.0.0</p>
+          <p className="text-xs font-black text-primary/40 uppercase tracking-[0.3em]">{t('settings.version')} 1.0.0</p>
           <div className="flex items-center justify-center gap-2 mt-2">
             <span className="w-8 h-px bg-primary/10" />
             <p className="text-[10px] font-medium text-muted-foreground italic">
-              Feito com excelência para você
+              {t('settings.madeWith')}
             </p>
             <span className="w-8 h-px bg-primary/10" />
           </div>
@@ -265,7 +268,7 @@ export default function Settings() {
       <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
         <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Escolher idioma</DialogTitle>
+            <DialogTitle>{t('settings.language.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2 pt-4">
             <button
@@ -298,7 +301,7 @@ export default function Settings() {
       <Dialog open={showThemeDialog} onOpenChange={setShowThemeDialog}>
         <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Escolher tema</DialogTitle>
+            <DialogTitle>{t('settings.theme.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2 pt-4">
             <button
@@ -331,25 +334,25 @@ export default function Settings() {
       <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
         <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Editar nome</DialogTitle>
+            <DialogTitle>{t('settings.name.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Nome</label>
+              <label className="text-sm font-medium">{t('settings.name.label')}</label>
               <input
                 type="text"
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
                 className="w-full p-3 rounded-xl border border-input bg-background"
-                placeholder="Seu nome"
+                placeholder={t('settings.name.placeholder')}
               />
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setShowNameDialog(false)} className="flex-1">
-                Cancelar
+                {t('cancel')}
               </Button>
               <Button onClick={handleSaveName} disabled={savingName} className="flex-1">
-                {savingName ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Salvar'}
+                {savingName ? <Loader2 className="w-4 h-4 animate-spin" /> : t('save')}
               </Button>
             </div>
           </div>
@@ -362,9 +365,9 @@ export default function Settings() {
             <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2 mx-auto">
               <AlertTriangle className="w-6 h-6 text-destructive" />
             </div>
-            <AlertDialogTitle className="text-center text-xl">Excluir Permanentemente?</AlertDialogTitle>
+            <AlertDialogTitle className="text-center text-xl">{t('settings.delete.title')}</AlertDialogTitle>
             <AlertDialogDescription className="text-center">
-              Esta ação é **irreversível**. Todos os seus documentos salvos, notas, transações e histórico serão apagados para sempre em conformidade com a **LGPD**.
+              {t('settings.delete.desc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col gap-2">
@@ -373,10 +376,10 @@ export default function Settings() {
               disabled={deletingAccount}
               className="w-full h-12 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold"
             >
-              {deletingAccount ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sim, apagar tudo'}
+              {deletingAccount ? <Loader2 className="w-5 h-5 animate-spin" /> : t('settings.delete.confirm')}
             </AlertDialogAction>
             <AlertDialogCancel className="w-full h-12 rounded-xl border-none font-medium">
-              Cancelar
+              {t('cancel')}
             </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>

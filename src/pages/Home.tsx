@@ -51,6 +51,7 @@ import { CommunityCard } from '@/components/home/CommunityCard';
 import { PremiumWelcomeModal } from '@/components/PremiumWelcomeModal';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { useApp } from '@/contexts/AppContext';
 
 type NumberField = 'nif' | 'niss' | 'sns' | 'passport';
 
@@ -58,6 +59,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, updateNumber, updateProfile, loading: profileLoading, refetch } = useProfile();
+  const { t } = useApp();
   const { process: aimaProcess } = useAimaProcess();
   const { notes } = useNotes();
   const { userDocuments } = useUserDocuments();
@@ -233,10 +235,10 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-xl font-black text-foreground leading-none">
-                Olá, {profile?.display_name?.split(' ')[0] || 'Imigrante'}
+                {t('home.hello')}, {profile?.display_name?.split(' ')[0] || 'Imigrante'}
               </h1>
               <p className="text-xs font-bold text-muted-foreground mt-1 uppercase tracking-widest opacity-60">
-                Sua jornada para Portugal
+                {t('home.welcome')}
               </p>
             </div>
           </div>
@@ -264,7 +266,7 @@ export default function Home() {
 
         {/* Seu Progresso Section */}
         <section className="mb-8">
-          <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider text-center md:text-left">Seu Progresso</h2>
+          <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider text-center md:text-left">{t('home.progress')}</h2>
           <div className="grid grid-cols-2 gap-4">
             <CircularProgress
               percentage={completionPercentage}
@@ -284,12 +286,12 @@ export default function Home() {
         {/* Acesso Rápido Section */}
         <section className="mb-8">
           <div className="flex items-center justify-between md:justify-start gap-4 mb-6">
-            <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Acesso Rápido</h2>
+            <h2 className="text-lg font-black text-foreground uppercase tracking-wider">{t('home.quickAccess')}</h2>
             <button
               onClick={() => setShowAllQuickAccess(true)}
               className="text-xs font-black text-primary uppercase tracking-widest hover:underline"
             >
-              Ver Todos
+              {t('home.viewAll')}
             </button>
           </div>
 
@@ -312,45 +314,47 @@ export default function Home() {
         </section>
 
         {/* Anotações Section */}
-        {notes.filter(n => n.is_important).length > 0 && (
-          <section className="mb-8">
-            <div className="flex items-center justify-between md:justify-start gap-4 mb-6">
-              <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Anotações</h2>
-              <button
-                onClick={() => navigate('/notes')}
-                className="text-xs font-black text-primary uppercase tracking-widest hover:underline"
-              >
-                Ver Todas
-              </button>
-            </div>
-
-            <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
-              {notes.filter(n => n.is_important).map((note) => (
-                <div
-                  key={note.id}
+        {
+          notes.filter(n => n.is_important).length > 0 && (
+            <section className="mb-8">
+              <div className="flex items-center justify-between md:justify-start gap-4 mb-6">
+                <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Anotações</h2>
+                <button
                   onClick={() => navigate('/notes')}
-                  className="min-w-[200px] max-w-[240px] bg-card border border-border rounded-[2rem] p-5 shadow-soft hover:-translate-y-1 transition-all cursor-pointer relative overflow-hidden"
+                  className="text-xs font-black text-primary uppercase tracking-widest hover:underline"
                 >
-                  <div className="absolute top-0 right-0 p-3 opacity-10">
-                    <StickyNote className="w-12 h-12 text-primary blur-sm" />
-                  </div>
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <StickyNote className="w-4 h-4 text-primary" />
-                      </div>
-                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  Ver Todas
+                </button>
+              </div>
+
+              <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
+                {notes.filter(n => n.is_important).map((note) => (
+                  <div
+                    key={note.id}
+                    onClick={() => navigate('/notes')}
+                    className="min-w-[200px] max-w-[240px] bg-card border border-border rounded-[2rem] p-5 shadow-soft hover:-translate-y-1 transition-all cursor-pointer relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 p-3 opacity-10">
+                      <StickyNote className="w-12 h-12 text-primary blur-sm" />
                     </div>
-                    <h3 className="font-bold text-foreground text-sm truncate mb-1">{note.title}</h3>
-                    <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
-                      {note.content}
-                    </p>
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <StickyNote className="w-4 h-4 text-primary" />
+                        </div>
+                        <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      </div>
+                      <h3 className="font-bold text-foreground text-sm truncate mb-1">{note.title}</h3>
+                      <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
+                        {note.content}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+                ))}
+              </div>
+            </section>
+          )
+        }
 
         {/* Dialog for All Quick Access Documents */}
         <Dialog open={showAllQuickAccess} onOpenChange={setShowAllQuickAccess}>
@@ -402,14 +406,15 @@ export default function Home() {
         </section>
 
         {/* Alertas de Validade */}
-        {isPremium && documents.filter(doc => {
-          if (!doc.expiry_date) return false;
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const expiry = new Date(doc.expiry_date);
-          const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-          return diffDays <= 30;
-        }).length > 0 && (
+        {
+          isPremium && documents.filter(doc => {
+            if (!doc.expiry_date) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const expiry = new Date(doc.expiry_date);
+            const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            return diffDays <= 30;
+          }).length > 0 && (
             <section className="mb-8">
               <h2 className="text-lg font-black text-foreground mb-4 uppercase tracking-wider flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-orange-500" />
@@ -464,11 +469,12 @@ export default function Home() {
                   })}
               </div>
             </section>
-          )}
+          )
+        }
 
         {/* Serviços Grid */}
         <section className="mb-8">
-          <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider text-center md:text-left">Serviços</h2>
+          <h2 className="text-lg font-black text-foreground mb-6 uppercase tracking-wider text-center md:text-left">{t('home.services')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             <ActionCard
               icon={<ClipboardCheck className="w-8 h-8 text-blue-500" />}
@@ -524,10 +530,11 @@ export default function Home() {
 
 
 
-      </div>
+      </div >
 
       {/* Number Input Dialog */}
-      <Dialog open={!!showNumberDialog} onOpenChange={() => setShowNumberDialog(null)}>
+      < Dialog open={!!showNumberDialog
+      } onOpenChange={() => setShowNumberDialog(null)}>
         <DialogContent className="max-w-[calc(100vw-2rem)] rounded-[2.5rem] p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black">
@@ -565,13 +572,14 @@ export default function Home() {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
 
-      {/* Emergency Modal */}
-      <EmergencyModal open={showEmergency} onOpenChange={setShowEmergency} />
+      {/* Emergency Modal */ }
+  <EmergencyModal open={showEmergency} onOpenChange={setShowEmergency} />
 
-      {/* Premium Welcome Modal */}
-      <PremiumWelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
+  {/* Premium Welcome Modal */ }
+  <PremiumWelcomeModal isOpen={showWelcome} onClose={() => setShowWelcome(false)} />
 
-    </MobileLayout>
+    </MobileLayout >
   );
 }

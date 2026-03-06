@@ -57,164 +57,10 @@ interface AppContextType {
   isProfileLoading: boolean;
 }
 
-const translations: Record<Language, Record<string, string>> = {
-  pt: {
-    'welcome.title': 'Bem-vindo ao VOY',
-    'welcome.subtitle': 'VOY - A porta de entrada para o seu futuro',
-    'welcome.start': 'Começar',
-    'language.select': 'Escolha seu idioma',
-    'profile.select': 'Qual é a sua situação?',
-    'profile.recent': 'Recém-chegado',
-    'profile.recent.desc': 'Cheguei há pouco tempo',
-    'profile.resident': 'Já moro em Portugal',
-    'profile.resident.desc': 'Estou estabelecido',
-    'profile.legalizing': 'Em processo de legalização',
-    'profile.legalizing.desc': 'Aguardando documentos',
-    'notifications.title': 'Quer receber lembretes?',
-    'notifications.desc': 'Vamos avisar sobre prazos importantes para você não perder nada.',
-    'notifications.allow': 'Permitir notificações',
-    'notifications.skip': 'Agora não',
-    'biometric.title': 'Proteja seus dados',
-    'biometric.desc': 'Use sua biometria para acessar o app de forma segura.',
-    'biometric.enable': 'Ativar biometria',
-    'biometric.skip': 'Talvez depois',
-    'home.hello': 'Olá!',
-    'home.alerts': 'Atenção',
-    'home.quickAccess': 'Acesso rápido',
-    'home.nif': 'NIF',
-    'home.niss': 'NISS',
-    'home.sns': 'SNS',
-    'home.addNumber': 'Toque para adicionar',
-    'nav.home': 'Início',
-    'nav.documents': 'Documentos',
-    'nav.aima': 'Imigração',
-    'nav.notes': 'Notas',
-    'nav.meuBolso': 'Meu Bolso',
-    'nav.community': 'Mural',
-    'nav.agenda': 'Agenda',
-    'nav.checklist': 'Guia de Chegada',
-    'nav.calculator': 'Salário Líquido',
-    'nav.usefulLinks': 'Links Úteis',
-    'nav.help': 'Ajuda',
-    'documents.title': 'Meus Documentos',
-    'documents.add': 'Adicionar documento',
-    'documents.empty': 'Nenhum documento ainda',
-    'documents.empty.desc': 'Adicione seus documentos importantes aqui',
-    'documents.category.immigration': 'Imigração',
-    'documents.category.work': 'Trabalho',
-    'documents.category.health': 'Saúde',
-    'documents.category.housing': 'Moradia',
-    'aima.title': 'Imigração / AIMA',
-    'aima.selectProcess': 'Qual é o seu processo?',
-    'aima.cplp': 'CPLP',
-    'aima.cplp.desc': 'Comunidade dos Países de Língua Portuguesa',
-    'aima.manifestation': 'Manifestação de Interesse',
-    'aima.manifestation.desc': 'Para quem já está trabalhando',
-    'aima.renewal': 'Renovação',
-    'aima.renewal.desc': 'Renovar autorização de residência',
-    'aima.checklist': 'Suas etapas',
-    'aima.dates': 'Datas importantes',
-    'aima.protocols': 'Protocolos',
-    'notes.title': 'Minhas Anotações',
-    'notes.add': 'Nova anotação',
-    'notes.empty': 'Nenhuma anotação',
-    'notes.empty.desc': 'Crie notas para lembrar de coisas importantes',
-    'assistant.title': 'Preciso de Ajuda',
-    'assistant.placeholder': 'Digite sua dúvida...',
-    'assistant.disclaimer': 'As informações são apenas orientativas e não substituem aconselhamento legal.',
-    'settings.title': 'Configurações',
-    'settings.language': 'Idioma',
-    'settings.security': 'Segurança',
-    'settings.biometric': 'Biometria',
-    'settings.backup': 'Backup',
-    'settings.theme': 'Tema',
-    'settings.about': 'Sobre o VOY',
-    'continue': 'Continuar',
-    'save': 'Salvar',
-    'cancel': 'Cancelar',
-    'delete': 'Excluir',
-    'edit': 'Editar',
-    'share': 'Compartilhar',
-  },
-  en: {
-    'welcome.title': 'Welcome to VOY',
-    'welcome.subtitle': 'VOY - The gateway to your future',
-    'welcome.start': 'Get Started',
-    'language.select': 'Choose your language',
-    'profile.select': 'What\'s your situation?',
-    'profile.recent': 'Recently arrived',
-    'profile.recent.desc': 'I just got here',
-    'profile.resident': 'I live in Portugal',
-    'profile.resident.desc': 'I\'m settled in',
-    'profile.legalizing': 'Legalizing my status',
-    'profile.legalizing.desc': 'Waiting for documents',
-    'notifications.title': 'Want to receive reminders?',
-    'notifications.desc': 'We\'ll notify you about important deadlines so you don\'t miss anything.',
-    'notifications.allow': 'Allow notifications',
-    'notifications.skip': 'Not now',
-    'biometric.title': 'Protect your data',
-    'biometric.desc': 'Use biometrics to access the app securely.',
-    'biometric.enable': 'Enable biometrics',
-    'biometric.skip': 'Maybe later',
-    'home.hello': 'Hello!',
-    'home.alerts': 'Attention',
-    'home.quickAccess': 'Quick access',
-    'home.nif': 'NIF',
-    'home.niss': 'NISS',
-    'home.sns': 'SNS',
-    'home.addNumber': 'Tap to add',
-    'nav.home': 'Home',
-    'nav.documents': 'Documents',
-    'nav.aima': 'Immigration',
-    'nav.notes': 'Notes',
-    'nav.meuBolso': 'My Pocket',
-    'nav.community': 'Community',
-    'nav.agenda': 'Agenda',
-    'nav.checklist': 'Arrival Guide',
-    'nav.calculator': 'Salary Simulator',
-    'nav.usefulLinks': 'Useful Links',
-    'nav.help': 'Help',
-    'documents.title': 'My Documents',
-    'documents.add': 'Add document',
-    'documents.empty': 'No documents yet',
-    'documents.empty.desc': 'Add your important documents here',
-    'documents.category.immigration': 'Immigration',
-    'documents.category.work': 'Work',
-    'documents.category.health': 'Health',
-    'documents.category.housing': 'Housing',
-    'aima.title': 'Immigration / AIMA',
-    'aima.selectProcess': 'What\'s your process?',
-    'aima.cplp': 'CPLP',
-    'aima.cplp.desc': 'Community of Portuguese-Speaking Countries',
-    'aima.manifestation': 'Manifestation of Interest',
-    'aima.manifestation.desc': 'For those already working',
-    'aima.renewal': 'Renewal',
-    'aima.renewal.desc': 'Renew residence permit',
-    'aima.checklist': 'Your steps',
-    'aima.dates': 'Important dates',
-    'aima.protocols': 'Protocols',
-    'notes.title': 'My Notes',
-    'notes.add': 'New note',
-    'notes.empty': 'No notes',
-    'notes.empty.desc': 'Create notes to remember important things',
-    'assistant.title': 'Need Help',
-    'assistant.placeholder': 'Type your question...',
-    'assistant.disclaimer': 'Information is for guidance only and does not replace legal advice.',
-    'settings.title': 'Settings',
-    'settings.language': 'Language',
-    'settings.security': 'Security',
-    'settings.biometric': 'Biometrics',
-    'settings.backup': 'Backup',
-    'settings.theme': 'Theme',
-    'settings.about': 'About VOY',
-    'continue': 'Continue',
-    'save': 'Save',
-    'cancel': 'Cancel',
-    'delete': 'Delete',
-    'edit': 'Edit',
-    'share': 'Share',
-  },
-};
+import pt from '../i18n/locales/pt.json';
+import en from '../i18n/locales/en.json';
+
+const translations: Record<Language, Record<string, string>> = { pt, en };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -222,7 +68,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { profile, loading } = useProfile();
 
-  const [language, setLanguage] = useState<Language>('pt');
+  const [language, setLanguageState] = useState<Language>(() => {
+    const saved = localStorage.getItem('voy-language');
+    return (saved === 'en' || saved === 'pt') ? saved as Language : 'pt';
+  });
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem('voy-language', lang);
+  };
   const [userProfile, setUserProfile] = useState<UserProfile>(null);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [userNumbers, setUserNumbers] = useState<UserNumbers>({ nif: '', niss: '', sns: '' });
@@ -238,7 +92,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (profile) {
       if (profile.language && (profile.language === 'pt' || profile.language === 'en')) {
-        setLanguage(profile.language as Language);
+        const profileLang = profile.language as Language;
+        setLanguageState(profileLang);
+        localStorage.setItem('voy-language', profileLang);
       }
 
       // If user has a profile type selected (Steps 1-3), we consider onboarding sufficiently advanced/complete
