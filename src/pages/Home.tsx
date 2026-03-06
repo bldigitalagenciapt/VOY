@@ -186,7 +186,7 @@ export default function Home() {
       case 'nif': return 'NIF';
       case 'niss': return 'NISS';
       case 'sns': return 'SNS';
-      case 'passport': return 'Passaporte';
+      case 'passport': return t('home.passport_placeholder').replace(t('docs.add') + ' ', '');
       default: return type || '';
     }
   };
@@ -235,7 +235,7 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-xl font-black text-foreground leading-none">
-                {t('home.hello')}, {profile?.display_name?.split(' ')[0] || 'Imigrante'}
+                {t('home.hello')}, {profile?.display_name?.split(' ')[0] || t('home.guest')}
               </h1>
               <p className="text-xs font-bold text-muted-foreground mt-1 uppercase tracking-widest opacity-60">
                 {t('home.welcome')}
@@ -270,13 +270,13 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-4">
             <CircularProgress
               percentage={completionPercentage}
-              label="Perfil"
+              label={t('home.profile')}
               evolution="+5%"
               onClick={() => navigate('/profile')}
             />
             <CircularProgress
               percentage={processPercentage}
-              label="Processo"
+              label={t('home.process')}
               evolution="+12%"
               onClick={() => navigate('/aima')}
             />
@@ -392,7 +392,7 @@ export default function Home() {
                   key={block.id}
                   label={block.label}
                   value={block.value || ''}
-                  placeholder={`Adicionar ${block.label}`}
+                  placeholder={`${t('docs.add')} ${block.label}`}
                   onClick={() => openNumberDialog(block.label, block.value || '')}
                 />
               ))}

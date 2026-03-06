@@ -10,6 +10,16 @@ export interface ImportantDate {
   date: string;
 }
 
+export interface Step {
+  id: string;
+  title: string;
+  description: string;
+  voyTip: string;
+  documents: string[];
+  actionLink?: string;
+  cost: string;
+}
+
 export interface AimaProcess {
   id: string;
   user_id: string;
@@ -195,9 +205,94 @@ export function useAimaProcess() {
     });
   };
 
+  const getStepsForProcess = (type: string | null): Step[] => {
+    if (!type) return [];
+
+    const steps: Record<string, Step[]> = {
+      cplp: [
+        {
+          id: 'nif',
+          title: 'Obter NIF',
+          description: 'Número de Identificação Fiscal essencial para viver em Portugal.',
+          voyTip: 'Pode ser pedido presencialmente nas Finanças ou online através de representantes.',
+          documents: ['Passaporte', 'Comprovativo de Morada (Origem ou PT)'],
+          actionLink: 'https://www.portaldasfinancas.gov.pt/',
+          cost: 'Gratuito (no balcão)'
+        },
+        {
+          id: 'niss',
+          title: 'Obter NISS',
+          description: 'Número de Identificação de Segurança Social.',
+          voyTip: 'O NISS na hora agora pode ser pedido online pelo portal da Segurança Social Direta.',
+          documents: ['Passaporte', 'NIF'],
+          actionLink: 'https://www.seg-social.pt/pedido-de-formulario-niss-na-hora',
+          cost: 'Gratuito'
+        },
+        {
+          id: 'junta',
+          title: 'Atestado da Junta',
+          description: 'Comprovativo de morada oficial da sua freguesia.',
+          voyTip: 'Precisa de 2 testemunhas que morem na mesma freguesia (algumas juntas aceitam contrato de arrendamento).',
+          documents: ['Passaporte', 'NIF', '2 Testemunhas ou Contrato'],
+          cost: '€5 - €10'
+        },
+        {
+          id: 'manifestacao',
+          title: 'Certificado CPLP',
+          description: 'Pedido do Título de Residência Digital no portal da AIMA.',
+          voyTip: 'Verifique se seus dados estão corretos antes de submeter.',
+          documents: ['NIF', 'NISS', 'Passaporte'],
+          actionLink: 'https://aima.gov.pt/',
+          cost: '€15'
+        }
+      ],
+      visto: [
+        {
+          id: 'entrada',
+          title: 'Entrada Legal',
+          description: 'Garantir que sua entrada em Portugal foi registrada corretamente.',
+          voyTip: 'Se entrou por outro país do Espaço Schengen, tem 3 dias úteis para declarar entrada na AIMA.',
+          documents: ['Passaporte com carimbo', 'Declaração de Entrada se aplicável'],
+          cost: 'Gratuito'
+        },
+        {
+          id: 'nif',
+          title: 'NIF e NISS',
+          description: 'Obter os números básicos de identificação.',
+          voyTip: 'Como você já tem visto, o processo é mais rápido.',
+          documents: ['Visto', 'Passaporte', 'Morada'],
+          cost: 'Gratuito'
+        },
+        {
+          id: 'agendamento',
+          title: 'Agendamento AIMA',
+          description: 'Comparecer ao agendamento marcado no seu visto.',
+          voyTip: 'Leve todos os documentos originais e cópias.',
+          documents: ['Checklist do Visto', 'Fotos', 'Seguro Saúde'],
+          cost: 'Varie consoante o visto'
+        }
+      ],
+      familiar: [
+        {
+          id: 'agrupamento',
+          title: 'Pedido de Reagrupamento',
+          description: 'Solicitar o direito de trazer sua família.',
+          voyTip: 'Pode ser feito em simultâneo com o seu pedido em alguns casos.',
+          documents: ['Certidões Apostiladas', 'Prova de Meios', 'Alojamento'],
+          cost: '€80 - €150'
+        }
+      ]
+    };
+
+    return steps[type] || [];
+  };
+
+  const steps = getStepsForProcess(process?.process_type || null);
+
   return {
     process,
     loading,
+    steps,
     selectProcessType,
     toggleStep,
     addDate,

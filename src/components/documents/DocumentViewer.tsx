@@ -185,7 +185,7 @@ export function DocumentViewer({ open, onOpenChange, doc }: DocumentViewerProps)
                   <iframe
                     src={signedUrl + '#toolbar=0'}
                     className="w-full flex-1 rounded-xl bg-muted border border-border"
-                    title={document.name}
+                    title={doc.name}
                   />
                   <div className="p-2 text-center text-xs text-muted-foreground">
                     Se não conseguir visualizar, use o botão Baixar abaixo.
@@ -208,7 +208,7 @@ export function DocumentViewer({ open, onOpenChange, doc }: DocumentViewerProps)
                 </div>
               )}
             </>
-          ) : document.file_url && !signedUrl && !loadingUrl ? (
+          ) : doc.file_url && !signedUrl && !loadingUrl ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4 text-red-500">
                 <X className="w-8 h-8" />

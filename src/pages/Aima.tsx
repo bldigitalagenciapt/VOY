@@ -3,28 +3,12 @@ import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
 import {
   Users,
-  FileCheck,
-  RotateCcw,
   Check,
-  Plus,
-  Calendar,
-  AlertCircle,
-  Loader2,
   Plane,
   ChevronRight,
-  ArrowLeft,
-  GraduationCap,
-  Briefcase,
-  Search,
-  Home as HomeIcon,
   Globe,
-  Trash2,
-  FileText,
   RefreshCw,
-  ExternalLink,
-  HelpCircle,
-  Coins,
-  ShieldCheck,
+  Loader2,
   ChevronDown
 } from 'lucide-react';
 import {
@@ -33,16 +17,8 @@ import {
   AccordionItem,
   AccordionTrigger
 } from '@/components/ui/accordion';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useAimaProcess } from '@/hooks/useAimaProcess';
-import { useUserDocuments } from '@/hooks/useUserDocuments';
-import { useDocuments } from '@/hooks/useDocuments';
-import { visaTypes, VisaType, commonAimaDocuments } from '@/data/visaTypes';
 import { useToast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
 import { useApp } from '@/contexts/AppContext';
@@ -65,8 +41,7 @@ export const processTypes = [
 export default function Aima() {
   const { t } = useApp();
   const { toast } = useToast();
-  const { process, loading, steps, selectProcessType, toggleStep, resetProcess } = useAimaProcess();
-  const [saving, setSaving] = useState(false);
+  const { process, loading, steps, selectProcessType, toggleStep, clearProcess } = useAimaProcess();
 
   const handleToggleStep = async (stepId: string) => {
     const isCompleted = process?.completed_steps?.includes(stepId);
@@ -98,10 +73,10 @@ export default function Aima() {
     );
   }
 
-  if (!process) {
+  if (!process || !process.process_type) {
     return (
       <MobileLayout>
-        <div className="px-5 py-6 safe-area-top">
+        <div className="px-5 py-6 safe-area-top pb-24">
           <h1 className="text-2xl font-bold text-foreground mb-2 text-center md:text-left">{t('aima.title')}</h1>
           <p className="text-muted-foreground mb-8 text-center md:text-left">{t('aima.subtitle')}</p>
           <div className="grid grid-cols-1 gap-4">
@@ -128,14 +103,15 @@ export default function Aima() {
   }
 
   const completedCount = process.completed_steps?.length || 0;
-  const progress = (completedCount / steps.length) * 100;
+  const totalSteps = steps?.length || 1;
+  const progress = (completedCount / totalSteps) * 100;
 
   return (
     <MobileLayout>
       <div className="px-5 py-6 pb-24 safe-area-top">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">{t('aima.title')}</h1>
-          <Button variant="ghost" size="sm" onClick={() => resetProcess()} className="text-destructive">
+          <Button variant="ghost" size="sm" onClick={() => clearProcess()} className="text-destructive rounded-xl">
             {t('aima.close')}
           </Button>
         </div>
@@ -144,7 +120,7 @@ export default function Aima() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('aima.progress')}</p>
-              <p className="text-lg font-bold">{completedCount} {t('aima.of')} {steps.length} {t('aima.completed')}</p>
+              <p className="text-lg font-bold">{completedCount} {t('aima.of')} {totalSteps} {t('aima.completed')}</p>
             </div>
             <div className="text-2xl font-black text-primary">{Math.round(progress)}%</div>
           </div>
@@ -159,11 +135,11 @@ export default function Aima() {
         <div className="space-y-4">
           <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest px-1">{t('aima.path')}</h2>
           <Accordion type="single" collapsible className="space-y-4">
-            {steps.map((step, index) => {
+            {steps?.map((step, index) => {
               const isCompleted = process.completed_steps?.includes(step.id);
               return (
                 <AccordionItem key={step.id} value={step.id} className="border-none">
-                  <AccordionTrigger className="bg-card p-5 rounded-[2rem] border border-border/50 hover:no-underline [&[data-state=open]]:rounded-b-none">
+                  <AccordionTrigger className="bg-card p-5 rounded-[2rem] border border-border/50 hover:no-underline [&[data-state=open]]:rounded-b-none transition-all">
                     <div className="flex items-center gap-4 text-left w-full">
                       <div className={cn(
                         "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border-2 transition-all",
@@ -171,18 +147,26 @@ export default function Aima() {
                       )}>
                         {isCompleted ? <Check className="w-5 h-5 stroke-[3]" /> : <span className="text-sm font-black">{index + 1}</span>}
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-black uppercase text-muted-foreground">{t('aima.step')} {index + 1}</p>
-                        <p className={cn("font-bold", isCompleted && "text-muted-foreground line-through")}>{step.title}</p>
+                        <p className={cn("font-bold truncate", isCompleted && "text-muted-foreground line-through")}>{step.title}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="bg-card border-x border-b border-border/50 rounded-b-[2rem] p-5 pt-0">
                     <div className="space-y-4 pt-4">
-                      <p className="text-sm text-balance leading-relaxed">{step.description}</p>
+                      <p className="text-sm text-balance leading-relaxed text-muted-foreground">{step.description}</p>
+
+                      {step.voyTip && (
+                        <div className="bg-primary/5 p-3 rounded-xl border border-primary/10">
+                          <p className="text-[10px] font-black text-primary uppercase mb-1">{t('aima.tip')}</p>
+                          <p className="text-xs italic">"{step.voyTip}"</p>
+                        </div>
+                      )}
+
                       <Button
                         onClick={() => handleToggleStep(step.id)}
-                        className={cn("w-full rounded-2xl", isCompleted ? "bg-muted text-muted-foreground" : "bg-primary")}
+                        className={cn("w-full h-12 rounded-2xl font-bold", isCompleted ? "bg-muted text-muted-foreground hover:bg-muted/80" : "bg-primary hover:bg-primary/90 shadow-glow")}
                       >
                         {isCompleted ? t('aima.unmark') : t('aima.mark_done')}
                       </Button>
