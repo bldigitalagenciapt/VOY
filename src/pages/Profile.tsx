@@ -176,8 +176,22 @@ export default function Profile() {
             <div className="w-28 h-28 rounded-full bg-muted flex items-center justify-center overflow-hidden border-4 border-background shadow-lg">
               {uploadingPhoto ? (
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              ) : profile?.signedAvatarUrl ? (
-                <img src={profile.signedAvatarUrl} alt="Perfil" className="w-full h-full object-cover" />
+              ) : profile?.signedAvatarUrl || profile?.avatar_url ? (
+                <img
+                  src={profile.signedAvatarUrl || profile.avatar_url || ''}
+                  alt="Foto"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    const parent = (e.target as HTMLImageElement).parentElement;
+                    if (parent && !parent.querySelector('.avatar-fallback')) {
+                      const icon = document.createElement('div');
+                      icon.className = 'avatar-fallback w-full h-full flex items-center justify-center';
+                      icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-12 h-12 text-muted-foreground"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+                      parent.appendChild(icon);
+                    }
+                  }}
+                />
               ) : (
                 <User className="w-12 h-12 text-muted-foreground" />
               )}

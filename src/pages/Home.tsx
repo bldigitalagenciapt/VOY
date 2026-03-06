@@ -33,7 +33,8 @@ import {
   CheckCircle2,
   ChevronRight,
   AlertTriangle,
-  Archive
+  Archive,
+  User as UserIcon
 } from 'lucide-react';
 import { useDocuments } from '@/hooks/useDocuments';
 import { EmergencyModal } from '@/components/modals/EmergencyModal';
@@ -208,13 +209,25 @@ export default function Home() {
         <header className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full p-0.5 bg-gradient-to-br from-primary to-blue-400">
-              <div className="w-full h-full rounded-full border-2 border-background overflow-hidden bg-muted">
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              <div className="w-full h-full rounded-full border-2 border-background overflow-hidden bg-muted flex items-center justify-center">
+                {profile?.signedAvatarUrl || profile?.avatar_url ? (
+                  <img 
+                    src={profile.signedAvatarUrl || profile.avatar_url || ''} 
+                    alt="Foto" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      const parent = (e.target as HTMLImageElement).parentElement;
+                      if (parent && !parent.querySelector('.avatar-fallback')) {
+                        const icon = document.createElement('div');
+                        icon.className = 'avatar-fallback w-full h-full flex items-center justify-center';
+                        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-muted-foreground"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+                        parent.appendChild(icon);
+                      }
+                    }}
+                  />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center font-bold text-primary">
-                    {user?.email?.charAt(0).toUpperCase()}
-                  </div>
+                  <UserIcon className="w-6 h-6 text-muted-foreground" />
                 )}
               </div>
             </div>
