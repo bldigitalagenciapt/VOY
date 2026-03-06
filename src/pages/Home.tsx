@@ -318,12 +318,12 @@ export default function Home() {
           notes.filter(n => n.is_important).length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between md:justify-start gap-4 mb-6">
-                <h2 className="text-lg font-black text-foreground uppercase tracking-wider">Anotações</h2>
+                <h2 className="text-lg font-black text-foreground uppercase tracking-wider">{t('home.notes')}</h2>
                 <button
                   onClick={() => navigate('/notes')}
                   className="text-xs font-black text-primary uppercase tracking-widest hover:underline"
                 >
-                  Ver Todas
+                  {t('home.see_all')}
                 </button>
               </div>
 
@@ -360,31 +360,31 @@ export default function Home() {
         <Dialog open={showAllQuickAccess} onOpenChange={setShowAllQuickAccess}>
           <DialogContent className="max-w-[calc(100vw-2rem)] rounded-[2.5rem] p-6 max-h-[80vh] overflow-y-auto">
             <DialogHeader className="mb-6">
-              <DialogTitle className="text-2xl font-black text-center">Acesso Rápido</DialogTitle>
+              <DialogTitle className="text-2xl font-black text-center">{t('home.quick_access')}</DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-1 gap-4">
               <QuickAccessCard
                 label="NIF"
                 value={profile?.nif || ''}
-                placeholder="Adicionar NIF"
+                placeholder={t('home.nif_placeholder')}
                 onClick={() => openNumberDialog('nif', profile?.nif || '')}
               />
               <QuickAccessCard
                 label="NISS"
                 value={profile?.niss || ''}
-                placeholder="Adicionar NISS"
+                placeholder={t('home.niss_placeholder')}
                 onClick={() => openNumberDialog('niss', profile?.niss || '')}
               />
               <QuickAccessCard
                 label="SNS"
                 value={profile?.sns || ''}
-                placeholder="Adicionar SNS"
+                placeholder={t('home.sns_placeholder')}
                 onClick={() => openNumberDialog('sns', profile?.sns || '')}
               />
               <QuickAccessCard
                 label="Passaporte"
                 value={profile?.passport || ''}
-                placeholder="Adicionar Passaporte"
+                placeholder={t('home.passport_placeholder')}
                 onClick={() => openNumberDialog('passport', profile?.passport || '')}
               />
               {profile?.custom_quick_access?.map((block) => (
@@ -418,7 +418,7 @@ export default function Home() {
             <section className="mb-8">
               <h2 className="text-lg font-black text-foreground mb-4 uppercase tracking-wider flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-orange-500" />
-                Alertas de Validade
+                {t('home.alerts')}
               </h2>
               <div className="space-y-3">
                 {documents
@@ -460,7 +460,7 @@ export default function Home() {
                             "text-[11px] font-black uppercase tracking-wider mt-0.5",
                             isExpired ? "text-red-500" : "text-orange-500"
                           )}>
-                            {isExpired ? 'Expirado' : `Expira em ${diffDays} dias`}
+                            {isExpired ? t('docs.status.expired') : t('docs.status.expires_in').replace('{{days}}', diffDays.toString())}
                           </p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-muted-foreground opacity-30" />
@@ -478,51 +478,51 @@ export default function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             <ActionCard
               icon={<ClipboardCheck className="w-8 h-8 text-blue-500" />}
-              title="Primeiros Passos"
-              description="Guia Essencial"
+              title={t('services.steps')}
+              description={t('services.steps.desc')}
               onClick={() => navigate('/checklist')}
             />
             <ActionCard
               icon={<CalcIcon className="w-8 h-8 text-orange-500" />}
-              title="Simulador"
-              description="Salário Líquido"
+              title={t('services.simulator')}
+              description={t('services.simulator.desc')}
               onClick={() => navigate('/calculator')}
             />
             <ActionCard
               icon={<Briefcase className="w-8 h-8 text-emerald-500" />}
-              title="Emprego"
-              description="Vagas e Dicas"
+              title={t('services.jobs')}
+              description={t('services.jobs.desc')}
               onClick={() => navigate('/emprego')}
             />
             <ActionCard
               icon={<ExternalLink className="w-8 h-8 text-purple-500" />}
-              title="Links Úteis"
-              description="Links e Dicas"
+              title={t('services.links')}
+              description={t('services.links.desc')}
               onClick={() => navigate('/useful-links')}
             />
             <ActionCard
               icon={<FileText className="w-8 h-8 text-blue-400" />}
-              title="Documentos"
-              description="Seus Arquivos"
+              title={t('services.docs')}
+              description={t('services.docs.desc')}
               onClick={() => navigate('/documents')}
             />
             <ActionCard
               icon={<Globe className="w-8 h-8 text-indigo-500" />}
-              title="Imigração"
-              description="Seu Processo"
+              title={t('services.aima')}
+              description={t('services.aima.desc')}
               onClick={() => navigate('/aima')}
             />
 
             <ActionCard
               icon={<Wallet className="w-8 h-8 text-amber-500" />}
-              title="Meu Bolso"
-              description="Gestor Financeiro"
+              title={t('services.wallet')}
+              description={t('services.wallet.desc')}
               onClick={() => navigate('/meu-bolso')}
             />
             <ActionCard
               icon={<StickyNote className="w-8 h-8 text-yellow-500" />}
-              title="Minhas Notas"
-              description="Suas Anotações"
+              title={t('services.notes')}
+              description={t('services.notes.desc')}
               onClick={() => navigate('/notes')}
             />
           </div>
@@ -543,7 +543,7 @@ export default function Home() {
           </DialogHeader>
           <div className="space-y-6 pt-4">
             <div className="space-y-3">
-              <Label htmlFor="number" className="text-xs font-bold uppercase tracking-widest opacity-60">Número do documento</Label>
+              <Label htmlFor="number" className="text-xs font-bold uppercase tracking-widest opacity-60">{t('home.doc_number')}</Label>
               <Input
                 id="number"
                 value={tempNumber}

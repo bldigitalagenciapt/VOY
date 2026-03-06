@@ -11,8 +11,10 @@ import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useNotes } from '@/hooks/useNotes';
+import { useApp } from '@/contexts/AppContext';
 
 export default function Notes() {
+  const { t } = useApp();
   const { notes, loading, addNote, updateNote, deleteNote, toggleImportant } = useNotes();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -109,7 +111,7 @@ export default function Notes() {
       <div className="px-5 py-6 safe-area-top">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Minhas Anotações</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('notes.title')}</h1>
           <Button
             onClick={() => {
               resetForm();
@@ -119,7 +121,7 @@ export default function Notes() {
             className="rounded-xl gap-2 active:scale-95 transition-transform"
           >
             <Plus className="w-4 h-4" />
-            Nova
+            {t('notes.add')}
           </Button>
         </div>
 
@@ -130,10 +132,10 @@ export default function Notes() {
               <StickyNote className="w-10 h-10 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              Nenhuma anotação
+              {t('notes.empty')}
             </h3>
             <p className="text-muted-foreground max-w-[250px]">
-              Crie notas para lembrar de coisas importantes
+              {t('notes.empty.desc')}
             </p>
           </div>
         ) : (
@@ -185,14 +187,14 @@ export default function Notes() {
                             onClick={() => handleEditNote(note.id)}
                           >
                             <Pencil className="w-4 h-4" />
-                            Editar
+                            {t('docs.action.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="gap-2 text-destructive focus:text-destructive"
                             onClick={() => setDeleteId(note.id)}
                           >
                             <Trash2 className="w-4 h-4" />
-                            Excluir
+                            {t('docs.action.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -220,38 +222,38 @@ export default function Notes() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingNoteId ? 'Editar nota' : 'Nova anotação'}</DialogTitle>
+            <DialogTitle>{editingNoteId ? t('notes.dialog.edit') : t('notes.dialog.new')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="noteTitle">Título</Label>
+              <Label htmlFor="noteTitle">{t('notes.form.title')}</Label>
               <Input
                 id="noteTitle"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="O que você quer lembrar?"
+                placeholder={t('notes.form.title')}
                 className="h-12 rounded-xl"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="noteContent">Conteúdo (opcional)</Label>
+              <Label htmlFor="noteContent">{t('notes.form.content')}</Label>
               <Textarea
                 id="noteContent"
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                placeholder="Adicione mais detalhes..."
+                placeholder={t('notes.form.content')}
                 className="min-h-[100px] rounded-xl resize-none"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="noteCategory">Categoria (opcional)</Label>
+              <Label htmlFor="noteCategory">{t('notes.form.category')}</Label>
               <Input
                 id="noteCategory"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                placeholder="Ex: Trabalho, AIMA, Pessoal..."
+                placeholder={t('notes.form.category')}
                 className="h-12 rounded-xl"
               />
             </div>
@@ -259,7 +261,7 @@ export default function Notes() {
             <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
               <div className="flex items-center gap-3">
                 <Star className="w-5 h-5 text-[#FFD700]" />
-                <span className="font-medium">Marcar como importante</span>
+                <span className="font-medium">{t('notes.important')}</span>
               </div>
               <Switch
                 checked={formData.is_important}
@@ -271,7 +273,7 @@ export default function Notes() {
               <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
                 <div className="flex items-center gap-3">
                   <Bell className="w-5 h-5 text-info" />
-                  <span className="font-medium">Adicionar lembrete</span>
+                  <span className="font-medium">{t('notes.reminder')}</span>
                 </div>
                 <Switch
                   checked={formData.hasReminder}
@@ -298,14 +300,14 @@ export default function Notes() {
                 className="flex-1 h-12 rounded-xl"
                 disabled={saving}
               >
-                Cancelar
+                {t('cancel')}
               </Button>
               <Button
                 onClick={handleSaveNote}
                 disabled={!formData.title || saving}
                 className="flex-1 h-12 rounded-xl"
               >
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Salvar'}
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : t('save')}
               </Button>
             </div>
           </div>
@@ -316,15 +318,15 @@ export default function Notes() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir anotação?</AlertDialogTitle>
+            <AlertDialogTitle>{t('notes.delete.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. A nota será removida permanentemente.
+              {t('notes.delete.desc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-xl">{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteNote} className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Excluir
+              {t('docs.action.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

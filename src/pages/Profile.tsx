@@ -25,8 +25,10 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { validatePassword, getPasswordStrength } from '@/lib/passwordValidation';
 import { logger } from '@/lib/logger';
+import { useApp } from '@/contexts/AppContext';
 
 export default function Profile() {
+  const { t } = useApp();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, updateProfile, loading } = useProfile();
@@ -66,15 +68,15 @@ export default function Profile() {
       await updateProfile({ avatar_url: publicUrl });
 
       toast({
-        title: "Foto atualizada!",
-        description: "Sua foto de perfil foi alterada com sucesso.",
+        title: t('profile.photo.success'),
+        description: t('profile.photo.success_desc'),
       });
     } catch (error) {
       logger.error('Error uploading photo');
       toast({
         variant: "destructive",
-        title: "Erro ao enviar foto",
-        description: "Tente novamente.",
+        title: t('profile.photo.error'),
+        description: t('profile.photo.error_desc'),
       });
     } finally {
       setUploadingPhoto(false);
@@ -96,8 +98,8 @@ export default function Profile() {
     if (newPassword !== confirmPassword) {
       toast({
         variant: "destructive",
-        title: "Senhas não coincidem",
-        description: "A nova senha e a confirmação devem ser iguais.",
+        title: t('profile.password.match_error'),
+        description: t('profile.password.match_error_desc'),
       });
       return;
     }
@@ -122,8 +124,8 @@ export default function Profile() {
       if (error) throw error;
 
       toast({
-        title: "Senha alterada!",
-        description: "Sua senha foi atualizada com sucesso.",
+        title: t('profile.password.success'),
+        description: t('profile.password.success_desc'),
       });
 
       setShowPasswordDialog(false);
@@ -135,8 +137,8 @@ export default function Profile() {
       logger.error('Error changing password', { error: authError.message });
       toast({
         variant: "destructive",
-        title: "Erro ao alterar senha",
-        description: "Ocorreu um erro. Tente novamente.",
+        title: t('profile.password.error'),
+        description: t('profile.password.error_desc'),
       });
     } finally {
       setChangingPassword(false);
@@ -167,7 +169,7 @@ export default function Profile() {
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-2xl font-bold text-foreground">Meu Perfil</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('profile.title')}</h1>
         </div>
 
         {/* Profile Photo */}
@@ -229,7 +231,7 @@ export default function Profile() {
               <User className="w-5 h-5 text-muted-foreground" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-medium">Nome</p>
+              <p className="font-medium">{t('settings.profile_name')}</p>
               <p className="text-sm text-muted-foreground">{displayName}</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -253,7 +255,7 @@ export default function Profile() {
               <Lock className="w-5 h-5 text-muted-foreground" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-medium">Alterar senha</p>
+              <p className="font-medium">{t('profile.password.title')}</p>
               <p className="text-sm text-muted-foreground">Atualize sua senha</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -314,7 +316,7 @@ export default function Profile() {
       <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
         <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Editar nome</DialogTitle>
+            <DialogTitle>{t('profile.name.edit')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
@@ -334,14 +336,14 @@ export default function Profile() {
                 className="flex-1 h-12 rounded-xl"
                 disabled={saving}
               >
-                Cancelar
+                {t('cancel')}
               </Button>
               <Button
                 onClick={handleSaveName}
                 className="flex-1 h-12 rounded-xl"
                 disabled={saving || !tempName.trim()}
               >
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Salvar'}
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : t('save')}
               </Button>
             </div>
           </div>
@@ -352,7 +354,7 @@ export default function Profile() {
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
         <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Alterar senha</DialogTitle>
+            <DialogTitle>{t('profile.password.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
@@ -362,7 +364,7 @@ export default function Profile() {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Digite a nova senha"
+                placeholder={t('profile.password.new_placeholder')}
                 className="h-12 rounded-xl"
               />
             </div>
@@ -373,7 +375,7 @@ export default function Profile() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirme a nova senha"
+                placeholder={t('profile.password.confirm_placeholder')}
                 className="h-12 rounded-xl"
               />
 
@@ -421,14 +423,14 @@ export default function Profile() {
                 className="flex-1 h-12 rounded-xl"
                 disabled={changingPassword}
               >
-                Cancelar
+                {t('cancel')}
               </Button>
               <Button
                 onClick={handleChangePassword}
                 className="flex-1 h-12 rounded-xl"
                 disabled={changingPassword || !newPassword || !confirmPassword}
               >
-                {changingPassword ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Alterar'}
+                {changingPassword ? <Loader2 className="w-5 h-5 animate-spin" /> : t('profile.password.change_btn')}
               </Button>
             </div>
           </div>

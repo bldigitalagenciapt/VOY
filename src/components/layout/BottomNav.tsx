@@ -1,4 +1,4 @@
-import { Home, FileText, Plus, MessageCircle, User, Fingerprint, StickyNote, TrendingDown, TrendingUp } from 'lucide-react';
+import { Home, FileText, Plus, MessageCircle, User, Fingerprint, StickyNote, TrendingDown, TrendingUp, Globe } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
@@ -18,9 +18,9 @@ export function BottomNav() {
 
   const navItems = [
     { path: '/home', icon: Home, label: t('nav.home') },
-    { path: '/documents', icon: FileText, label: t('nav.documents') },
+    { path: '/documents', icon: FileText, label: t('nav.docs') },
     { isFAB: true },
-    { path: '/community', icon: MessageCircle, label: t('nav.community') },
+    { path: '/aima', icon: Globe, label: t('nav.aima') },
     { path: '/profile', icon: User, label: t('nav.profile') },
   ];
 
@@ -28,7 +28,7 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border/50 pb-safe-bottom backdrop-blur-xl">
       <div className="max-w-md mx-auto px-6 h-20 flex items-center justify-between relative">
         {navItems.map((item, index) => {
-          if (item.isFAB) {
+          if ('isFAB' in item && item.isFAB) {
             return (
               <Sheet key="fab">
                 <SheetTrigger asChild>
@@ -42,7 +42,7 @@ export function BottomNav() {
                 </SheetTrigger>
                 <SheetContent side="bottom" className="rounded-t-[2.5rem] border-t-0 bg-[#0D1520] p-8 border-none">
                   <SheetHeader className="mb-8">
-                    <SheetTitle className="text-2xl font-black text-center text-white">{t('nav.quickActions')}</SheetTitle>
+                    <SheetTitle className="text-2xl font-black text-center text-white">{t('home.quick_access')}</SheetTitle>
                   </SheetHeader>
                   <div className="grid grid-cols-2 gap-4 pb-8">
                     <button
@@ -52,7 +52,7 @@ export function BottomNav() {
                       <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400">
                         <FileText className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-bold text-white">{t('nav.addDoc')}</span>
+                      <span className="text-sm font-bold text-white">{t('docs.add')}</span>
                     </button>
                     <button
                       onClick={() => { navigate('/notes'); }}
@@ -61,7 +61,7 @@ export function BottomNav() {
                       <div className="w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center text-yellow-400">
                         <StickyNote className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-bold text-white">{t('nav.addNote')}</span>
+                      <span className="text-sm font-bold text-white">{t('services.notes')}</span>
                     </button>
                     <button
                       onClick={() => { navigate('/meu-bolso'); }}
@@ -70,7 +70,7 @@ export function BottomNav() {
                       <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center text-red-400">
                         <TrendingDown className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-bold text-white">{t('nav.addExpense')}</span>
+                      <span className="text-sm font-bold text-white">{t('services.wallet')}</span>
                     </button>
                     <button
                       onClick={() => { navigate('/meu-bolso'); }}
@@ -79,7 +79,7 @@ export function BottomNav() {
                       <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                         <TrendingUp className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-bold text-white">{t('nav.addIncome')}</span>
+                      <span className="text-sm font-bold text-white">{t('services.wallet')}</span>
                     </button>
                   </div>
                 </SheetContent>
@@ -87,29 +87,32 @@ export function BottomNav() {
             );
           }
 
-          const isActive = location.pathname === item.path;
-          const Icon = item.icon!;
+          if ('path' in item) {
+            const isActive = location.pathname === item.path;
+            const Icon = item.icon!;
 
-          return (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className={cn(
-                'flex flex-col items-center justify-center gap-1 transition-colors',
-                isActive ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
-              <Icon
-                className={cn('w-6 h-6', isActive ? 'stroke-[2.5]' : 'stroke-[1.5]')}
-              />
-              <span className={cn(
-                'text-[10px] font-black tracking-widest',
-                isActive ? 'opacity-100' : 'opacity-60'
-              )}>
-                {item.label}
-              </span>
-            </button>
-          );
+            return (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={cn(
+                  'flex flex-col items-center justify-center gap-1 transition-colors',
+                  isActive ? 'text-primary' : 'text-muted-foreground'
+                )}
+              >
+                <Icon
+                  className={cn('w-6 h-6', isActive ? 'stroke-[2.5]' : 'stroke-[1.5]')}
+                />
+                <span className={cn(
+                  'text-[10px] font-black tracking-widest',
+                  isActive ? 'opacity-100' : 'opacity-60'
+                )}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          }
+          return null;
         })}
       </div>
     </nav>

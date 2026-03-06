@@ -7,9 +7,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface DocumentViewerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  document: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  doc: {
     id: string;
     name: string;
     file_url: string | null;
@@ -53,33 +53,33 @@ const isPdf = (fileType: string | null) => {
   return fileType.includes('pdf');
 };
 
-export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProps) {
+export function DocumentViewer({ open, onOpenChange, doc }: DocumentViewerProps) {
   const [downloading, setDownloading] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [loadingUrl, setLoadingUrl] = useState(false);
 
   useEffect(() => {
-    if (isOpen && document?.file_url) {
+    if (open && doc?.file_url) {
       generateSignedUrl();
     } else {
       setSignedUrl(null);
       setImageLoading(true);
     }
-  }, [isOpen, document?.file_url]);
+  }, [open, doc?.file_url]);
 
   const generateSignedUrl = async () => {
-    if (!document?.file_url) return;
+    if (!doc?.file_url) return;
 
     setLoadingUrl(true);
     try {
       const bucket = 'voy_secure_docs';
       let filePath = '';
 
-      if (document.file_url.includes(`/${bucket}/`)) {
-        filePath = decodeURIComponent(document.file_url.split(`/${bucket}/`)[1]);
+      if (doc.file_url.includes(`/${bucket}/`)) {
+        filePath = decodeURIComponent(doc.file_url.split(`/${bucket}/`)[1]);
       } else {
-        const urlParts = document.file_url.split('/');
+        const urlParts = doc.file_url.split('/');
         filePath = urlParts[urlParts.length - 1];
       }
 
@@ -97,15 +97,15 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
     }
   };
 
-  if (!document) return null;
+  if (!doc) return null;
 
-  const Icon = getFileIcon(document.file_type);
-  const fileTypeName = getFileTypeName(document.file_type);
-  const canPreviewImage = isImage(document.file_type);
-  const canPreviewPdf = isPdf(document.file_type);
+  const Icon = getFileIcon(doc.file_type);
+  const fileTypeName = getFileTypeName(doc.file_type);
+  const canPreviewImage = isImage(doc.file_type);
+  const canPreviewPdf = isPdf(doc.file_type);
 
   const handleDownload = async () => {
-    const urlToUse = signedUrl || document.file_url;
+    const urlToUse = signedUrl || doc.file_url;
     if (!urlToUse) return;
 
     setDownloading(true);
@@ -115,7 +115,7 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
       const url = window.URL.createObjectURL(blob);
       const a = window.document.createElement('a');
       a.href = url;
-      a.download = document.name + (document.file_type ? `.${document.file_type.split('/').pop()}` : '');
+      a.download = doc.name + (doc.file_type ? `.${doc.file_type.split('/').pop()}` : '');
       window.document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -129,14 +129,14 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
   };
 
   const handleOpenExternal = () => {
-    const urlToUse = signedUrl || document.file_url;
+    const urlToUse = signedUrl || doc.file_url;
     if (urlToUse) {
       window.open(urlToUse, '_blank');
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[calc(100vw-1rem)] max-h-[90vh] rounded-2xl p-0 overflow-hidden">
         <DialogHeader className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
@@ -145,7 +145,7 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
                 <Icon className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <DialogTitle className="text-left truncate">{document.name}</DialogTitle>
+                <DialogTitle className="text-left truncate">{doc.name}</DialogTitle>
                 <p className="text-sm text-muted-foreground">{fileTypeName}</p>
               </div>
             </div>
@@ -158,7 +158,7 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground animate-pulse">Obtendo acesso seguro...</p>
             </div>
-          ) : document.file_url && signedUrl ? (
+          ) : doc.file_url && signedUrl ? (
             <>
               {canPreviewImage && (
                 <div className="relative w-full flex items-center justify-center min-h-[200px] bg-muted rounded-xl overflow-hidden">
@@ -169,7 +169,7 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
                   )}
                   <img
                     src={signedUrl}
-                    alt={document.name}
+                    alt={doc.name}
                     className={cn(
                       "max-w-full max-h-[50vh] object-contain rounded-lg",
                       imageLoading && "opacity-0"
@@ -238,12 +238,12 @@ export function DocumentViewer({ isOpen, onClose, document }: DocumentViewerProp
         <div className="p-4 border-t border-border flex gap-3">
           <Button
             variant="outline"
-            onClick={onClose}
+            onClick={onOpenChange ? () => onOpenChange(false) : () => { }}
             className="flex-1 h-12 rounded-xl"
           >
             Fechar
           </Button>
-          {document.file_url && signedUrl && (
+          {doc.file_url && signedUrl && (
             <Button
               onClick={handleDownload}
               disabled={downloading}
