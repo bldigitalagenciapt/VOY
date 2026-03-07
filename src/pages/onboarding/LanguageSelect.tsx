@@ -29,7 +29,7 @@ export default function LanguageSelect() {
           {t('language.select')}
         </h1>
         <p className="text-muted-foreground mb-8 animate-fade-in" style={{ animationDelay: '100ms' }}>
-          Você pode mudar isso depois nas configurações.
+          {t('onboarding.language.hint')}
         </p>
 
         <div className="space-y-3">

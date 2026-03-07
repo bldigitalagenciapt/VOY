@@ -64,11 +64,11 @@ export default function Settings() {
       if (!data?.success) throw new Error(data?.error || 'Deletion failed');
 
       await signOut();
-      toast.success('Sua conta e dados foram removidos com sucesso. Reembolso será processado pelo Stripe.');
+      toast.success(t('settings.delete.success') || 'Sua conta e dados foram removidos com sucesso. Reembolso será processado pelo Stripe.');
       navigate('/auth');
     } catch (error: any) {
       console.error('Delete account error:', error);
-      toast.error(error?.message || 'Erro ao excluir conta. Contacte o suporte.');
+      toast.error(error?.message || t('settings.delete.error') || 'Erro ao excluir conta. Contacte o suporte.');
       setDeletingAccount(false);
     }
   };
@@ -114,7 +114,7 @@ export default function Settings() {
       id: 'theme',
       icon: Palette,
       label: t('settings.theme'),
-      value: profile?.theme === 'dark' ? t('theme.dark') : t('theme.light'),
+      value: profile?.theme === 'dark' ? t('settings.theme.dark') : t('settings.theme.light'),
       onClick: () => setShowThemeDialog(true),
     },
     {
@@ -196,8 +196,8 @@ export default function Settings() {
                 <ShieldCheck className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 text-left">
-                <p className="font-bold text-primary">Master Panel</p>
-                <p className="text-xs text-primary/70">Acesso Administrativo</p>
+                <p className="font-bold text-primary">{t('settings.admin_panel')}</p>
+                <p className="text-xs text-primary/70">{t('settings.admin_desc')}</p>
               </div>
               <ChevronRight className="w-5 h-5 text-primary" />
             </button>
@@ -231,11 +231,11 @@ export default function Settings() {
                 <Shield className="w-6 h-6 text-orange-500" />
               </div>
               <div className="space-y-1">
-                <span className="font-black text-orange-500 text-sm tracking-widest uppercase">Solicitar Reembolso</span>
-                <p className="text-[10px] text-orange-400/80 font-bold uppercase tracking-widest leading-none">Válido por 7 dias (Garantia)</p>
+                <span className="font-black text-orange-500 text-sm tracking-widest uppercase">{t('settings.refund')}</span>
+                <span className="block text-[10px] text-orange-400/80 font-bold uppercase tracking-widest leading-none">{t('settings.refund_guarantee')}</span>
               </div>
               <p className="text-xs text-orange-200/50 font-medium px-4">
-                Ao clicar aqui, você receberá o reembolso total e sua conta será bloqueada e excluída permanentemente.
+                {t('settings.refund_desc')}
               </p>
             </button>
           )}
@@ -313,7 +313,7 @@ export default function Settings() {
                   : 'border-border hover:border-primary/50'
               )}
             >
-              <span className="font-medium">☀️ Claro</span>
+              <span className="font-medium">{t('settings.theme.light')}</span>
             </button>
             <button
               onClick={() => handleThemeChange('dark')}
@@ -324,7 +324,7 @@ export default function Settings() {
                   : 'border-border hover:border-primary/50'
               )}
             >
-              <span className="font-medium">🌙 Escuro</span>
+              <span className="font-medium">{t('settings.theme.dark')}</span>
             </button>
           </div>
         </DialogContent>

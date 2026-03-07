@@ -186,7 +186,7 @@ export default function Home() {
       case 'nif': return 'NIF';
       case 'niss': return 'NISS';
       case 'sns': return 'SNS';
-      case 'passport': return t('home.passport_placeholder').replace(t('docs.add') + ' ', '');
+      case 'passport': return t('home.passport_placeholder').replace(t('home.doc_number') + ' ', '');
       default: return type || '';
     }
   };

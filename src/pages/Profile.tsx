@@ -109,7 +109,7 @@ export default function Profile() {
     if (!validation.isValid) {
       toast({
         variant: "destructive",
-        title: "Senha fraca",
+        title: t('profile.password.weak'),
         description: validation.errors[0],
       });
       return;
@@ -155,7 +155,7 @@ export default function Profile() {
     );
   }
 
-  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Usuário';
+  const displayName = profile?.display_name || user?.email?.split('@')[0] || t('home.guest');
   const avatarUrl = profile?.avatar_url;
 
   return (
@@ -181,7 +181,7 @@ export default function Profile() {
               ) : profile?.signedAvatarUrl || profile?.avatar_url ? (
                 <img
                   src={profile.signedAvatarUrl || profile.avatar_url || ''}
-                  alt="Foto"
+                  alt={t('profile.title')}
                   className="w-full h-full object-cover object-center"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
@@ -242,7 +242,7 @@ export default function Profile() {
               <Mail className="w-5 h-5 text-muted-foreground" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-medium">Email</p>
+              <p className="font-medium">{t('profile.email')}</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
@@ -256,7 +256,7 @@ export default function Profile() {
             </div>
             <div className="flex-1 text-left">
               <p className="font-medium">{t('profile.password.title')}</p>
-              <p className="text-sm text-muted-foreground">Atualize sua senha</p>
+              <p className="text-sm text-muted-foreground">{t('profile.password.update')}</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -265,7 +265,7 @@ export default function Profile() {
         {/* Settings Shortcuts */}
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            Configurações rápidas
+            {t('profile.quick_settings')}
           </h3>
 
           <button
@@ -276,8 +276,8 @@ export default function Profile() {
               <FolderPlus className="w-5 h-5 text-info" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-medium">Categorias de documentos</p>
-              <p className="text-sm text-muted-foreground">Gerenciar categorias</p>
+              <p className="font-medium">{t('settings.docCategories')}</p>
+              <p className="text-sm text-muted-foreground">{t('profile.doc_categories_desc')}</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -290,8 +290,8 @@ export default function Profile() {
               <Star className="w-5 h-5 text-warning" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-medium">Acesso rápido</p>
-              <p className="text-sm text-muted-foreground">Escolher documentos favoritos</p>
+              <p className="font-medium">{t('settings.quickAccess')}</p>
+              <p className="text-sm text-muted-foreground">{t('profile.quick_access_desc')}</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -304,8 +304,8 @@ export default function Profile() {
               <Settings className="w-5 h-5 text-muted-foreground" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-medium">Todas as configurações</p>
-              <p className="text-sm text-muted-foreground">Idioma, tema e mais</p>
+              <p className="font-medium">{t('profile.all_settings')}</p>
+              <p className="text-sm text-muted-foreground">{t('profile.all_settings_desc')}</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -320,12 +320,12 @@ export default function Profile() {
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome de exibição</Label>
+              <Label htmlFor="name">{t('profile.name.display')}</Label>
               <Input
                 id="name"
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
-                placeholder="Seu nome"
+                placeholder={t('profile.name.placeholder')}
                 className="h-12 rounded-xl"
               />
             </div>
@@ -358,7 +358,7 @@ export default function Profile() {
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="newPassword">Nova senha</Label>
+              <Label htmlFor="newPassword">{t('profile.password.new')}</Label>
               <Input
                 id="newPassword"
                 type="password"
@@ -369,7 +369,7 @@ export default function Profile() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar nova senha</Label>
+              <Label htmlFor="confirmPassword">{t('profile.password.confirm')}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -403,11 +403,11 @@ export default function Profile() {
                     passwordStrength === 'weak' ? 'text-destructive' :
                       passwordStrength === 'medium' ? 'text-warning' : 'text-success'
                   )}>
-                    Força: {passwordStrength === 'weak' ? 'Fraca' :
-                      passwordStrength === 'medium' ? 'Média' : 'Forte'}
+                    {t('profile.password.strength')}: {passwordStrength === 'weak' ? t('profile.password.weak') :
+                      passwordStrength === 'medium' ? t('profile.password.medium') : t('profile.password.strong')}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Mínimo 8 caracteres, 1 letra e 1 número
+                    {t('profile.password.strength_desc')}
                   </p>
                 </div>
               )}
