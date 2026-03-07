@@ -9,16 +9,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { 
-    ChevronLeft, 
-    Plus, 
-    TrendingUp, 
-    TrendingDown, 
-    Wallet, 
-    Trash2, 
-    Loader2, 
-    ArrowUpCircle, 
-    ArrowDownCircle, 
+import {
+    ChevronLeft,
+    Plus,
+    TrendingUp,
+    TrendingDown,
+    Wallet,
+    Trash2,
+    Loader2,
+    ArrowUpCircle,
+    ArrowDownCircle,
     PieChart as PieChartIcon,
     Calendar as CalendarIcon,
     Bell,
@@ -37,6 +37,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Download } from 'lucide-react';
 
 interface Transaction {
     id: string;
@@ -81,6 +82,31 @@ export default function MeuBolso() {
         setNewCat('Outros');
     };
 
+    const exportToCSV = () => {
+        if (transactions.length === 0) {
+            toast.error('Nenhuma transação para exportar.');
+            return;
+        }
+        const header = 'Data;Tipo;Categoria;Valor (EUR);Estado;Vencimento';
+        const rows = transactions.map(t => [
+            new Date(t.data).toLocaleDateString('pt-PT'),
+            t.tipo === 'entrada' ? 'Entrada' : 'Saída',
+            t.categoria,
+            Number(t.valor).toFixed(2),
+            t.status === 'pendente' ? 'Pendente' : 'Pago',
+            t.due_date ? new Date(t.due_date).toLocaleDateString('pt-PT') : ''
+        ].join(';'));
+        const csvContent = '\uFEFF' + [header, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `meu-bolso-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+        toast.success('CSV exportado com sucesso!');
+    };
+
     useEffect(() => {
         if (user) fetchTransactions();
     }, [user]);
@@ -101,7 +127,7 @@ export default function MeuBolso() {
     const handleAdd = async () => {
         if (!user || !newVal) return;
         setSaving(true);
-        const { error } = await supabase
+        const { error } = await (supabase as any)
             .from('transactions')
             .insert({
                 user_id: user.id,
@@ -113,7 +139,6 @@ export default function MeuBolso() {
                 is_recurring: isRecurring,
                 status: isPending ? 'pendente' : 'pago'
             });
-
         if (!error) {
             toast.success("Transação adicionada!");
             fetchTransactions();
@@ -139,7 +164,7 @@ export default function MeuBolso() {
 
     const handleToggleStatus = async (transaction: Transaction) => {
         const newStatus = transaction.status === 'pago' ? 'pendente' : 'pago';
-        const { error } = await supabase
+        const { error } = await (supabase as any)
             .from('transactions')
             .update({ status: newStatus })
             .eq('id', transaction.id);
@@ -179,14 +204,25 @@ export default function MeuBolso() {
         <MobileLayout showNav={false}>
             <div className="px-5 py-6 safe-area-top pb-24">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-8">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+                <div className="flex items-center justify-between gap-4 mb-8">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <h1 className="text-2xl font-bold text-foreground">Meu Bolso</h1>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={exportToCSV}
+                        className="rounded-xl gap-2 text-xs font-bold shrink-0"
                     >
-                        <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <h1 className="text-2xl font-bold text-foreground">Meu Bolso</h1>
+                        <Download className="w-4 h-4" />
+                        CSV
+                    </Button>
                 </div>
 
                 {/* Alerts Section */}
@@ -304,12 +340,12 @@ export default function MeuBolso() {
                         ) : (
                             transactions.map((t) => (
                                 <div key={t.id} className="flex items-center gap-4 p-4 bg-card border rounded-2xl group active:scale-95 transition-all">
-                                    <div 
+                                    <div
                                         onClick={() => handleToggleStatus(t)}
                                         className={cn(
-                                        "w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-transform hover:scale-110",
-                                        t.status === 'pendente' ? "bg-muted text-muted-foreground" : (t.tipo === 'entrada' ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive")
-                                    )}>
+                                            "w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-transform hover:scale-110",
+                                            t.status === 'pendente' ? "bg-muted text-muted-foreground" : (t.tipo === 'entrada' ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive")
+                                        )}>
                                         {t.status === 'pendente' ? <Clock className="w-5 h-5" /> : (t.tipo === 'entrada' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />)}
                                     </div>
                                     <div className="flex-1">

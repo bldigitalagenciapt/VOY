@@ -34,7 +34,7 @@ export default function Admin() {
     const { user, loading: authLoading } = useAuth();
     const [activeTab, setActiveTab] = useState<TabType>('dashboard');
 
-    const isAdmin = profile?.is_admin === true || user?.email?.toLowerCase().trim() === 'brunoalmeidaoficial21@gmail.com';
+    const isAdmin = profile?.is_admin === true;
 
     useEffect(() => {
         if (!profileLoading && !authLoading && !isAdmin) {

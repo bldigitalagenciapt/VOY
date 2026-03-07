@@ -24,6 +24,8 @@ export interface Profile {
   plan_status?: string | null;
   payment_date?: string | null;
   email?: string | null;
+  emergency_contact?: string | null;
+  emergency_contact_name?: string | null;
 }
 
 export function useProfile() {

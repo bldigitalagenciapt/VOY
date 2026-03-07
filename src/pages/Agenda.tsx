@@ -15,15 +15,18 @@ import {
     Clock,
     Trash2,
     Info,
-    InfoIcon
+    InfoIcon,
+    ExternalLink
 } from 'lucide-react';
 import { useCalendar, CalendarEvent } from '@/hooks/useCalendar';
+import { useApp } from '@/contexts/AppContext';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isToday, addMonths, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 export default function Agenda() {
     const navigate = useNavigate();
+    const { t } = useApp();
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
     const { events, loading, createEvent, deleteEvent } = useCalendar(currentMonth.getFullYear());
@@ -54,6 +57,20 @@ export default function Agenda() {
         setNewTitle('');
         setNewDesc('');
         setShowAddDialog(false);
+    };
+
+    const getGoogleCalendarUrl = (event: CalendarEvent) => {
+        const title = encodeURIComponent(event.title);
+        const description = encodeURIComponent(event.description || '');
+        // format date as YYYYMMDD
+        const dateStr = event.event_date.replace(/-/g, '');
+        // Google Calendar needs a start and end date/time. For whole day events: YYYYMMDD/YYYYMMDD+1
+        const start = dateStr;
+        const end = format(addMonths(new Date(event.event_date + 'T12:00:00'), 0), 'yyyyMMdd', { locale: ptBR }); // same day for now, or add 1 day
+
+        // Let's just use the same date for start and end if it's an all-day event
+        // Actually YYYYMMDD/YYYYMMDD is valid for single day
+        return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${description}&dates=${start}/${start}&sf=true&output=xml`;
     };
 
     return (
@@ -216,12 +233,21 @@ export default function Agenda() {
                                             <p className="text-xs text-muted-foreground">{event.description || 'Consulta a tua agenda'}</p>
                                         </div>
                                         {!event.is_holiday && (
-                                            <button
-                                                onClick={() => deleteEvent(event.id)}
-                                                className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    onClick={() => window.open(getGoogleCalendarUrl(event), '_blank')}
+                                                    className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                                                    title={t('agenda.add_google_calendar')}
+                                                >
+                                                    <ExternalLink className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteEvent(event.id)}
+                                                    className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 </Card>

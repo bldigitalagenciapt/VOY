@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Bell, ChevronLeft, Info, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -13,27 +14,42 @@ interface Notification {
     type: 'info' | 'success' | 'warning';
     created_at: string;
     is_read: boolean;
+    user_id?: string | null;
+    target_all?: boolean;
 }
 
 export default function Notifications() {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchNotifications();
-    }, []);
+        if (user) fetchNotifications();
+    }, [user]);
 
     const fetchNotifications = async () => {
+        if (!user) return;
         try {
             setLoading(true);
             const { data, error } = await (supabase as any)
                 .from('system_notifications')
                 .select('*')
+                .or(`user_id.eq.${user.id},target_all.eq.true`)
                 .order('created_at', { ascending: false });
 
             if (!error && data) {
                 setNotifications(data as Notification[]);
+                // Mark all unread as read
+                const unreadIds = (data as Notification[])
+                    .filter(n => !n.is_read)
+                    .map(n => n.id);
+                if (unreadIds.length > 0) {
+                    await (supabase as any)
+                        .from('system_notifications')
+                        .update({ is_read: true })
+                        .in('id', unreadIds);
+                }
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -72,8 +88,11 @@ export default function Notifications() {
                         notifications.map((notif) => (
                             <div
                                 key={notif.id}
-                                className="p-6 rounded-3xl bg-card border border-border shadow-soft space-y-3 relative overflow-hidden group transition-all hover:shadow-glow"
+                                className={`p-6 rounded-3xl bg-card border shadow-soft space-y-3 relative overflow-hidden group transition-all hover:shadow-glow ${notif.is_read ? 'border-border' : 'border-primary/30 bg-primary/5'}`}
                             >
+                                {!notif.is_read && (
+                                    <span className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary" />
+                                )}
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-2xl bg-muted/50 flex items-center justify-center">

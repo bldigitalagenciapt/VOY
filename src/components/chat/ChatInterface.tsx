@@ -191,8 +191,13 @@ interface ChatInterfaceProps {
 export function ChatInterface({ onClose }: ChatInterfaceProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [selectedQuestion, setSelectedQuestion] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+
+    const filteredFaqs = searchQuery.trim()
+        ? faqQuestions.filter(q => q.question.toLowerCase().includes(searchQuery.toLowerCase()))
+        : faqQuestions;
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -233,11 +238,11 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
             <div className="px-5 py-4 border-b border-border/50 bg-card/80 backdrop-blur-xl safe-area-top flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-blue-500/15 flex items-center justify-center">
-                        <Sparkles className="w-5 h-5 text-blue-600" />
+                        <Bot className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                        <h1 className="font-bold text-foreground">Preciso de Ajuda</h1>
-                        <p className="text-xs text-muted-foreground">Assistente Virtual VOY</p>
+                        <h1 className="font-bold text-foreground">Perguntas Frequentes</h1>
+                        <p className="text-xs text-muted-foreground">Base de conhecimento VOY</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -261,15 +266,28 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
             <div className="flex-1 overflow-y-auto px-5 py-4 scrollbar-hide">
                 {messages.length === 0 ? (
                     <div className="space-y-6 animate-in fade-in zoom-in duration-300">
-                        {/* Welcome */}
-                        <div className="text-center py-6">
-                            <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-4 animate-bounce">
-                                <Bot className="w-8 h-8 text-blue-600" />
-                            </div>
-                            <h2 className="text-lg font-black mb-2 tracking-tight">Como posso ajudar?</h2>
-                            <p className="text-sm text-muted-foreground">
-                                Selecione uma dúvida abaixo para começar
+                        {/* Disclaimer */}
+                        <div className="flex items-start gap-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                            <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                            <p className="text-xs text-foreground/80 leading-relaxed">
+                                Respondo apenas às perguntas listadas abaixo. Para casos específicos, consulte sempre um advogado ou o portal oficial da AIMA.
                             </p>
+                        </div>
+
+                        {/* Search */}
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Pesquisar nas perguntas..."
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                className="w-full h-11 pl-4 pr-10 rounded-xl bg-muted/50 border border-border/40 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            />
+                            {searchQuery && (
+                                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-3 text-muted-foreground hover:text-foreground">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
 
                         {/* Featured Actions */}
@@ -301,9 +319,13 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                         {/* FAQ Questions */}
                         <div className="space-y-2 pb-10">
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3 px-1">
-                                Perguntas frequentes
+                                {searchQuery ? `${filteredFaqs.length} resultado(s) encontrado(s)` : 'Perguntas frequentes'}
                             </p>
-                            {faqQuestions.map((faq, index) => (
+                            {filteredFaqs.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground text-sm">
+                                    Nenhuma pergunta encontrada para "{searchQuery}".
+                                </div>
+                            ) : filteredFaqs.map((faq, index) => (
                                 <button
                                     key={index}
                                     onClick={() => handleSelectQuestion(faq.question)}

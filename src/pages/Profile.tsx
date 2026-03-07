@@ -16,7 +16,8 @@ import {
   Settings,
   FolderPlus,
   Star,
-  ChevronRight
+  ChevronRight,
+  Phone
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -45,6 +46,11 @@ export default function Profile() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
+
+  // Emergency contact fields
+  const [showEmergencyDialog, setShowEmergencyDialog] = useState(false);
+  const [tempEmergencyName, setTempEmergencyName] = useState('');
+  const [tempEmergencyPhone, setTempEmergencyPhone] = useState('');
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,6 +96,16 @@ export default function Profile() {
     await updateProfile({ display_name: tempName });
     setSaving(false);
     setShowNameDialog(false);
+  };
+
+  const handleSaveEmergency = async () => {
+    setSaving(true);
+    await updateProfile({
+      emergency_contact_name: tempEmergencyName,
+      emergency_contact: tempEmergencyPhone
+    });
+    setSaving(false);
+    setShowEmergencyDialog(false);
   };
 
   const passwordStrength = getPasswordStrength(newPassword);
@@ -257,6 +273,26 @@ export default function Profile() {
             <div className="flex-1 text-left">
               <p className="font-medium">{t('profile.password.title')}</p>
               <p className="text-sm text-muted-foreground">{t('profile.password.update')}</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          </button>
+
+          <button
+            onClick={() => {
+              setTempEmergencyName(profile?.emergency_contact_name || '');
+              setTempEmergencyPhone(profile?.emergency_contact || '');
+              setShowEmergencyDialog(true);
+            }}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all"
+          >
+            <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+              <Phone className="w-5 h-5 text-red-500" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-medium">{t('profile.emergency_contact')}</p>
+              <p className="text-sm text-muted-foreground text-ellipsis overflow-hidden">
+                {profile?.emergency_contact_name ? `${profile.emergency_contact_name} (${profile.emergency_contact})` : t('profile.emergency_contact_placeholder')}
+              </p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -431,6 +467,55 @@ export default function Profile() {
                 disabled={changingPassword || !newPassword || !confirmPassword}
               >
                 {changingPassword ? <Loader2 className="w-5 h-5 animate-spin" /> : t('profile.password.change_btn')}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Emergency Contact Dialog */}
+      <Dialog open={showEmergencyDialog} onOpenChange={setShowEmergencyDialog}>
+        <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('profile.emergency_contact')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="emergencyName">{t('profile.emergency_contact_name')}</Label>
+              <Input
+                id="emergencyName"
+                value={tempEmergencyName}
+                onChange={(e) => setTempEmergencyName(e.target.value)}
+                placeholder={t('profile.emergency_name_placeholder')}
+                className="h-12 rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="emergencyPhone">{t('profile.emergency_contact')}</Label>
+              <Input
+                id="emergencyPhone"
+                value={tempEmergencyPhone}
+                onChange={(e) => setTempEmergencyPhone(e.target.value)}
+                placeholder={t('profile.emergency_contact_placeholder')}
+                className="h-12 rounded-xl"
+                type="tel"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowEmergencyDialog(false)}
+                className="flex-1 h-12 rounded-xl"
+                disabled={saving}
+              >
+                {t('cancel')}
+              </Button>
+              <Button
+                onClick={handleSaveEmergency}
+                className="flex-1 h-12 rounded-xl"
+                disabled={saving}
+              >
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : t('save')}
               </Button>
             </div>
           </div>

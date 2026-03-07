@@ -4,6 +4,7 @@ import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
+import { visaTypes } from '@/data/visaTypes';
 
 export interface ImportantDate {
   label: string;
@@ -208,7 +209,34 @@ export function useAimaProcess() {
   const getStepsForProcess = (type: string | null): Step[] => {
     if (!type) return [];
 
-    const steps: Record<string, Step[]> = {
+    const commonSteps = {
+      entrada: {
+        id: 'entrada',
+        title: 'Entrada Legal',
+        description: 'Garantir que sua entrada em Portugal foi registrada corretamente.',
+        voyTip: 'Se entrou por outro país do Espaço Schengen, tem 3 dias úteis para declarar entrada na AIMA.',
+        documents: ['Passaporte com carimbo', 'Declaração de Entrada se aplicável'],
+        cost: 'Gratuito'
+      },
+      nif_niss: {
+        id: 'nif',
+        title: 'NIF e NISS',
+        description: 'Obter os números básicos de identificação.',
+        voyTip: 'Essencial para qualquer contrato ou trabalho.',
+        documents: ['Passaporte', 'Morada'],
+        cost: 'Gratuito'
+      },
+      agendamento: {
+        id: 'agendamento',
+        title: 'Agendamento AIMA',
+        description: 'Comparecer ao agendamento para entrega de biométricos.',
+        voyTip: 'Leve todos os documentos originais e cópias.',
+        documents: ['Passaporte', 'Fotos', 'Seguro Saúde'],
+        cost: 'Varia'
+      }
+    };
+
+    const stepsMap: Record<string, Step[]> = {
       cplp: [
         {
           id: 'nif',
@@ -232,7 +260,7 @@ export function useAimaProcess() {
           id: 'junta',
           title: 'Atestado da Junta',
           description: 'Comprovativo de morada oficial da sua freguesia.',
-          voyTip: 'Precisa de 2 testemunhas que morem na mesma freguesia (algumas juntas aceitam contrato de arrendamento).',
+          voyTip: 'Precisa de 2 testemunhas que morem na mesma freguesia.',
           documents: ['Passaporte', 'NIF', '2 Testemunhas ou Contrato'],
           cost: '€5 - €10'
         },
@@ -247,30 +275,9 @@ export function useAimaProcess() {
         }
       ],
       visto: [
-        {
-          id: 'entrada',
-          title: 'Entrada Legal',
-          description: 'Garantir que sua entrada em Portugal foi registrada corretamente.',
-          voyTip: 'Se entrou por outro país do Espaço Schengen, tem 3 dias úteis para declarar entrada na AIMA.',
-          documents: ['Passaporte com carimbo', 'Declaração de Entrada se aplicável'],
-          cost: 'Gratuito'
-        },
-        {
-          id: 'nif',
-          title: 'NIF e NISS',
-          description: 'Obter os números básicos de identificação.',
-          voyTip: 'Como você já tem visto, o processo é mais rápido.',
-          documents: ['Visto', 'Passaporte', 'Morada'],
-          cost: 'Gratuito'
-        },
-        {
-          id: 'agendamento',
-          title: 'Agendamento AIMA',
-          description: 'Comparecer ao agendamento marcado no seu visto.',
-          voyTip: 'Leve todos os documentos originais e cópias.',
-          documents: ['Checklist do Visto', 'Fotos', 'Seguro Saúde'],
-          cost: 'Varie consoante o visto'
-        }
+        commonSteps.entrada,
+        commonSteps.nif_niss,
+        commonSteps.agendamento
       ],
       familiar: [
         {
@@ -284,7 +291,26 @@ export function useAimaProcess() {
       ]
     };
 
-    return steps[type] || [];
+    // Add specific visa types dynamically
+    visaTypes.forEach(v => {
+      if (!stepsMap[v.id]) {
+        stepsMap[v.id] = [
+          commonSteps.entrada,
+          commonSteps.nif_niss,
+          {
+            id: `docs_${v.id}`,
+            title: `Documentação ${v.name.split('(')[1]?.replace(')', '') || v.name}`,
+            description: `Preparar documentos específicos: ${v.shortDescription}`,
+            voyTip: v.observations[0] || 'Certifique-se que todos os documentos estão traduzidos e apostilados.',
+            documents: v.specificDocuments.map(d => d.name),
+            cost: 'Varia'
+          },
+          commonSteps.agendamento
+        ];
+      }
+    });
+
+    return stepsMap[type] || [];
   };
 
   const steps = getStepsForProcess(process?.process_type || null);

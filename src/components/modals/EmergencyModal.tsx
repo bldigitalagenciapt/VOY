@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Phone, AlertCircle, HeartPulse, ShieldAlert, X } from 'lucide-react';
+import { Phone, AlertCircle, HeartPulse, ShieldAlert, X, User } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
+import { useApp } from '@/contexts/AppContext';
 
 interface EmergencyModalProps {
     open: boolean;
@@ -8,29 +10,42 @@ interface EmergencyModalProps {
 }
 
 export function EmergencyModal({ open, onOpenChange }: EmergencyModalProps) {
+    const { profile } = useProfile();
+    const { t } = useApp();
+
     const contacts = [
         {
             number: '112',
-            label: 'Emergência Geral',
-            desc: 'Polícia, Bombeiros, Ambulância',
+            label: t('emergency.general') || 'Emergência Geral',
+            desc: t('emergency.general_desc') || 'Polícia, Bombeiros, Ambulância',
             icon: ShieldAlert,
             color: 'bg-red-500'
         },
         {
             number: '808 24 24 24',
-            label: 'Saúde 24',
-            desc: 'Triagem e aconselhamento médico',
+            label: t('emergency.health24') || 'Saúde 24',
+            desc: t('emergency.health24_desc') || 'Triagem e aconselhamento médico',
             icon: HeartPulse,
             color: 'bg-blue-500'
         },
         {
             number: '+351 218 106 191',
-            label: 'Apoio ao Migrante',
-            desc: 'Linha oficial da AIMA / ACM',
+            label: t('emergency.aima') || 'Apoio ao Migrante',
+            desc: t('emergency.aima_desc') || 'Linha oficial da AIMA / ACM',
             icon: AlertCircle,
             color: 'bg-orange-500'
         }
     ];
+
+    if (profile?.emergency_contact) {
+        contacts.unshift({
+            number: profile.emergency_contact,
+            label: profile.emergency_contact_name || t('emergency.personal_contact'),
+            desc: t('emergency.personal_desc'),
+            icon: User,
+            color: 'bg-primary'
+        });
+    }
 
     const handleCall = (number: string) => {
         window.location.href = `tel:${number.replace(/\s/g, '')}`;

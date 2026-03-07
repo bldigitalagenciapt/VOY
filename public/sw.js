@@ -1,27 +1,24 @@
-/*
- * VOY App - Service Worker para Notificações
- */
+// Basic Service Worker for PWA installability
+const CACHE_NAME = 'voy-v1';
+const ASSETS_TO_CACHE = [
+    '/',
+    '/index.html',
+    '/manifest.json',
+    '/vite.svg'
+];
 
-self.addEventListener('push', (event) => {
-    const data = event.data ? event.data.json() : { title: 'Notificação VOY', body: 'Você tem uma nova atualização.' };
-
-    const options = {
-        body: data.body,
-        icon: '/logo.png', // Substituir pelo ícone real se disponível
-        badge: '/badge.png',
-        data: data.url
-    };
-
+self.addEventListener('install', (event) => {
     event.waitUntil(
-        self.registration.showNotification(data.title, options)
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(ASSETS_TO_CACHE);
+        })
     );
 });
 
-self.addEventListener('notificationclick', (event) => {
-    event.notification.close();
-    if (event.notification.data) {
-        event.waitUntil(
-            clients.openWindow(event.notification.data)
-        );
-    }
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            return response || fetch(event.request);
+        })
+    );
 });

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +22,9 @@ import { useAimaProcess } from '@/hooks/useAimaProcess';
 import { useToast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
 import { useApp } from '@/contexts/AppContext';
+import { visaTypes } from '@/data/visaTypes';
+import { Badge } from '@/components/ui/badge';
+import { Info } from 'lucide-react';
 
 const MOTIVATIONAL_PHRASES = [
   "Um passo mais perto do seu sonho! 🇵🇹",
@@ -42,6 +45,15 @@ export default function Aima() {
   const { t } = useApp();
   const { toast } = useToast();
   const { process, loading, steps, selectProcessType, toggleStep, clearProcess } = useAimaProcess();
+  const [showVisaSelection, setShowVisaSelection] = useState(false);
+
+  useEffect(() => {
+    if (showVisaSelection) {
+      setTimeout(() => {
+        document.getElementById('visa-catalog')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [showVisaSelection]);
 
   const handleToggleStep = async (stepId: string) => {
     const isCompleted = process?.completed_steps?.includes(stepId);
@@ -83,7 +95,13 @@ export default function Aima() {
             {processTypes.map((type) => (
               <button
                 key={type.id}
-                onClick={() => selectProcessType(type.id)}
+                onClick={() => {
+                  if (type.id === 'visto') {
+                    setShowVisaSelection(true);
+                  } else {
+                    selectProcessType(type.id);
+                  }
+                }}
                 className="flex items-center gap-4 p-5 bg-card rounded-3xl border border-border/50 hover:border-primary/30 transition-all active:scale-[0.98]"
               >
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -96,6 +114,86 @@ export default function Aima() {
                 <ChevronRight className="w-5 h-5 text-muted-foreground opacity-30" />
               </button>
             ))}
+          </div>
+
+          <div id="visa-catalog" className="mt-12 space-y-6 scroll-mt-20">
+            <div className="flex items-center gap-2 px-1">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <Info className="w-4 h-4" />
+              </div>
+              <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground">
+                {t('aima.visa_catalog')}
+              </h2>
+            </div>
+            {showVisaSelection && (
+              <div className="bg-primary/5 p-4 rounded-2xl border border-primary/20 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-primary italic">Escolha o seu visto abaixo para ver o checklist específico:</p>
+                  <Button variant="ghost" size="sm" onClick={() => setShowVisaSelection(false)} className="h-7 text-[10px] text-primary hover:bg-primary/10">
+                    {t('cancel')}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <Accordion type="single" collapsible className="space-y-3">
+              {visaTypes.map((visa) => (
+                <AccordionItem key={visa.id} value={visa.id} className="border-none">
+                  <AccordionTrigger className={cn(
+                    "bg-card/50 p-5 rounded-3xl border border-border/40 hover:no-underline transition-all [&[data-state=open]]:bg-card [&[data-state=open]]:rounded-b-none shadow-sm",
+                    showVisaSelection && "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
+                  )}>
+                    <div className="flex flex-col items-start gap-1 text-left">
+                      <p className="font-bold text-base">{visa.name}</p>
+                      <p className="text-xs text-muted-foreground font-medium line-clamp-1">{visa.shortDescription}</p>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="bg-card border-x border-b border-border/40 rounded-b-3xl p-6">
+                    <div className="space-y-4">
+                      <Button
+                        onClick={() => selectProcessType(visa.id)}
+                        className="w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl h-12 shadow-glow mb-2"
+                      >
+                        {t('aima.select_this_visa') || 'Começar este Processo'}
+                      </Button>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-primary mb-2">{t('aima.for_who')}</p>
+                        <p className="text-sm leading-relaxed">{visa.forWho}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="rounded-lg font-bold px-3 py-1 bg-primary/5 text-primary border-primary/10">
+                          {t('aima.duration_label')} {visa.duration}
+                        </Badge>
+                      </div>
+
+                      {visa.specificDocuments.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-3">{t('aima.specific_docs')}</p>
+                          <div className="space-y-3">
+                            {visa.specificDocuments.map((doc, i) => (
+                              <div key={i} className="p-3 rounded-2xl bg-muted/30 border border-border/20">
+                                <p className="text-sm font-bold mb-1">{doc.name}</p>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{doc.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {visa.observations.length > 0 && (
+                        <div className="pt-2 border-t border-border/30">
+                          {visa.observations.map((obs, i) => (
+                            <p key={i} className="text-[10px] italic text-muted-foreground">
+                              * {obs}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </MobileLayout>

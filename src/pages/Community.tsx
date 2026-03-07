@@ -65,7 +65,7 @@ export default function Community() {
         }
     });
 
-    const isAdmin = profile?.is_admin === true || user?.email?.toLowerCase().trim() === 'brunoalmeidaoficial21@gmail.com';
+    const isAdmin = profile?.is_admin === true;
 
     const handlePost = async () => {
         if (!content.trim()) return;

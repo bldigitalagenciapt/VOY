@@ -72,7 +72,7 @@ export default function About() {
 
                 {/* Version */}
                 <div className="mt-8 text-center pb-8 animate-fade-in">
-                    <p className="text-xs font-black text-primary/40 uppercase tracking-[0.3em]">VOY VERSION 1.0.0</p>
+                    <p className="text-xs font-black text-primary/40 uppercase tracking-[0.3em]">VOY VERSION {import.meta.env.VITE_APP_VERSION || '1.0.0'}</p>
                     <div className="flex items-center justify-center gap-2 mt-2">
                         <span className="w-8 h-px bg-primary/10" />
                         <p className="text-[10px] font-medium text-muted-foreground italic">

@@ -1,25 +1,45 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
     ChevronLeft,
     CheckCircle2,
     Circle,
     Info,
     Rocket,
-    ArrowRight
+    Plus,
+    Trash2
 } from 'lucide-react';
 import { useChecklist, CHECKLIST_ITEMS } from '@/hooks/useChecklist';
+import { useCustomChecklist } from '@/hooks/useCustomChecklist';
 import { cn } from '@/lib/utils';
 
 export default function Checklist() {
     const navigate = useNavigate();
     const { completedItems, loading, toggleItem } = useChecklist();
+    const { items: customItems, loading: customLoading, addItem, toggleItem: toggleCustom, deleteItem } = useCustomChecklist();
 
-    const total = CHECKLIST_ITEMS.length;
-    const completedCount = completedItems.length;
-    const progressPercent = Math.round((completedCount / total) * 100);
+    const [showAddDialog, setShowAddDialog] = useState(false);
+    const [newLabel, setNewLabel] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    const total = CHECKLIST_ITEMS.length + customItems.length;
+    const completedCount = completedItems.length + customItems.filter(i => i.is_done).length;
+    const progressPercent = Math.round((completedCount / Math.max(total, 1)) * 100);
+
+    const handleAddCustom = async () => {
+        if (!newLabel.trim()) return;
+        setSaving(true);
+        await addItem(newLabel.trim());
+        setNewLabel('');
+        setSaving(false);
+        setShowAddDialog(false);
+    };
 
     return (
         <MobileLayout showNav={true}>
@@ -55,11 +75,11 @@ export default function Checklist() {
                     <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
                 </Card>
 
-                {/* Tasks List */}
-                <div className="space-y-4">
+                {/* VOY Default Items */}
+                <div className="space-y-4 mb-8">
+                    <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Itens do VOY</p>
                     {CHECKLIST_ITEMS.map((item) => {
                         const isDone = completedItems.includes(item.id);
-
                         return (
                             <button
                                 key={item.id}
@@ -77,7 +97,6 @@ export default function Checklist() {
                                 )}>
                                     {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
                                 </div>
-
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-center mb-1">
                                         <span className={cn(
@@ -105,8 +124,83 @@ export default function Checklist() {
                     })}
                 </div>
 
+                {/* My Custom Items */}
+                <div className="space-y-4 mb-8">
+                    <div className="flex items-center justify-between px-1">
+                        <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">Meus Itens</p>
+                        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+                            <DialogTrigger asChild>
+                                <Button size="sm" variant="outline" className="gap-2 rounded-xl text-xs font-bold h-8">
+                                    <Plus className="w-3.5 h-3.5" />
+                                    Adicionar
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="rounded-[24px] max-w-[calc(100vw-2rem)]">
+                                <DialogHeader>
+                                    <DialogTitle>Novo Item</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4 pt-2">
+                                    <Input
+                                        placeholder="Ex: Marcar consulta no Centro de Saúde"
+                                        value={newLabel}
+                                        onChange={e => setNewLabel(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && handleAddCustom()}
+                                        className="rounded-xl h-12"
+                                        autoFocus
+                                    />
+                                    <Button onClick={handleAddCustom} disabled={saving || !newLabel.trim()} className="w-full h-12 rounded-xl font-bold">
+                                        Adicionar Item
+                                    </Button>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+
+                    {customItems.length === 0 ? (
+                        <div className="bg-muted/20 border border-dashed rounded-[24px] p-8 text-center">
+                            <p className="text-muted-foreground text-sm font-medium">Adicione seus próprios itens personalizados.</p>
+                        </div>
+                    ) : (
+                        customItems.map((item) => (
+                            <div
+                                key={item.id}
+                                className={cn(
+                                    "w-full flex items-start gap-4 p-5 rounded-[28px] border transition-all group",
+                                    item.is_done
+                                        ? "bg-primary/5 border-primary/20"
+                                        : "bg-card border-border/50 hover:border-primary/30"
+                                )}
+                            >
+                                <button
+                                    onClick={() => toggleCustom(item.id, !item.is_done)}
+                                    className={cn(
+                                        "w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors",
+                                        item.is_done ? "bg-primary text-white" : "border-2 border-muted-foreground/30 text-transparent"
+                                    )}
+                                >
+                                    {item.is_done ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                                </button>
+                                <div className="flex-1 min-w-0" onClick={() => toggleCustom(item.id, !item.is_done)}>
+                                    <span className={cn(
+                                        "text-sm font-bold transition-all",
+                                        item.is_done ? "text-primary line-through opacity-70" : "text-foreground"
+                                    )}>
+                                        {item.label}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => deleteItem(item.id)}
+                                    className="p-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </div>
+
                 {/* Pro Tip */}
-                <div className="mt-8 p-4 bg-muted/30 rounded-3xl flex gap-3 items-center border border-border/50">
+                <div className="mt-4 p-4 bg-muted/30 rounded-3xl flex gap-3 items-center border border-border/50">
                     <Info className="w-5 h-5 text-primary shrink-0" />
                     <p className="text-[10px] text-muted-foreground leading-relaxed">
                         Dica VOY: Comece pelo NIF. Quase todos os outros passos dependem dele para serem concluídos.
