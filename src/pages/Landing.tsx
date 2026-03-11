@@ -27,7 +27,8 @@ import {
     Quote,
     Instagram,
     Facebook,
-    Linkedin
+    Linkedin,
+    Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -420,10 +421,16 @@ export default function Landing() {
                             const currentPeriod = billingCycle === 'monthly' ? '/ mês' : '/ ano';
 
                             return (
-                                <div key={i} className={cn(
-                                    "p-12 rounded-[3.5rem] relative group border transition-all duration-300",
-                                    p.popular ? "bg-[#0066FF] border-blue-400 text-white shadow-2xl shadow-blue-500/20 -translate-y-2" : "bg-white/5 border-white/10 text-white hover:bg-white/[0.08]"
+                                <div className={cn(
+                                    "p-12 rounded-[3.5rem] relative group border transition-all duration-500",
+                                    p.popular ? "bg-[#0066FF] border-blue-400 text-white shadow-2xl shadow-blue-500/20 -translate-y-2 ring-4 ring-blue-500/20" : "bg-white/5 border-white/10 text-white hover:bg-white/[0.08]"
                                 )}>
+                                    {p.popular && (
+                                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                                            <Sparkles className="w-3 h-3" />
+                                            RECOMENDADO
+                                        </div>
+                                    )}
                                     <div className="absolute top-8 left-8 bg-white/20 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest">Oferta de Lançamento</div>
                                     <h4 className="text-lg font-black uppercase tracking-widest opacity-60 mb-6 mt-4">{p.name}</h4>
                                     <div className="flex items-baseline gap-2 mb-10">
@@ -435,6 +442,7 @@ export default function Landing() {
                                             <li key={fi} className="flex items-center gap-4 text-sm font-bold">
                                                 <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", p.popular ? "bg-white/20" : "bg-blue-500/20 text-blue-400")}>
                                                     <CheckCircle2 className="w-3 h-3" />
+                                                    ```
                                                 </div>
                                                 {f}
                                             </li>
@@ -444,11 +452,16 @@ export default function Landing() {
                                         onClick={() => handleCheckout(billingCycle)}
                                         disabled={loading}
                                         className={cn(
-                                            "w-full h-16 rounded-2xl font-black uppercase tracking-widest group",
-                                            p.popular ? "bg-white text-[#0066FF] hover:bg-slate-100" : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
+                                            "w-full h-16 rounded-2xl font-black uppercase tracking-widest group shadow-xl transition-all active:scale-[0.98]",
+                                            p.popular ? "bg-white text-[#0066FF] hover:bg-slate-100 shadow-white/10" : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
                                         )}>
-                                        {loading ? "Processando..." : "Assinar Agora"}
-                                        {!loading && <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                                        {loading ? "Processando..." : (
+                                            <span className="flex items-center gap-2">
+                                                {p.popular ? <Sparkles className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+                                                Assinar {billingCycle === 'monthly' ? 'Mensal' : 'Anual'} ({currentPrice})
+                                                <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                            </span>
+                                        )}
                                     </Button>
                                 </div>
                             );

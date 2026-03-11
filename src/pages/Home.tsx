@@ -122,7 +122,7 @@ export default function Home() {
               onClick={() => setBillingCycle('monthly')}
               className={cn(
                 "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-                billingCycle === 'monthly' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:bg-background/50"
+                billingCycle === 'monthly' ? "bg-background text-primary shadow-sm ring-2 ring-blue-500/20" : "text-muted-foreground hover:bg-background/50"
               )}
             >
               Mensal
@@ -131,7 +131,7 @@ export default function Home() {
               onClick={() => setBillingCycle('yearly')}
               className={cn(
                 "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative",
-                billingCycle === 'yearly' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:bg-background/50"
+                billingCycle === 'yearly' ? "bg-background text-primary shadow-sm ring-2 ring-blue-500/20" : "text-muted-foreground hover:bg-background/50"
               )}
             >
               Anual
@@ -142,7 +142,10 @@ export default function Home() {
           </div>
 
           {/* Pricing Info */}
-          <div className="mb-8 text-center">
+          <div className={cn(
+            "mb-8 text-center p-6 rounded-3xl border transition-all duration-300 w-full max-w-sm",
+            billingCycle === 'yearly' ? "bg-blue-600/5 border-blue-500/30 scale-105" : "bg-card border-border"
+          )}>
             <div className="flex items-baseline justify-center gap-1">
               <span className="text-4xl font-black">€{billingCycle === 'monthly' ? prices.monthly : prices.yearly}</span>
               <span className="text-muted-foreground text-sm font-bold uppercase tracking-widest">
@@ -150,8 +153,14 @@ export default function Home() {
               </span>
             </div>
             {billingCycle === 'yearly' && (
-              <p className="text-xs text-emerald-500 font-bold mt-1 uppercase tracking-widest">Oferta de Lançamento</p>
+              <p className="text-xs text-emerald-500 font-bold mt-1 uppercase tracking-widest flex items-center justify-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                Melhor Custo-Benefício
+              </p>
             )}
+            <p className="text-[10px] text-muted-foreground mt-2 uppercase font-black tracking-widest opacity-60">
+              {billingCycle === 'monthly' ? "Cancele a qualquer momento" : "Pagamento único anual"}
+            </p>
           </div>
 
           <div className="w-full max-w-sm space-y-3 mb-8">
@@ -178,8 +187,8 @@ export default function Home() {
             disabled={checkoutLoading}
             className="w-full max-w-sm h-16 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-black text-lg tracking-wider gap-3 shadow-xl shadow-blue-500/25 transition-all active:scale-[0.98]"
           >
-            {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-            {checkoutLoading ? "Processando..." : "Assinar Agora"}
+            {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
+            {checkoutLoading ? "Processando..." : `Assinar ${billingCycle === 'monthly' ? 'Mensal' : 'Anual'} (€${billingCycle === 'monthly' ? '1,99' : '19,90'})`}
           </Button>
 
           <p className="mt-4 text-xs text-muted-foreground font-bold flex items-center gap-2">
