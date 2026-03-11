@@ -356,8 +356,13 @@ export default function Auth() {
                       htmlFor="privacy"
                       className="text-xs text-muted-foreground leading-relaxed cursor-pointer"
                     >
-                      Eu aceito os <button type="button" onClick={() => navigate('/terms')} className="text-primary font-medium hover:underline">Termos de Uso</button> e a <button type="button" onClick={() => navigate('/terms')} className="text-primary font-medium hover:underline">Política de Privacidade</button> (LGPD/GDPR) do VOY App.
+                      Eu aceito os Termos de Uso e a Política de Privacidade (LGPD/GDPR) do VOY App.
                     </label>
+                    <div className="flex gap-2 text-[10px] uppercase font-black tracking-widest text-primary/60">
+                      <button type="button" onClick={() => navigate('/terms')} className="hover:text-primary transition-colors">Termos de Uso</button>
+                      <span>•</span>
+                      <button type="button" onClick={() => navigate('/terms')} className="hover:text-primary transition-colors">Privacidade</button>
+                    </div>
                   </div>
                 </div>
               )}
