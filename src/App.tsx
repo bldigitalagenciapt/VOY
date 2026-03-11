@@ -16,6 +16,7 @@ import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Home from "./pages/Home";
 import Landing from "./pages/Landing";
+import Terms from "./pages/Terms";
 
 // Onboarding
 const Welcome = lazy(() => import("./pages/onboarding/Welcome"));
@@ -129,6 +130,7 @@ function AppRoutes() {
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
 
           {/* Onboarding Routes */}

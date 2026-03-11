@@ -20,15 +20,14 @@ Deno.serve(async (req: Request) => {
         const { user_id, user_email, plan_type } = await req.json();
 
         // Determinar o ID do preço baseado no tipo de plano
-        // Se price_id vir diretamente do frontend, usamos ele. 
-        // Caso contrário, usamos as variáveis de ambiente.
-        const priceId = plan_type === 'yearly'
-            ? Deno.env.get("STRIPE_PRICE_YEARLY")
-            : Deno.env.get("STRIPE_PRICE_MONTHLY");
+        const monthlyPriceId = Deno.env.get("STRIPE_PRICE_MONTHLY");
+        const yearlyPriceId = Deno.env.get("STRIPE_PRICE_YEARLY");
+
+        const priceId = plan_type === 'yearly' ? yearlyPriceId : monthlyPriceId;
 
         if (!priceId) {
             console.error("Price ID not configured for plan:", plan_type);
-            // Fallback para log ou erro amigável se necessário
+            throw new Error(`Price ID para o plano ${plan_type} não configurado.`);
         }
 
         console.log(`[DEBUG] Creating checkout session for user ${user_id}, plan: ${plan_type}, priceId: ${priceId}`);
@@ -37,20 +36,22 @@ Deno.serve(async (req: Request) => {
             payment_method_types: ["card", "multibanco", "mb_way"],
             line_items: [
                 {
-                    price: priceId, // Usando Price ID do Stripe Dashboard
+                    price: priceId,
                     quantity: 1,
                 },
             ],
             mode: "subscription",
-            success_url: `${req.headers.get("origin")}/home?success=true`,
-            cancel_url: `${req.headers.get("origin")}/home?payment=cancelled`,
-            customer_email: user_email,
-            client_reference_id: user_id,
+            allow_promotion_codes: true, // Permitir cupons de desconto
             subscription_data: {
+                trial_period_days: 14, // Período de teste de 14 dias
                 metadata: {
                     user_id: user_id,
                 },
             },
+            success_url: `${req.headers.get("origin")}/home?success=true`,
+            cancel_url: `${req.headers.get("origin")}/home?payment=cancelled`,
+            customer_email: user_email,
+            client_reference_id: user_id,
         });
 
         return new Response(JSON.stringify({ url: session.url }), {

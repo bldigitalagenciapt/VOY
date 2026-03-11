@@ -72,9 +72,9 @@ export default function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showWelcome, setShowWelcome] = useState(false);
   const { documents } = useDocuments();
-  const isPremium = profile?.plan_status === 'premium';
-
   const { handleCheckout, loading: checkoutLoading } = useSubscription();
+  const isOverdue = profile?.plan_status === 'overdue';
+  const isPremium = profile?.plan_status === 'premium';
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -250,6 +250,25 @@ export default function Home() {
   return (
     <MobileLayout>
       <div className="pb-32 pt-8 px-6 bg-background min-h-screen">
+        {isOverdue && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-[1.5rem] flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-red-500 uppercase tracking-tight">Acesso Bloqueado (Inadimplência)</h3>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Suas funções premium foram suspensas por falta de pagamento. Você tem até <strong>30 dias</strong> para regularizar antes que seus dados sejam removidos permanentemente.
+              </p>
+              <button
+                onClick={() => handleCheckout()}
+                className="text-[11px] font-black text-red-500 underline uppercase tracking-widest mt-2 block"
+              >
+                Regularizar Minha Conta
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Header Section */}
         <header className="flex items-center justify-between mb-10">
@@ -530,44 +549,51 @@ export default function Home() {
               icon={<CalcIcon className="w-8 h-8 text-orange-500" />}
               title={t('services.simulator')}
               description={t('services.simulator.desc')}
-              onClick={() => navigate('/calculator')}
+              onClick={() => isOverdue ? toast.error('Função bloqueada por inadimplência') : navigate('/calculator')}
+              className={isOverdue ? "opacity-50 grayscale cursor-not-allowed" : ""}
             />
             <ActionCard
               icon={<Briefcase className="w-8 h-8 text-emerald-500" />}
               title={t('services.jobs')}
               description={t('services.jobs.desc')}
-              onClick={() => navigate('/emprego')}
+              onClick={() => isOverdue ? toast.error('Função bloqueada por inadimplência') : navigate('/emprego')}
+              className={isOverdue ? "opacity-50 grayscale cursor-not-allowed" : ""}
             />
             <ActionCard
               icon={<ExternalLink className="w-8 h-8 text-purple-500" />}
               title={t('services.links')}
               description={t('services.links.desc')}
-              onClick={() => navigate('/useful-links')}
+              onClick={() => isOverdue ? toast.error('Função bloqueada por inadimplência') : navigate('/useful-links')}
+              className={isOverdue ? "opacity-50 grayscale cursor-not-allowed" : ""}
             />
             <ActionCard
               icon={<FileText className="w-8 h-8 text-blue-400" />}
               title={t('services.docs')}
               description={t('services.docs.desc')}
               onClick={() => navigate('/documents')}
+              className={isOverdue ? "border-amber-500/20 shadow-amber-500/5 bg-amber-500/5" : ""}
             />
             <ActionCard
               icon={<Globe className="w-8 h-8 text-indigo-500" />}
               title={t('services.aima')}
               description={t('services.aima.desc')}
-              onClick={() => navigate('/aima')}
+              onClick={() => isOverdue ? toast.error('Função bloqueada por inadimplência') : navigate('/aima')}
+              className={isOverdue ? "opacity-50 grayscale cursor-not-allowed" : ""}
             />
 
             <ActionCard
               icon={<Wallet className="w-8 h-8 text-amber-500" />}
               title={t('services.wallet')}
               description={t('services.wallet.desc')}
-              onClick={() => navigate('/meu-bolso')}
+              onClick={() => isOverdue ? toast.error('Função bloqueada por inadimplência') : navigate('/meu-bolso')}
+              className={isOverdue ? "opacity-50 grayscale cursor-not-allowed" : ""}
             />
             <ActionCard
               icon={<StickyNote className="w-8 h-8 text-yellow-500" />}
               title={t('services.notes')}
               description={t('services.notes.desc')}
-              onClick={() => navigate('/notes')}
+              onClick={() => isOverdue ? toast.error('Função bloqueada por inadimplência') : navigate('/notes')}
+              className={isOverdue ? "opacity-50 grayscale cursor-not-allowed" : ""}
             />
           </div>
         </section>

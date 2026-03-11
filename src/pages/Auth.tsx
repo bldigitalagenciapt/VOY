@@ -356,7 +356,7 @@ export default function Auth() {
                       htmlFor="privacy"
                       className="text-xs text-muted-foreground leading-relaxed cursor-pointer"
                     >
-                      Eu aceito os <span className="text-primary font-medium">Termos de Uso</span> e a <span className="text-primary font-medium">Política de Privacidade</span> (LGPD/GDPR) do VOY App.
+                      Eu aceito os <button type="button" onClick={() => navigate('/terms')} className="text-primary font-medium hover:underline">Termos de Uso</button> e a <button type="button" onClick={() => navigate('/terms')} className="text-primary font-medium hover:underline">Política de Privacidade</button> (LGPD/GDPR) do VOY App.
                     </label>
                   </div>
                 </div>
