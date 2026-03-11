@@ -421,7 +421,7 @@ export default function Landing() {
                             const currentPeriod = billingCycle === 'monthly' ? '/ mês' : '/ ano';
 
                             return (
-                                <div className={cn(
+                                <div key={i} className={cn(
                                     "p-12 rounded-[3.5rem] relative group border transition-all duration-500",
                                     p.popular ? "bg-[#0066FF] border-blue-400 text-white shadow-2xl shadow-blue-500/20 -translate-y-2 ring-4 ring-blue-500/20" : "bg-white/5 border-white/10 text-white hover:bg-white/[0.08]"
                                 )}>
@@ -442,7 +442,6 @@ export default function Landing() {
                                             <li key={fi} className="flex items-center gap-4 text-sm font-bold">
                                                 <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", p.popular ? "bg-white/20" : "bg-blue-500/20 text-blue-400")}>
                                                     <CheckCircle2 className="w-3 h-3" />
-                                                    ```
                                                 </div>
                                                 {f}
                                             </li>
