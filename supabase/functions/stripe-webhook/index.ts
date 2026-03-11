@@ -63,6 +63,26 @@ Deno.serve(async (req: Request) => {
             } else {
                 console.error("[WEBHOOK] ABORT: No user_id found in session.client_reference_id");
             }
+        } else if (event.type === "customer.subscription.deleted") {
+            const subscription = event.data.object as Stripe.Subscription;
+            const customerId = subscription.customer as string;
+
+            console.log(`[WEBHOOK] Processing customer.subscription.deleted for customer: ${customerId}`);
+
+            // Buscar o user_id pelo customer_id do Stripe (precisaríamos salvar o stripe_customer_id no perfil ou buscar via Stripe API)
+            // Por simplicidade atual, vamos assumir que o sistema apenas ativa no checkout.
+            // Para produção, é recomendado mapear o stripe_customer_id -> user_id
+
+            // Se tivermos o stripe_customer_id na tabela profiles:
+            const { data, error } = await supabaseAdmin
+                .from("profiles")
+                .update({ plan_status: "free" })
+                .eq("stripe_customer_id", customerId)
+                .select();
+
+            if (error) console.error(`[WEBHOOK] Error resetting plan for customer ${customerId}:`, error);
+            else console.log(`[WEBHOOK] Subscription deleted. User plan reset to free for customer ${customerId}`);
+
         } else {
             console.log(`[WEBHOOK] Ignored event type: ${event.type}`);
         }

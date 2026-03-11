@@ -17,29 +17,36 @@ Deno.serve(async (req: Request) => {
     }
 
     try {
-        const { user_id, user_email } = await req.json();
+        const { user_id, user_email, plan_type } = await req.json();
+
+        // Determinar o ID do preço baseado no tipo de plano
+        // Se price_id vir diretamente do frontend, usamos ele. 
+        // Caso contrário, usamos as variáveis de ambiente.
+        const priceId = plan_type === 'yearly'
+            ? Deno.env.get("STRIPE_PRICE_YEARLY")
+            : Deno.env.get("STRIPE_PRICE_MONTHLY");
+
+        if (!priceId) {
+            console.error("Price ID not configured for plan:", plan_type);
+            // Fallback para log ou erro amigável se necessário
+        }
+
+        console.log(`[DEBUG] Creating checkout session for user ${user_id}, plan: ${plan_type}, priceId: ${priceId}`);
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card", "multibanco", "mb_way"],
             line_items: [
                 {
-                    price_data: {
-                        currency: "eur",
-                        product_data: {
-                            name: "VOY Premium - Acesso Total Vitalício",
-                            description: "Acesso ilimitado a documentos, cofre criptografado e suporte VIP.",
-                        },
-                        unit_amount: 1990, // 19.90€
-                    },
+                    price: priceId, // Usando Price ID do Stripe Dashboard
                     quantity: 1,
                 },
             ],
-            mode: "payment",
+            mode: "subscription",
             success_url: `${req.headers.get("origin")}/home?success=true`,
             cancel_url: `${req.headers.get("origin")}/home?payment=cancelled`,
             customer_email: user_email,
             client_reference_id: user_id,
-            payment_intent_data: {
+            subscription_data: {
                 metadata: {
                     user_id: user_id,
                 },

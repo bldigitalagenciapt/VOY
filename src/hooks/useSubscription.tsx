@@ -3,15 +3,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+export type PlanType = 'monthly' | 'yearly';
+
 export function useSubscription() {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
 
-    const handleCheckout = async () => {
+    const handleCheckout = async (planType: PlanType = 'monthly') => {
         if (!user) {
             // Se não estiver logado, redireciona para login
-            // Salvamos a intenção de compra para redirecionar de volta depois (opcional, mas boa prática)
-            sessionStorage.setItem('redirect_after_login', '/?checkout=true');
+            sessionStorage.setItem('redirect_after_login', `/?checkout=true&plan=${planType}`);
             window.location.href = '/auth';
             return;
         }
@@ -27,7 +28,7 @@ export function useSubscription() {
                 throw new Error('Sessão inválida. Por favor, faça login novamente.');
             }
 
-            console.log('[DEBUG] Calling stripe-checkout with token:', session.access_token.substring(0, 10) + '...');
+            console.log(`[DEBUG] Calling stripe-checkout for ${planType} plan`);
 
             const { data, error } = await supabase.functions.invoke('stripe-checkout', {
                 headers: {
@@ -35,7 +36,8 @@ export function useSubscription() {
                 },
                 body: {
                     user_id: user.id,
-                    user_email: user.email
+                    user_email: user.email,
+                    plan_type: planType
                 }
             });
 
@@ -51,7 +53,6 @@ export function useSubscription() {
         } catch (error: any) {
             console.error('Checkout error details:', error);
 
-            // Tenta extrair mensagem de erro do corpo da resposta, se disponível
             let errorMessage = 'Erro ao iniciar pagamento. Tente novamente mais tarde.';
 
             if (error && typeof error === 'object') {

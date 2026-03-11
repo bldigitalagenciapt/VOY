@@ -39,7 +39,15 @@ export default function Landing() {
     const [showIosModal, setShowIosModal] = useState(false);
     const [isIos, setIsIos] = useState(false);
     const [activeFaq, setActiveFaq] = useState<number | null>(0);
+    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const { handleCheckout, loading } = useSubscription();
+
+    const prices = {
+        monthly: 1.99,
+        yearly: 19.90
+    };
+
+    const discount = Math.round((1 - (prices.yearly / (prices.monthly * 12))) * 100);
 
     useEffect(() => {
         const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -108,17 +116,36 @@ export default function Landing() {
         }
     ];
 
+    const howItWorks = [
+        {
+            step: "01",
+            title: "Crie sua conta",
+            description: "Acesse a plataforma em segundos e comece a organizar sua jornada."
+        },
+        {
+            step: "02",
+            title: "Configure seu Perfil",
+            description: "Insira seus dados essenciais e defina seus objetivos em Portugal."
+        },
+        {
+            step: "03",
+            title: "Gerencie na Palma da Mão",
+            description: "Acompanhe processos, valide documentos e controle suas finanças."
+        }
+    ];
+
     const pricing = [
         {
-            name: "Residente Pro",
-            price: "€19.90",
-            period: "/ taxa única",
+            name: "Plano Premium",
+            monthlyPrice: "€1.99",
+            yearlyPrice: "€19.90",
             features: [
                 "Cofre de Documentos Ilimitados",
                 "Alertas de Validade",
                 "Tracking AIMA Manual",
+                "Gestor Financeiro Completo",
                 "Sem Anúncios",
-                "Acesso Vitalício"
+                "Suporte Prioritário"
             ],
             popular: true
         }
@@ -240,8 +267,6 @@ export default function Landing() {
                 </div>
             </section>
 
-
-
             {/* Features/Services Section */}
             <section id="serviços" className="py-20 md:py-32 px-6">
                 <div className="max-w-7xl mx-auto">
@@ -264,6 +289,35 @@ export default function Landing() {
                                 <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest block mb-2">{s.subtitle}</span>
                                 <h4 className="text-lg md:text-xl font-bold mb-3 md:mb-4">{s.title}</h4>
                                 <p className="text-slate-500 text-xs md:text-sm leading-relaxed">{s.description}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* How It Works Section */}
+            <section id="processo" className="py-20 md:py-32 px-6 bg-[#0A0D14]/50">
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center space-y-4 mb-20">
+                        <h2 className="text-blue-500 font-black uppercase tracking-[0.25em] text-[10px] md:text-xs">Passo a Passo</h2>
+                        <h3 className="text-3xl md:text-5xl font-black text-white">Como o VOY funciona?</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                        {/* Connecting Line */}
+                        <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-blue-500/10 -translate-y-1/2 z-0" />
+
+                        {howItWorks.map((step, i) => (
+                            <div key={i} className="relative z-10 flex flex-col items-center text-center space-y-6 group">
+                                <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-xl font-black shadow-2xl shadow-blue-500/40 border-4 border-[#0A0D14] group-hover:scale-110 transition-transform">
+                                    {step.step}
+                                </div>
+                                <div className="space-y-3">
+                                    <h4 className="text-xl font-bold">{step.title}</h4>
+                                    <p className="text-slate-400 text-sm leading-relaxed max-w-[250px] mx-auto">
+                                        {step.description}
+                                    </p>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -336,52 +390,75 @@ export default function Landing() {
             <section id="preços" className="py-20 md:py-32 px-6">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center space-y-6 md:space-y-8 mb-16 md:mb-20">
-                        <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-[10px] md:text-xs">Planos Sob Medida</h2>
-                        <h3 className="text-3xl md:text-5xl font-black">Invista no seu sonho.</h3>
+                        <h2 className="text-[#0066FF] font-black uppercase tracking-widest text-[10px] md:text-xs">Assinatura Premium</h2>
+                        <h3 className="text-3xl md:text-5xl font-black">Planos que cabem no seu bolso.</h3>
+
+                        {/* Billing Switcher */}
+                        <div className="flex items-center justify-center gap-4 pt-4">
+                            <span className={cn("text-sm font-bold transition-colors", billingCycle === 'monthly' ? "text-white" : "text-slate-500")}>Mensal</span>
+                            <button
+                                onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
+                                className="w-16 h-8 bg-blue-600/20 rounded-full relative p-1 transition-all border border-blue-500/20"
+                            >
+                                <div className={cn(
+                                    "w-6 h-6 bg-blue-500 rounded-full shadow-lg transition-all transform",
+                                    billingCycle === 'yearly' ? "translate-x-8" : "translate-x-0"
+                                )} />
+                            </button>
+                            <span className={cn("text-sm font-bold transition-colors relative", billingCycle === 'yearly' ? "text-white" : "text-slate-500")}>
+                                Anual
+                                <span className="absolute -top-6 -right-12 bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-lg animate-bounce">
+                                    ECONOMIZE {discount}%
+                                </span>
+                            </span>
+                        </div>
                     </div>
 
                     <div className="max-w-lg mx-auto">
-                        {pricing.map((p, i) => (
-                            <div key={i} className={cn(
-                                "p-12 rounded-[3.5rem] relative group border transition-all duration-300",
-                                p.popular ? "bg-[#0066FF] border-blue-400 text-white shadow-2xl shadow-blue-500/20 -translate-y-2" : "bg-white/5 border-white/10 text-white hover:bg-white/[0.08]"
-                            )}>
-                                {p.popular && (
-                                    <div className="absolute top-8 right-8 bg-white/20 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Mais Popular</div>
-                                )}
-                                <h4 className="text-lg font-black uppercase tracking-widest opacity-60 mb-6">{p.name}</h4>
-                                <div className="flex items-baseline gap-2 mb-10">
-                                    <span className="text-6xl font-black">{p.price}</span>
-                                    <span className="text-xs font-bold opacity-60 uppercase">{p.period}</span>
+                        {pricing.map((p, i) => {
+                            const currentPrice = billingCycle === 'monthly' ? p.monthlyPrice : p.yearlyPrice;
+                            const currentPeriod = billingCycle === 'monthly' ? '/ mês' : '/ ano';
+
+                            return (
+                                <div key={i} className={cn(
+                                    "p-12 rounded-[3.5rem] relative group border transition-all duration-300",
+                                    p.popular ? "bg-[#0066FF] border-blue-400 text-white shadow-2xl shadow-blue-500/20 -translate-y-2" : "bg-white/5 border-white/10 text-white hover:bg-white/[0.08]"
+                                )}>
+                                    <div className="absolute top-8 left-8 bg-white/20 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest">Oferta de Lançamento</div>
+                                    <h4 className="text-lg font-black uppercase tracking-widest opacity-60 mb-6 mt-4">{p.name}</h4>
+                                    <div className="flex items-baseline gap-2 mb-10">
+                                        <span className="text-6xl font-black">{currentPrice}</span>
+                                        <span className="text-xs font-bold opacity-60 uppercase">{currentPeriod}</span>
+                                    </div>
+                                    <ul className="space-y-6 mb-12">
+                                        {p.features.map((f, fi) => (
+                                            <li key={fi} className="flex items-center gap-4 text-sm font-bold">
+                                                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", p.popular ? "bg-white/20" : "bg-blue-500/20 text-blue-400")}>
+                                                    <CheckCircle2 className="w-3 h-3" />
+                                                </div>
+                                                {f}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <Button
+                                        onClick={() => handleCheckout(billingCycle)}
+                                        disabled={loading}
+                                        className={cn(
+                                            "w-full h-16 rounded-2xl font-black uppercase tracking-widest group",
+                                            p.popular ? "bg-white text-[#0066FF] hover:bg-slate-100" : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
+                                        )}>
+                                        {loading ? "Processando..." : "Assinar Agora"}
+                                        {!loading && <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                                    </Button>
                                 </div>
-                                <ul className="space-y-6 mb-12">
-                                    {p.features.map((f, fi) => (
-                                        <li key={fi} className="flex items-center gap-4 text-sm font-bold">
-                                            <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", p.popular ? "bg-white/20" : "bg-blue-500/20 text-blue-400")}>
-                                                <CheckCircle2 className="w-3 h-3" />
-                                            </div>
-                                            {f}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <Button
-                                    onClick={() => p.price === "Grátis" ? navigate('/auth') : handleCheckout()}
-                                    disabled={loading}
-                                    className={cn(
-                                        "w-full h-16 rounded-2xl font-black uppercase tracking-widest group",
-                                        p.popular ? "bg-white text-[#0066FF] hover:bg-slate-100" : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
-                                    )}>
-                                    {loading ? "Processando..." : (p.price === "Grátis" ? "Explorar Agora" : "Assinar Agora")}
-                                    {!loading && <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />}
-                                </Button>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     <div className="mt-12 text-center text-slate-500 font-bold text-xs uppercase tracking-[0.2em] flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8">
                         <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Cartão de Crédito</span>
-                        <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> MB WAY</span>
-                        <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Multibanco</span>
+                        <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> SIBS / ATM</span>
+                        <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Segurança Stripe</span>
                     </div>
                 </div>
             </section>

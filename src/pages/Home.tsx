@@ -86,12 +86,19 @@ export default function Home() {
   }, [searchParams, setSearchParams, refetch]);
 
   // ─── PAYWALL: Full sales page for non-premium users ───
-  // Só mostra o paywall se NÃO estiver mostrando o modal de boas-vindas
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+
   if (profile && !isPremium && !profileLoading && !showWelcome) {
+    const prices = {
+      monthly: 1.99,
+      yearly: 19.90
+    };
+
+    const discount = Math.round((1 - (prices.yearly / (prices.monthly * 12))) * 100);
 
     return (
       <MobileLayout>
-        <div className="px-5 py-8 safe-area-top min-h-full flex flex-col items-center text-center">
+        <div className="px-5 py-8 safe-area-top min-h-full flex flex-col items-center">
           <div className="relative mb-6">
             <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center border border-blue-500/20 shadow-lg shadow-blue-500/10">
               <Shield className="w-12 h-12 text-blue-500" />
@@ -101,21 +108,58 @@ export default function Home() {
             </div>
           </div>
 
-          <h1 className="text-[1.6rem] font-black text-foreground leading-tight mb-3 max-w-xs tracking-tight">
-            {t('paywall.title')}{' '}
-            <span className="text-blue-500">19,90€</span>
+          <h1 className="text-[1.6rem] font-black text-foreground leading-tight mb-2 max-w-xs tracking-tight text-center">
+            Escolha seu Plano Premium
           </h1>
 
-          <p className="text-sm text-muted-foreground font-medium mb-8 max-w-[280px]">
-            {t('paywall.subtitle')}
+          <p className="text-sm text-muted-foreground font-medium mb-8 max-w-[280px] text-center">
+            Desbloqueie todas as ferramentas essenciais para sua vida em Portugal.
           </p>
+
+          {/* Plan Toggle */}
+          <div className="w-full max-w-sm bg-muted/30 p-1 rounded-2xl flex mb-8 border border-border">
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              className={cn(
+                "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                billingCycle === 'monthly' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:bg-background/50"
+              )}
+            >
+              Mensal
+            </button>
+            <button
+              onClick={() => setBillingCycle('yearly')}
+              className={cn(
+                "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative",
+                billingCycle === 'yearly' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:bg-background/50"
+              )}
+            >
+              Anual
+              <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[8px] px-2 py-0.5 rounded-full ring-2 ring-background">
+                -{discount}%
+              </span>
+            </button>
+          </div>
+
+          {/* Pricing Info */}
+          <div className="mb-8 text-center">
+            <div className="flex items-baseline justify-center gap-1">
+              <span className="text-4xl font-black">€{billingCycle === 'monthly' ? prices.monthly : prices.yearly}</span>
+              <span className="text-muted-foreground text-sm font-bold uppercase tracking-widest">
+                / {billingCycle === 'monthly' ? 'mês' : 'ano'}
+              </span>
+            </div>
+            {billingCycle === 'yearly' && (
+              <p className="text-xs text-emerald-500 font-bold mt-1 uppercase tracking-widest">Oferta de Lançamento</p>
+            )}
+          </div>
 
           <div className="w-full max-w-sm space-y-3 mb-8">
             {[
-              { icon: Upload, text: t('paywall.benefit1'), sub: t('paywall.benefit1.sub') },
-              { icon: ShieldCheck, text: t('paywall.benefit2'), sub: t('paywall.benefit2.sub') },
-              { icon: Bell, text: t('paywall.benefit3'), sub: t('paywall.benefit3.sub') },
-              { icon: FileText, text: t('paywall.benefit4'), sub: t('paywall.benefit4.sub') },
+              { icon: Upload, text: "Cofre de Documentos", sub: "Espaço ilimitado e seguro" },
+              { icon: ShieldCheck, text: "Tracking Completo", sub: "Siga cada passo da imigração" },
+              { icon: Bell, text: "Alertas de Validade", sub: "Nunca perca um prazo importante" },
+              { icon: FileText, text: "NIF e NISS Digitais", sub: "Acesso rápido em qualquer lugar" },
             ].map((benefit, i) => (
               <div key={i} className="flex items-center gap-4 p-4 bg-card rounded-2xl border border-border text-left">
                 <div className="w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
@@ -130,17 +174,17 @@ export default function Home() {
           </div>
 
           <Button
-            onClick={handleCheckout}
+            onClick={() => handleCheckout(billingCycle)}
             disabled={checkoutLoading}
             className="w-full max-w-sm h-16 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-black text-lg tracking-wider gap-3 shadow-xl shadow-blue-500/25 transition-all active:scale-[0.98]"
           >
             {checkoutLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-            {checkoutLoading ? t('paywall.processing') : t('paywall.button')}
+            {checkoutLoading ? "Processando..." : "Assinar Agora"}
           </Button>
 
           <p className="mt-4 text-xs text-muted-foreground font-bold flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            {t('paywall.guarantee')}
+            Pagamento Seguro via Stripe
           </p>
         </div>
       </MobileLayout>
