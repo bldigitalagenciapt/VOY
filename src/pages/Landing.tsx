@@ -407,7 +407,7 @@ export default function Landing() {
                             </button>
                             <span className={cn("text-sm font-bold transition-colors relative", billingCycle === 'yearly' ? "text-white" : "text-slate-500")}>
                                 Anual
-                                <span className="absolute -top-6 -right-12 bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-lg animate-bounce">
+                                <span className="absolute -top-8 left-full ml-2 whitespace-nowrap bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full animate-bounce shadow-lg shadow-emerald-500/20">
                                     ECONOMIZE {discount}%
                                 </span>
                             </span>

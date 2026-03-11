@@ -135,7 +135,7 @@ export default function Home() {
               )}
             >
               Anual
-              <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[8px] px-2 py-0.5 rounded-full ring-2 ring-background">
+              <span className="absolute -top-3 -right-3 bg-emerald-500 text-white text-[8px] px-2 py-0.5 rounded-full ring-2 ring-background whitespace-nowrap">
                 -{discount}%
               </span>
             </button>
