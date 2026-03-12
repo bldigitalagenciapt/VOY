@@ -12,13 +12,17 @@ self.addEventListener('activate', (e) => {
                 })
             );
         }).then(() => {
-            console.log('[Service Worker] Unregistering self to fix blank screen issue');
-            self.registration.unregister();
+            console.log('[Service Worker] Claiming clients for PWA installability');
+            // We claim clients instead of unregistering to keep PWA installability active
+            self.clients.claim();
         })
     );
 });
 
 self.addEventListener('fetch', (event) => {
     // Always go to the network, never use cache to prevent the "white screen" error
-    event.respondWith(fetch(event.request).catch(() => new Response("Network error - please check your connection.")));
+    // but having the fetch listener is mandatory for Chrome's PWA install criteria
+    event.respondWith(
+        fetch(event.request).catch(() => new Response("Network error - please check your connection."))
+    );
 });
