@@ -129,7 +129,7 @@ function AppRoutes() {
     <ErrorBoundary>
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
           <Route path="/terms" element={<Suspense fallback={<LoadingScreen />}><Terms /></Suspense>} />
           <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
 
