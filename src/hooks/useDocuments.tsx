@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
+import { z } from 'zod';
 
 export interface Document {
   id: string;
@@ -53,6 +54,36 @@ export function useDocuments() {
       let fileType = null;
 
       if (file) {
+        // Validação de Segurança com Zod
+        const fileSchema = z.object({
+          size: z.number().max(5 * 1024 * 1024, "O arquivo deve ter no máximo 5MB."),
+          // Aceita application/pdf, image/jpeg, image/png
+          type: z.enum(['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'], {
+            errorMap: () => ({ message: "Apenas arquivos PDF, JPG e PNG são permitidos." })
+          })
+        });
+
+        try {
+          // Determina o content_type antes da validação porque o file.type pode vir vazio em alguns sistemas operacionais
+          let checkType = file.type;
+          const ext = file.name.split('.').pop()?.toLowerCase();
+          if (!checkType) {
+             if (ext === 'pdf') checkType = 'application/pdf';
+             else if (ext === 'jpg' || ext === 'jpeg') checkType = 'image/jpeg';
+             else if (ext === 'png') checkType = 'image/png';
+          }
+          
+          fileSchema.parse({
+            size: file.size,
+            type: checkType,
+          });
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            throw new Error(error.errors[0].message);
+          }
+          throw error;
+        }
+
         // Determine file extension
         const fileExt = file.name.split('.').pop()?.toLowerCase() || 'pdf';
 

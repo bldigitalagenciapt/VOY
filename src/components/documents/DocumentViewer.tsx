@@ -85,7 +85,7 @@ export function DocumentViewer({ open, onOpenChange, doc }: DocumentViewerProps)
 
       const { data, error } = await supabase.storage
         .from(bucket)
-        .createSignedUrl(filePath, 3600); // 1 hour
+        .createSignedUrl(filePath, 900); // 15 minutos
 
       if (error) throw error;
       setSignedUrl(data.signedUrl);
