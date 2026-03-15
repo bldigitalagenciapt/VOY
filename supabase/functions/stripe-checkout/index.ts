@@ -23,14 +23,19 @@ Deno.serve(async (req: Request) => {
         const monthlyPriceId = Deno.env.get("STRIPE_PRICE_MONTHLY");
         const yearlyPriceId = Deno.env.get("STRIPE_PRICE_YEARLY");
 
-        const priceId = plan_type === 'yearly' ? yearlyPriceId : monthlyPriceId;
+        console.log(`[STRIPE] Request para plano: ${plan_type}`);
+        console.log(`[STRIPE] Configuração encontrada - Mensal: ${monthlyPriceId ? 'OK' : 'MISSING'}, Anual: ${yearlyPriceId ? 'OK' : 'MISSING'}`);
+
+        // Aceitar variações de nomes
+        const isYearly = plan_type === 'yearly' || plan_type === 'annual' || plan_type === 'yearly_v1';
+        const priceId = isYearly ? yearlyPriceId : monthlyPriceId;
 
         if (!priceId) {
-            console.error("Price ID not configured for plan:", plan_type);
-            throw new Error(`Price ID para o plano ${plan_type} não configurado.`);
+            console.error(`[STRIPE] Price ID não configurado para o plano: ${plan_type}`);
+            throw new Error(`Configuração incompleta no servidor: ID do preço para '${plan_type}' não encontrado.`);
         }
 
-        console.log(`[DEBUG] Creating checkout session for user ${user_id}, plan: ${plan_type}, priceId: ${priceId}`);
+        console.log(`[STRIPE] Criando sessão. User: ${user_id}, ID do Preço: ${priceId}, Modo: subscription`);
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card", "multibanco", "mb_way"],
@@ -41,9 +46,9 @@ Deno.serve(async (req: Request) => {
                 },
             ],
             mode: "subscription",
-            allow_promotion_codes: true, // Permitir cupons de desconto
+            allow_promotion_codes: true,
             subscription_data: {
-                trial_period_days: 14, // Período de teste de 14 dias
+                trial_period_days: 14,
                 metadata: {
                     user_id: user_id,
                 },

@@ -28,7 +28,8 @@ export function useSubscription() {
                 throw new Error('Sessão inválida. Por favor, faça login novamente.');
             }
 
-            console.log(`[DEBUG] Calling stripe-checkout for ${planType} plan`);
+            console.log(`[STRIPE DEBUG] Iniciando checkout. Plano Selecionado: ${planType}`);
+            console.log(`[STRIPE DEBUG] User ID: ${user.id}, Email: ${user.email}`);
 
             const { data, error } = await supabase.functions.invoke('stripe-checkout', {
                 headers: {
