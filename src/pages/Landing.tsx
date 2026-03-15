@@ -218,7 +218,9 @@ export default function Landing() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-4 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-300">
-                        <Button className="w-full sm:w-auto h-16 px-12 rounded-2xl bg-[#0066FF] hover:bg-blue-600 text-lg font-black shadow-2xl shadow-blue-500/30 group">
+                        <Button 
+                            onClick={() => navigate('/auth')}
+                            className="w-full sm:w-auto h-16 px-12 rounded-2xl bg-[#0066FF] hover:bg-blue-600 text-lg font-black shadow-2xl shadow-blue-500/30 group">
                             COMEÇAR AGORA
                             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Button>

@@ -89,7 +89,14 @@ export default function Auth() {
           }
         } else {
           console.log('Login bem-sucedido');
-          navigate('/home');
+          const redirectStr = sessionStorage.getItem('redirect_after_login');
+          if (redirectStr && redirectStr.includes('?')) {
+            sessionStorage.removeItem('redirect_after_login');
+            const params = redirectStr.split('?')[1];
+            navigate(`/home?${params}`);
+          } else {
+            navigate('/home');
+          }
         }
       } else {
         const { error } = await signUp(email, password, captchaToken);
@@ -101,7 +108,14 @@ export default function Auth() {
             setError(`Erro ao criar conta: ${error.message}`);
           }
         } else {
-          navigate('/home');
+          const redirectStr = sessionStorage.getItem('redirect_after_login');
+          if (redirectStr && redirectStr.includes('?')) {
+            sessionStorage.removeItem('redirect_after_login');
+            const params = redirectStr.split('?')[1];
+            navigate(`/home?${params}`);
+          } else {
+            navigate('/home');
+          }
         }
       }
     } catch (err) {

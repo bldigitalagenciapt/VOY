@@ -75,6 +75,7 @@ export default function Home() {
   const { handleCheckout, loading: checkoutLoading } = useSubscription();
   const isOverdue = profile?.plan_status === 'overdue';
   const isPremium = profile?.plan_status === 'premium';
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -82,11 +83,21 @@ export default function Home() {
       refetch(); // Forçar atualização do perfil para verificar status premium
       searchParams.delete('success');
       setSearchParams(searchParams, { replace: true });
+    } else if (searchParams.get('checkout') === 'true' && !profileLoading && !isPremium) {
+      const plan = searchParams.get('plan') as 'monthly' | 'yearly';
+      if (plan) {
+        searchParams.delete('checkout');
+        searchParams.delete('plan');
+        setSearchParams(searchParams, { replace: true });
+        
+        // Match chosen plan state and immediately process the checkout
+        setBillingCycle(plan);
+        handleCheckout(plan);
+      }
     }
-  }, [searchParams, setSearchParams, refetch]);
+  }, [searchParams, setSearchParams, refetch, isPremium, profileLoading, handleCheckout]);
 
   // ─── PAYWALL: Full sales page for non-premium users ───
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   if (profile && !isPremium && !profileLoading && !showWelcome) {
     const prices = {
