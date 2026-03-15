@@ -36,8 +36,15 @@ export default function Checklist() {
     const [hiddenDefaultItems, setHiddenDefaultItems] = useState<string[]>([]);
 
     useEffect(() => {
-        const hidden = localStorage.getItem('voy_hidden_checklist_items');
-        if (hidden) setHiddenDefaultItems(JSON.parse(hidden));
+        try {
+            const hidden = localStorage.getItem('voy_hidden_checklist_items');
+            if (hidden) {
+                const parsed = JSON.parse(hidden);
+                if (Array.isArray(parsed)) setHiddenDefaultItems(parsed);
+            }
+        } catch (e) {
+            console.error('Erro ao ler localStorage:', e);
+        }
     }, []);
 
     const saveHiddenItems = (ids: string[]) => {
@@ -45,11 +52,17 @@ export default function Checklist() {
         localStorage.setItem('voy_hidden_checklist_items', JSON.stringify(ids));
     };
 
-    const visibleDefaultItems = CHECKLIST_ITEMS.filter(item => !hiddenDefaultItems.includes(item.id));
-    const total = visibleDefaultItems.length + customItems.length;
-    const completedCount = CHECKLIST_ITEMS.filter(i => completedItems.includes(i.id) && !hiddenDefaultItems.includes(i.id)).length + 
-                           customItems.filter(i => i.is_done).length;
-    const progressPercent = Math.round((completedCount / Math.max(total, 1)) * 100);
+    const safeCompletedItems = Array.isArray(completedItems) ? completedItems : [];
+    const safeCustomItems = Array.isArray(customItems) ? customItems : [];
+    const safeHiddenItemsList = Array.isArray(hiddenDefaultItems) ? hiddenDefaultItems : [];
+
+    const visibleDefaultItems = (CHECKLIST_ITEMS || []).filter(item => !safeHiddenItemsList.includes(item.id));
+    const total = visibleDefaultItems.length + safeCustomItems.length;
+    const completedCount = (CHECKLIST_ITEMS || []).filter(i => 
+        safeCompletedItems.includes(i.id) && !safeHiddenItemsList.includes(i.id)
+    ).length + safeCustomItems.filter(i => i.is_done).length;
+    
+    const progressPercent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
     const handleAddCustom = async () => {
         if (!newLabel.trim()) return;
@@ -129,7 +142,7 @@ export default function Checklist() {
                 <div className="space-y-4 mb-8">
                     <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Itens do VOY</p>
                     {visibleDefaultItems.map((item) => {
-                        const isDone = completedItems.includes(item.id);
+                        const isDone = safeCompletedItems.includes(item.id);
                         return (
                             <div
                                 key={item.id}
@@ -221,12 +234,12 @@ export default function Checklist() {
                         </Dialog>
                     </div>
 
-                    {customItems.length === 0 ? (
+                    {safeCustomItems.length === 0 ? (
                         <div className="bg-muted/20 border border-dashed rounded-[24px] p-8 text-center">
                             <p className="text-muted-foreground text-sm font-medium">Adicione seus próprios itens personalizados.</p>
                         </div>
                     ) : (
-                        customItems.map((item) => (
+                        safeCustomItems.map((item) => (
                             <div
                                 key={item.id}
                                 className={cn(
