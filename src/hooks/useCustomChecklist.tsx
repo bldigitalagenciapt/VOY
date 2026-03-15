@@ -66,16 +66,18 @@ export function useCustomChecklist() {
         }
     };
 
-    const deleteItem = async (id: string) => {
+    const updateItem = async (id: string, label: string) => {
         const { error } = await (supabase as any)
             .from('custom_checklist_items')
-            .delete()
+            .update({ label: label.trim() })
             .eq('id', id);
 
         if (!error) {
-            setItems(prev => prev.filter(i => i.id !== id));
+            setItems(prev => prev.map(i => i.id === id ? { ...i, label: label.trim() } : i));
+        } else {
+            toast({ variant: 'destructive', title: 'Erro ao atualizar item.' });
         }
     };
 
-    return { items, loading, addItem, toggleItem, deleteItem };
+    return { items, loading, addItem, toggleItem, deleteItem, updateItem };
 }

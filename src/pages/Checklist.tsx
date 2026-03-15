@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Card } from '@/components/ui/card';
@@ -13,23 +13,42 @@ import {
     Info,
     Rocket,
     Plus,
-    Trash2
+    Trash2,
+    Pencil
 } from 'lucide-react';
 import { useChecklist, CHECKLIST_ITEMS } from '@/hooks/useChecklist';
 import { useCustomChecklist } from '@/hooks/useCustomChecklist';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Checklist() {
     const navigate = useNavigate();
+    const { toast } = useToast();
     const { completedItems, loading, toggleItem } = useChecklist();
-    const { items: customItems, loading: customLoading, addItem, toggleItem: toggleCustom, deleteItem } = useCustomChecklist();
+    const { items: customItems, loading: customLoading, addItem, toggleItem: toggleCustom, deleteItem, updateItem } = useCustomChecklist();
 
     const [showAddDialog, setShowAddDialog] = useState(false);
+    const [showEditDialog, setShowEditDialog] = useState(false);
+    const [editingItem, setEditingItem] = useState<{ id: string, label: string, isCustom: boolean } | null>(null);
     const [newLabel, setNewLabel] = useState('');
+    const [editLabel, setEditLabel] = useState('');
     const [saving, setSaving] = useState(false);
+    const [hiddenDefaultItems, setHiddenDefaultItems] = useState<string[]>([]);
 
-    const total = CHECKLIST_ITEMS.length + customItems.length;
-    const completedCount = completedItems.length + customItems.filter(i => i.is_done).length;
+    useEffect(() => {
+        const hidden = localStorage.getItem('voy_hidden_checklist_items');
+        if (hidden) setHiddenDefaultItems(JSON.parse(hidden));
+    }, []);
+
+    const saveHiddenItems = (ids: string[]) => {
+        setHiddenDefaultItems(ids);
+        localStorage.setItem('voy_hidden_checklist_items', JSON.stringify(ids));
+    };
+
+    const visibleDefaultItems = CHECKLIST_ITEMS.filter(item => !hiddenDefaultItems.includes(item.id));
+    const total = visibleDefaultItems.length + customItems.length;
+    const completedCount = CHECKLIST_ITEMS.filter(i => completedItems.includes(i.id) && !hiddenDefaultItems.includes(i.id)).length + 
+                           customItems.filter(i => i.is_done).length;
     const progressPercent = Math.round((completedCount / Math.max(total, 1)) * 100);
 
     const handleAddCustom = async () => {
@@ -39,6 +58,37 @@ export default function Checklist() {
         setNewLabel('');
         setSaving(false);
         setShowAddDialog(false);
+    };
+
+    const handleEditItem = (id: string, label: string, isCustom: boolean) => {
+        setEditingItem({ id, label, isCustom });
+        setEditLabel(label);
+        setShowEditDialog(true);
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editLabel.trim() || !editingItem) return;
+        setSaving(true);
+        if (editingItem.isCustom) {
+            await updateItem(editingItem.id, editLabel.trim());
+        } else {
+            // Se for item padrão, o ocultamos e criamos um novo personalizado
+            const newHidden = [...hiddenDefaultItems, editingItem.id];
+            saveHiddenItems(newHidden);
+            await addItem(editLabel.trim());
+            
+            // Se estava completado, mantemos o estado no novo item (opcional, aqui simplificamos)
+            toast({ title: "Item padrão atualizado!", description: "O item original foi substituído pela sua edição." });
+        }
+        setSaving(false);
+        setShowEditDialog(false);
+        setEditingItem(null);
+    };
+
+    const handleDeleteDefault = (id: string) => {
+        const newHidden = [...hiddenDefaultItems, id];
+        saveHiddenItems(newHidden);
+        toast({ title: "Item removido", description: "O item padrão foi ocultado da sua lista." });
     };
 
     return (
@@ -78,27 +128,28 @@ export default function Checklist() {
                 {/* VOY Default Items */}
                 <div className="space-y-4 mb-8">
                     <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] px-1">Itens do VOY</p>
-                    {CHECKLIST_ITEMS.map((item) => {
+                    {visibleDefaultItems.map((item) => {
                         const isDone = completedItems.includes(item.id);
                         return (
-                            <button
+                            <div
                                 key={item.id}
-                                onClick={() => toggleItem(item.id, !isDone)}
                                 className={cn(
-                                    "w-full flex items-start gap-4 p-5 rounded-[28px] border transition-all text-left group",
+                                    "w-full flex items-start gap-4 p-5 rounded-[28px] border transition-all text-left group relative",
                                     isDone
                                         ? "bg-primary/5 border-primary/20"
                                         : "bg-card border-border/50 hover:border-primary/30"
                                 )}
                             >
-                                <div className={cn(
-                                    "w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors",
-                                    isDone ? "bg-primary text-white" : "border-2 border-muted-foreground/30 text-transparent"
-                                )}>
+                                <button
+                                    onClick={() => toggleItem(item.id, !isDone)}
+                                    className={cn(
+                                        "w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors",
+                                        isDone ? "bg-primary text-white" : "border-2 border-muted-foreground/30 text-transparent"
+                                    )}>
                                     {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between items-center mb-1">
+                                </button>
+                                <div className="flex-1 min-w-0" onClick={() => toggleItem(item.id, !isDone)}>
+                                    <div className="flex justify-between items-center mb-1 pr-14">
                                         <span className={cn(
                                             "text-sm font-bold transition-all",
                                             isDone ? "text-primary line-through opacity-70" : "text-foreground"
@@ -113,13 +164,27 @@ export default function Checklist() {
                                         </span>
                                     </div>
                                     <p className={cn(
-                                        "text-[10px] leading-relaxed",
+                                        "text-[10px] leading-relaxed pr-8",
                                         isDone ? "text-muted-foreground/50" : "text-muted-foreground"
                                     )}>
                                         {item.description}
                                     </p>
                                 </div>
-                            </button>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => handleEditItem(item.id, item.label, false)}
+                                        className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                                    >
+                                        <Pencil className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteDefault(item.id)}
+                                        className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
                         );
                     })}
                 </div>
@@ -165,7 +230,7 @@ export default function Checklist() {
                             <div
                                 key={item.id}
                                 className={cn(
-                                    "w-full flex items-start gap-4 p-5 rounded-[28px] border transition-all group",
+                                    "w-full flex items-start gap-4 p-5 rounded-[28px] border transition-all group relative",
                                     item.is_done
                                         ? "bg-primary/5 border-primary/20"
                                         : "bg-card border-border/50 hover:border-primary/30"
@@ -188,16 +253,46 @@ export default function Checklist() {
                                         {item.label}
                                     </span>
                                 </div>
-                                <button
-                                    onClick={() => deleteItem(item.id)}
-                                    className="p-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => handleEditItem(item.id, item.label, true)}
+                                        className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                                    >
+                                        <Pencil className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => deleteItem(item.id)}
+                                        className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         ))
                     )}
                 </div>
+
+                {/* Edit Dialog */}
+                <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+                    <DialogContent className="rounded-[24px] max-w-[calc(100vw-2rem)]">
+                        <DialogHeader>
+                            <DialogTitle>Editar Item</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 pt-2">
+                            <Input
+                                placeholder="Nome do item"
+                                value={editLabel}
+                                onChange={e => setEditLabel(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleSaveEdit()}
+                                className="rounded-xl h-12"
+                                autoFocus
+                            />
+                            <Button onClick={handleSaveEdit} disabled={saving || !editLabel.trim()} className="w-full h-12 rounded-xl font-bold">
+                                Salvar Alterações
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
 
                 {/* Pro Tip */}
                 <div className="mt-4 p-4 bg-muted/30 rounded-3xl flex gap-3 items-center border border-border/50">
