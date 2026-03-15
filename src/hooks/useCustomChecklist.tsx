@@ -66,6 +66,17 @@ export function useCustomChecklist() {
         }
     };
 
+    const deleteItem = async (id: string) => {
+        const { error } = await (supabase as any)
+            .from('custom_checklist_items')
+            .delete()
+            .eq('id', id);
+
+        if (!error) {
+            setItems(prev => prev.filter(i => i.id !== id));
+        }
+    };
+
     const updateItem = async (id: string, label: string) => {
         const { error } = await (supabase as any)
             .from('custom_checklist_items')
