@@ -11,6 +11,13 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// IDs dos planos do Stripe
+// Prioridade: variável de ambiente → fallback com ID real do produto
+const PRICE_IDS = {
+    monthly: Deno.env.get("STRIPE_PRICE_MONTHLY") || "price_1TErBVE9B3Qi46145xFfvUu3",
+    yearly: Deno.env.get("STRIPE_PRICE_YEARLY") || "price_1TErBVE9B3Qi4614qt3qEvv4",
+};
+
 Deno.serve(async (req: Request) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
@@ -19,23 +26,14 @@ Deno.serve(async (req: Request) => {
     try {
         const { user_id, user_email, plan_type } = await req.json();
 
-        // Determinar o ID do preço baseado no tipo de plano
-        const monthlyPriceId = Deno.env.get("STRIPE_PRICE_MONTHLY");
-        const yearlyPriceId = Deno.env.get("STRIPE_PRICE_YEARLY");
-
-        console.log(`[STRIPE] Request para plano: ${plan_type}`);
-        console.log(`[STRIPE] Configuração encontrada - Mensal: ${monthlyPriceId ? 'OK' : 'MISSING'}, Anual: ${yearlyPriceId ? 'OK' : 'MISSING'}`);
-
         // Aceitar variações de nomes
-        const isYearly = plan_type === 'yearly' || plan_type === 'annual' || plan_type === 'yearly_v1';
-        const priceId = isYearly ? yearlyPriceId : monthlyPriceId;
+        const isYearly = plan_type === "yearly" || plan_type === "annual";
+        const priceId = isYearly ? PRICE_IDS.yearly : PRICE_IDS.monthly;
+        const resolvedPlanType = isYearly ? "yearly" : "monthly";
 
-        if (!priceId) {
-            console.error(`[STRIPE] Price ID não configurado para o plano: ${plan_type}`);
-            throw new Error(`Configuração incompleta no servidor: ID do preço para '${plan_type}' não encontrado.`);
-        }
-
-        console.log(`[STRIPE] Criando sessão. User: ${user_id}, ID do Preço: ${priceId}, Modo: subscription`);
+        console.log(`[STRIPE] Plano solicitado: ${plan_type} → ${resolvedPlanType}`);
+        console.log(`[STRIPE] Price ID selecionado: ${priceId}`);
+        console.log(`[STRIPE] User: ${user_id} | Email: ${user_email}`);
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card", "multibanco", "mb_way"],
@@ -51,6 +49,7 @@ Deno.serve(async (req: Request) => {
                 trial_period_days: 14,
                 metadata: {
                     user_id: user_id,
+                    plan_type: resolvedPlanType,
                 },
             },
             success_url: `${req.headers.get("origin")}/home?success=true`,
@@ -59,13 +58,15 @@ Deno.serve(async (req: Request) => {
             client_reference_id: user_id,
         });
 
+        console.log(`[STRIPE] Sessão criada com sucesso: ${session.id}`);
+
         return new Response(JSON.stringify({ url: session.url }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 200,
         });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
-        console.error("Stripe Checkout Error:", error);
+        console.error("[STRIPE] Erro ao criar sessão:", error);
         return new Response(JSON.stringify({ error: errorMessage }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 400,

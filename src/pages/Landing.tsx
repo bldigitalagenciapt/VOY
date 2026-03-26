@@ -419,8 +419,11 @@ export default function Landing() {
 
                     <div className="max-w-lg mx-auto">
                         {pricing.map((p, i) => {
-                            const currentPrice = billingCycle === 'monthly' ? p.monthlyPrice : p.yearlyPrice;
-                            const currentPeriod = billingCycle === 'monthly' ? '/ mês' : '/ ano';
+                            const isYearly = billingCycle === 'yearly';
+                            const currentPrice = isYearly ? p.yearlyPrice : p.monthlyPrice;
+                            const currentPeriod = isYearly ? '/ ano' : '/ mês';
+                            // Preço mensal equivalente no plano anual: 19.90 / 12 ≈ 1.66
+                            const monthlyEquivalent = '€1.66';
 
                             return (
                                 <div key={i} className={cn(
@@ -435,14 +438,40 @@ export default function Landing() {
                                     )}
                                     <div className="absolute top-8 left-8 bg-white/20 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest">Oferta de Lançamento</div>
                                     <h4 className="text-lg font-black uppercase tracking-widest opacity-60 mb-6 mt-4">{p.name}</h4>
-                                    <div className="flex items-baseline gap-2 mb-10">
-                                        <span className="text-6xl font-black">{currentPrice}</span>
+
+                                    {/* Preço principal */}
+                                    <div className="flex items-baseline gap-2 mb-2">
+                                        <span className="text-6xl font-black transition-all duration-300">{currentPrice}</span>
                                         <span className="text-xs font-bold opacity-60 uppercase">{currentPeriod}</span>
                                     </div>
-                                    <ul className="space-y-6 mb-12">
+
+                                    {/* Info extra do plano anual */}
+                                    {isYearly ? (
+                                        <div className="flex flex-col gap-2 mb-8">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-bold opacity-70">equivale a</span>
+                                                <span className="text-lg font-black">{monthlyEquivalent}/mês</span>
+                                                <span className="line-through text-sm opacity-40">{p.monthlyPrice}</span>
+                                            </div>
+                                            <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-black px-3 py-1.5 rounded-full self-start">
+                                                <CheckCircle className="w-3 h-3" />
+                                                14 DIAS PARA TESTAR (REEMBOLSO INTEGRAL)
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-2 mb-8">
+                                            <span className="text-sm font-bold opacity-50">cobrado mensalmente</span>
+                                            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/80 text-[10px] font-black px-3 py-1.5 rounded-full self-start">
+                                                <CheckCircle className="w-3 h-3" />
+                                                14 DIAS PARA TESTAR (REEMBOLSO INTEGRAL)
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <ul className="space-y-5 mb-12">
                                         {p.features.map((f, fi) => (
                                             <li key={fi} className="flex items-center gap-4 text-sm font-bold">
-                                                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", p.popular ? "bg-white/20" : "bg-blue-500/20 text-blue-400")}>
+                                                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0", p.popular ? "bg-white/20" : "bg-blue-500/20 text-blue-400")}>
                                                     <CheckCircle2 className="w-3 h-3" />
                                                 </div>
                                                 {f}
@@ -459,7 +488,7 @@ export default function Landing() {
                                         {loading ? "Processando..." : (
                                             <span className="flex items-center gap-2">
                                                 {p.popular ? <Sparkles className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
-                                                Assinar {billingCycle === 'monthly' ? 'Mensal' : 'Anual'} ({currentPrice})
+                                                Assinar {isYearly ? `Anual (${currentPrice})` : `Mensal (${currentPrice})`}
                                                 <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                             </span>
                                         )}

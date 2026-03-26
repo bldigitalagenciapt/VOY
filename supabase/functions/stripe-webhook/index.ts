@@ -21,7 +21,7 @@ Deno.serve(async (req: Request) => {
 
     try {
         const body = await req.text();
-        console.log("[WEBHOOK] Received webhook request. Signature:", signature ? "Present" : "Missing");
+        console.log("[WEBHOOK] Recebido webhook. Assinatura:", signature ? "Presente" : "Ausente");
 
         const event = await stripe.webhooks.constructEventAsync(
             body,
@@ -29,62 +29,80 @@ Deno.serve(async (req: Request) => {
             Deno.env.get("STRIPE_WEBHOOK_SECRET") || ""
         );
 
-        console.log(`[WEBHOOK] Event constructed: ${event.type}`);
+        console.log(`[WEBHOOK] Evento construído: ${event.type}`);
 
         if (event.type === "checkout.session.completed") {
             const session = event.data.object as Stripe.Checkout.Session;
             const userId = session.client_reference_id;
             const customerEmail = session.customer_details?.email;
 
-            console.log(`[WEBHOOK] Processing checkout.session.completed. userId: ${userId}, email: ${customerEmail}`);
+            console.log(`[WEBHOOK] Processando checkout.session.completed. userId: ${userId}, email: ${customerEmail}`);
 
             if (userId) {
-                console.log(`[WEBHOOK] Attempting to update profile for user ${userId} to premium...`);
+                // Determinar o tipo de plano baseado no Price ID utilizado
+                let planType = "monthly";
+                try {
+                    const monthlyPriceId = Deno.env.get("STRIPE_PRICE_MONTHLY");
+                    const yearlyPriceId = Deno.env.get("STRIPE_PRICE_YEARLY");
+
+                    const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
+                    const priceId = lineItems.data[0]?.price?.id;
+
+                    console.log(`[WEBHOOK] Price ID utilizado: ${priceId}. Mensal: ${monthlyPriceId}, Anual: ${yearlyPriceId}`);
+
+                    if (priceId && priceId === yearlyPriceId) {
+                        planType = "yearly";
+                    } else if (priceId && priceId === monthlyPriceId) {
+                        planType = "monthly";
+                    } else if (session.metadata?.plan_type) {
+                        planType = session.metadata.plan_type;
+                    }
+                } catch (lineItemsError) {
+                    console.warn("[WEBHOOK] Não foi possível buscar line items. Usando plano padrão 'monthly':", lineItemsError);
+                }
+
+                console.log(`[WEBHOOK] Tipo de plano: ${planType}. Atualizando perfil do user ${userId}...`);
 
                 const { data, error } = await supabaseAdmin
                     .from("profiles")
                     .update({
                         plan_status: "premium",
+                        plan_type: planType,
                         payment_date: new Date().toISOString()
                     })
                     .eq("user_id", userId)
                     .select();
 
                 if (error) {
-                    console.error(`[WEBHOOK] ERROR updating profile for user ${userId}:`, error);
+                    console.error(`[WEBHOOK] ERRO ao atualizar perfil do user ${userId}:`, error);
                     return new Response(JSON.stringify({ error: "Error updating profile", details: error }), { status: 500 });
                 }
 
                 if (!data || data.length === 0) {
-                    console.warn(`[WEBHOOK] WARNING: No profile found for user ${userId}. Status update skipped.`);
+                    console.warn(`[WEBHOOK] AVISO: Nenhum perfil encontrado para o user ${userId}.`);
                 } else {
-                    console.log(`[WEBHOOK] SUCCESS: User ${userId} upgraded to premium. Row(s) updated:`, data.length);
+                    console.log(`[WEBHOOK] SUCESSO: User ${userId} é agora premium com plano ${planType}.`);
                 }
             } else {
-                console.error("[WEBHOOK] ABORT: No user_id found in session.client_reference_id");
+                console.error("[WEBHOOK] ABORTADO: Nenhum user_id em session.client_reference_id");
             }
         } else if (event.type === "customer.subscription.deleted") {
             const subscription = event.data.object as Stripe.Subscription;
             const customerId = subscription.customer as string;
 
-            console.log(`[WEBHOOK] Processing customer.subscription.deleted for customer: ${customerId}`);
+            console.log(`[WEBHOOK] Processando customer.subscription.deleted para customer: ${customerId}`);
 
-            // Buscar o user_id pelo customer_id do Stripe (precisaríamos salvar o stripe_customer_id no perfil ou buscar via Stripe API)
-            // Por simplicidade atual, vamos assumir que o sistema apenas ativa no checkout.
-            // Para produção, é recomendado mapear o stripe_customer_id -> user_id
-
-            // Se tivermos o stripe_customer_id na tabela profiles:
             const { data, error } = await supabaseAdmin
                 .from("profiles")
-                .update({ plan_status: "free" })
+                .update({ plan_status: "free", plan_type: null })
                 .eq("stripe_customer_id", customerId)
                 .select();
 
-            if (error) console.error(`[WEBHOOK] Error resetting plan for customer ${customerId}:`, error);
-            else console.log(`[WEBHOOK] Subscription deleted. User plan reset to free for customer ${customerId}`);
+            if (error) console.error(`[WEBHOOK] Erro ao resetar plano do customer ${customerId}:`, error);
+            else console.log(`[WEBHOOK] Assinatura cancelada. Plano resetado para free. Customer: ${customerId}`);
 
         } else {
-            console.log(`[WEBHOOK] Ignored event type: ${event.type}`);
+            console.log(`[WEBHOOK] Evento ignorado: ${event.type}`);
         }
 
         return new Response(JSON.stringify({ received: true }), {
@@ -93,7 +111,7 @@ Deno.serve(async (req: Request) => {
         });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
-        console.error(`[WEBHOOK] CRITICAL ERROR: ${errorMessage}`);
+        console.error(`[WEBHOOK] ERRO CRÍTICO: ${errorMessage}`);
         return new Response(JSON.stringify({ error: errorMessage }), { status: 400 });
     }
 });
