@@ -50,6 +50,10 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
+  -- Trava de Segurança Crítica: Apenas o dono da conta pode excluir seus dados
+  IF auth.uid() IS NULL OR auth.uid() != user_uuid THEN
+    RAISE EXCEPTION 'Acesso Negado: Você só pode excluir os seus próprios dados.';
+  END IF;
   -- 1. Deletar documentos (isso já libera as referências no banco)
   DELETE FROM public.documents WHERE user_id = user_uuid;
   

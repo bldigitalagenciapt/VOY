@@ -28,7 +28,14 @@ export function useSubscription() {
                 throw new Error('Sessão inválida. Por favor, faça login novamente.');
             }
 
-            console.log(`[STRIPE DEBUG] Iniciando checkout. Plano Selecionado: ${planType}`);
+            // IDs dos planos do Stripe (mesmos que estavam configurados no backend)
+            const PRICE_IDS = {
+                monthly: 'price_1TErBVE9B3Qi46145xFfvUu3',
+                yearly: 'price_1TErBVE9B3Qi4614qt3qEvv4'
+            };
+            const priceId = PRICE_IDS[planType];
+
+            console.log(`Iniciando checkout para o Price ID: ${priceId}`);
             console.log(`[STRIPE DEBUG] User ID: ${user.id}, Email: ${user.email}`);
 
             const { data, error } = await supabase.functions.invoke('stripe-checkout', {
@@ -38,7 +45,8 @@ export function useSubscription() {
                 body: {
                     user_id: user.id,
                     user_email: user.email,
-                    plan_type: planType
+                    plan_type: planType,
+                    price_id: priceId
                 }
             });
 

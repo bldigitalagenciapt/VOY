@@ -11,12 +11,7 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// IDs dos planos do Stripe
-// Prioridade: variável de ambiente → fallback com ID real do produto
-const PRICE_IDS = {
-    monthly: Deno.env.get("STRIPE_PRICE_MONTHLY") || "price_1TErBVE9B3Qi46145xFfvUu3",
-    yearly: Deno.env.get("STRIPE_PRICE_YEARLY") || "price_1TErBVE9B3Qi4614qt3qEvv4",
-};
+// Remover fallbacks hardcoded; o frontend dita o Price ID.
 
 Deno.serve(async (req: Request) => {
     if (req.method === "OPTIONS") {
@@ -24,22 +19,24 @@ Deno.serve(async (req: Request) => {
     }
 
     try {
-        const { user_id, user_email, plan_type } = await req.json();
+        const { user_id, user_email, plan_type, price_id } = await req.json();
 
-        // Aceitar variações de nomes
+        if (!price_id) {
+            throw new Error("O price_id deve ser fornecido obrigatoriamente no corpo da requisição.");
+        }
+
         const isYearly = plan_type === "yearly" || plan_type === "annual";
-        const priceId = isYearly ? PRICE_IDS.yearly : PRICE_IDS.monthly;
         const resolvedPlanType = isYearly ? "yearly" : "monthly";
 
         console.log(`[STRIPE] Plano solicitado: ${plan_type} → ${resolvedPlanType}`);
-        console.log(`[STRIPE] Price ID selecionado: ${priceId}`);
+        console.log(`[STRIPE] Price ID selecionado pelo cliente: ${price_id}`);
         console.log(`[STRIPE] User: ${user_id} | Email: ${user_email}`);
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card", "multibanco", "mb_way"],
             line_items: [
                 {
-                    price: priceId,
+                    price: price_id,
                     quantity: 1,
                 },
             ],
