@@ -62,23 +62,30 @@ export function useSubscription() {
             let errorMessage = 'Erro ao iniciar pagamento. Tente novamente mais tarde.';
 
             if (error && typeof error === 'object') {
-                if (error.message) {
-                    errorMessage = `Erro no Checkout: ${error.message}`;
-                }
+                // If it's a standard Error object or error string
+                const rawMessage = error.message || String(error);
+                
+                // Prioritize specific error from response body
                 if (error.context && error.context.json) {
                     try {
                         const errorBody = await error.context.json();
-                        console.error('Error body:', errorBody);
+                        console.error('[STRIPE ERROR BODY]', errorBody);
                         if (errorBody.error) {
-                            errorMessage = `Erro do Servidor: ${errorBody.error}`;
+                            errorMessage = `Erro: ${errorBody.error}`;
+                        } else {
+                            errorMessage = `Erro no Servidor: ${rawMessage}`;
                         }
                     } catch (e) {
-                        console.log('Could not parse error context json');
+                        errorMessage = `Erro: ${rawMessage}`;
                     }
+                } else {
+                    errorMessage = `Erro: ${rawMessage}`;
                 }
             }
 
-            toast.error(errorMessage);
+            toast.error(errorMessage, {
+                duration: 5000,
+            });
         } finally {
             setLoading(false);
         }

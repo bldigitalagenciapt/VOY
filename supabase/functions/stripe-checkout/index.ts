@@ -33,7 +33,7 @@ Deno.serve(async (req: Request) => {
         console.log(`[STRIPE] User: ${user_id} | Email: ${user_email}`);
 
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card", "multibanco", "mb_way"],
+            payment_method_types: ["card"],
             line_items: [
                 {
                     price: price_id,
