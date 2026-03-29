@@ -39,9 +39,6 @@ export function useSubscription() {
             console.log(`[STRIPE DEBUG] User ID: ${user.id}, Email: ${user.email}`);
 
             const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-                headers: {
-                    Authorization: `Bearer ${session.access_token}`
-                },
                 body: {
                     user_id: user.id,
                     user_email: user.email,
