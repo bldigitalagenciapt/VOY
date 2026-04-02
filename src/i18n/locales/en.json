@@ -1,4 +1,4 @@
-﻿{
+{
     "welcome.title": "Welcome to VOY",
     "welcome.subtitle": "VOY - The gateway to your future",
     "welcome.start": "Get Started",
@@ -27,8 +27,9 @@
     "settings.madeWith": "Made with ❤️ by VOY team",
     "settings.deleteAccount": "Delete Account",
     "settings.delete.title": "Delete your account?",
-    "settings.delete.desc": "This will permanently delete all your documents and data. This action cannot be undone.",
-    "settings.delete.confirm": "Yes, delete my account",
+    "settings.delete.desc": "This will schedule the deletion of your account and all your data for 30 days from now. Your data will be preserved during this security period if you change your mind.",
+    "settings.delete.confirm": "Yes, schedule deletion",
+    "settings.delete.success": "Deletion scheduled! You will be logged out and have 30 days to recover your account if needed.",
     "settings.name.title": "Change Name",
     "settings.name.label": "Your Name",
     "settings.name.placeholder": "How do you want to be called?",

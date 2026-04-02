@@ -36,8 +36,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Set up auth state listener FIRST
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (event, session) => {
+        async (event, session) => {
           console.log('[Auth] Mudança de estado:', event);
+          
+          if (session?.user) {
+            // Check if account is scheduled for deletion
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('deletion_scheduled_at')
+              .eq('user_id', session.user.id)
+              .single();
+
+            if (profile?.deletion_scheduled_at) {
+              console.warn('[Auth] Conta agendada para exclusão. Desconectando...');
+              await supabase.auth.signOut();
+              setUser(null);
+              setSession(null);
+              setLoading(false);
+              return;
+            }
+          }
+
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
@@ -88,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string, captchaToken?: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
       options: {
@@ -96,7 +115,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
 
-    return { error: error };
+    if (signInError) return { error: signInError };
+
+    if (data.user) {
+      // Check if account is scheduled for deletion
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('deletion_scheduled_at')
+        .eq('user_id', data.user.id)
+        .single();
+
+      if (profile?.deletion_scheduled_at) {
+        console.warn('[Auth] Tentativa de login em conta agendada para exclusão.');
+        await supabase.auth.signOut();
+        return { error: new Error('Esta conta está agendada para exclusão em 30 dias. Entre em contato com o suporte para reativar.') };
+      }
+    }
+
+    return { error: null };
   };
 
   const signInWithGoogle = async () => {

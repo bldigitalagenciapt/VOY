@@ -1,4 +1,4 @@
-﻿{
+{
     "welcome.title": "Bem-vindo ao VOY",
     "welcome.subtitle": "VOY - A porta de entrada para o seu futuro",
     "welcome.start": "Começar Agora",
@@ -27,8 +27,9 @@
     "settings.madeWith": "Feito com ❤️ pela equipe VOY",
     "settings.deleteAccount": "Excluir Conta",
     "settings.delete.title": "Excluir sua conta?",
-    "settings.delete.desc": "Isto apagará permanentemente todos os seus documentos e dados. Esta ação não pode ser desfeita.",
-    "settings.delete.confirm": "Sim, excluir minha conta",
+    "settings.delete.desc": "Isto agendará a exclusão da sua conta e de todos os seus dados para daqui a 30 dias. Seus dados serão preservados durante este período de segurança caso mude de ideia.",
+    "settings.delete.confirm": "Sim, agendar exclusão",
+    "settings.delete.success": "Exclusão agendada! Você será desconectado e tem 30 dias para recuperar sua conta se necessário.",
     "settings.name.title": "Alterar Nome",
     "settings.name.label": "Seu Nome",
     "settings.name.placeholder": "Como quer ser chamado?",

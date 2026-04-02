@@ -64,7 +64,7 @@ export default function Settings() {
       if (!data?.success) throw new Error(data?.error || 'Deletion failed');
 
       await signOut();
-      toast.success(t('settings.delete.success') || 'Sua conta e dados foram removidos com sucesso. Reembolso será processado pelo Stripe.');
+      toast.success(t('settings.delete.success'));
       navigate('/auth');
     } catch (error: any) {
       console.error('Delete account error:', error);
