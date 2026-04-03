@@ -22,72 +22,97 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
     console.log('[Auth] Inicializando estado de autenticação...');
-    console.log('[Auth] Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
 
-    // Failsafe: Se em 8 segundos não inicializar, força loading para false
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.warn('[Auth] Tempo limite de inicialização atingido. Forçando desbloqueio.');
-        setLoading(false);
+    // Função para verificar deletamento agendado
+    const checkDeletionStatus = async (user: User) => {
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('deletion_scheduled_at')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('[Auth] Erro ao verificar status de exclusão:', error);
+          return false;
+        }
+
+        if (profile?.deletion_scheduled_at) {
+          console.warn('[Auth] Conta agendada para exclusão capturada.');
+          return true;
+        }
+      } catch (e) {
+        console.error('[Auth] Exceção ao verificar status de exclusão:', e);
       }
-    }, 8000);
+      return false;
+    };
 
-    try {
-      // Set up auth state listener FIRST
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          console.log('[Auth] Mudança de estado:', event);
-          
-          if (session?.user) {
-            // Check if account is scheduled for deletion
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('deletion_scheduled_at')
-              .eq('user_id', session.user.id)
-              .single();
+    const initializeAuth = async () => {
+      try {
+        // 1. Recuperar sessão inicial (Síncrono/Rápido via LocalStorage)
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('[Auth] Erro ao recuperar sessão inicial:', sessionError);
+        }
 
-            if (profile?.deletion_scheduled_at) {
-              console.warn('[Auth] Conta agendada para exclusão. Desconectando...');
-              await supabase.auth.signOut();
-              setUser(null);
-              setSession(null);
+        if (initialSession?.user) {
+          const isDeleted = await checkDeletionStatus(initialSession.user);
+          if (isDeleted && mounted) {
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+        }
+
+        if (mounted) {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+          setLoading(false);
+        }
+
+        // 2. Configurar o listener para mudanças futuras
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, currentSession) => {
+            console.log('[Auth] Evento de mudança:', event);
+            
+            if (currentSession?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
+              const isDeleted = await checkDeletionStatus(currentSession.user);
+              if (isDeleted && mounted) {
+                await supabase.auth.signOut();
+                setSession(null);
+                setUser(null);
+                setLoading(false);
+                return;
+              }
+            }
+
+            if (mounted) {
+              setSession(currentSession);
+              setUser(currentSession?.user ?? null);
               setLoading(false);
-              return;
             }
           }
+        );
 
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-          clearTimeout(timeout);
-        }
-      );
+        return subscription;
+      } catch (err) {
+        console.error('[Auth] Erro crítico na inicialização:', err);
+        if (mounted) setLoading(false);
+        return null;
+      }
+    };
 
-      // THEN check for existing session
-      supabase.auth.getSession().then(({ data: { session }, error }) => {
-        if (error) {
-          console.error('[Auth] Erro ao buscar sessão:', error);
-        }
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        clearTimeout(timeout);
-      }).catch(err => {
-        console.error('[Auth] Erro crítico na Promise de sessão:', err);
-        setLoading(false);
-        clearTimeout(timeout);
-      });
+    const authPromise = initializeAuth();
 
-      return () => {
-        subscription.unsubscribe();
-        clearTimeout(timeout);
-      };
-    } catch (err) {
-      console.error('[Auth] Erro ao configurar listeners de auth:', err);
-      setLoading(false);
-      clearTimeout(timeout);
-    }
+    return () => {
+      mounted = false;
+      authPromise.then(sub => sub?.unsubscribe());
+    };
   }, []);
 
 
