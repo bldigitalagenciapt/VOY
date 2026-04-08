@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Card } from '@/components/ui/card';
@@ -24,7 +24,7 @@ export default function SalaryCalculator() {
     const [ssTax, setSsTax] = useState<number>(0);
 
     // Simple Portuguese IRS Brackets Approximation (2026 simplified)
-    const calculateTaxes = () => {
+    const calculateTaxes = useCallback(() => {
         const salary = Number(grossSalary);
         const ss = salary * (ssRate / 100);
 
@@ -43,11 +43,11 @@ export default function SalaryCalculator() {
         setSsTax(ss);
         setIrsTax(irs);
         setNetSalary(net);
-    };
+    }, [grossSalary, ssRate]);
 
     useEffect(() => {
         calculateTaxes();
-    }, [grossSalary]);
+    }, [calculateTaxes]);
 
     return (
         <MobileLayout showNav={true}>

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return false;
         }
 
-        if (profile?.deletion_scheduled_at) {
+        if ((profile as any)?.deletion_scheduled_at) {
           console.warn('[Auth] Conta agendada para exclusão capturada.');
           return true;
         }
@@ -150,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('user_id', data.user.id)
         .single();
 
-      if (profile?.deletion_scheduled_at) {
+      if ((profile as any)?.deletion_scheduled_at) {
         console.warn('[Auth] Tentativa de login em conta agendada para exclusão.');
         await supabase.auth.signOut();
         return { error: new Error('Esta conta está agendada para exclusão em 30 dias. Entre em contato com o suporte para reativar.') };

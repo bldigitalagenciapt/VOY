@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Download, X, FileText, Image, FileSpreadsheet, File, Loader2 } from 'lucide-react';
@@ -66,9 +66,9 @@ export function DocumentViewer({ open, onOpenChange, doc }: DocumentViewerProps)
       setSignedUrl(null);
       setImageLoading(true);
     }
-  }, [open, doc?.file_url]);
+  }, [open, doc?.file_url, generateSignedUrl]);
 
-  const generateSignedUrl = async () => {
+  const generateSignedUrl = useCallback(async () => {
     if (!doc?.file_url) return;
 
     setLoadingUrl(true);
@@ -95,7 +95,7 @@ export function DocumentViewer({ open, onOpenChange, doc }: DocumentViewerProps)
     } finally {
       setLoadingUrl(false);
     }
-  };
+  }, [doc?.file_url]);
 
   if (!doc) return null;
 
