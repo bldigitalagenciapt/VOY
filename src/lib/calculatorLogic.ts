@@ -27,6 +27,7 @@ export interface SalaryInputs {
   hasRetroactive: boolean;
   retroactiveTotal: number;
   retroactiveMonths: number;
+  bonusTotal: number;
 }
 
 export interface EarningsBreakdown {
@@ -37,6 +38,7 @@ export interface EarningsBreakdown {
   overtimeTotal: number;
   overtimeDetails: { label: string; value: number }[];
   retroactiveMonthly: number;
+  bonusTotal: number;
   totalGross: number;
 }
 
@@ -315,14 +317,14 @@ export function calculateNetSalary(inputs: SalaryInputs): SalaryResult {
   }
 
   // 4. Total Bruto
-  const totalGross = baseSalary + mealResult.gross + overtimeResult.total + retroactiveMonthly;
+  const totalGross = baseSalary + mealResult.gross + overtimeResult.total + retroactiveMonthly + (inputs.bonusTotal || 0);
 
   // 5. Segurança Social (11% sobre Base + HExtra + SA tributável)
-  const ssBase = baseSalary + overtimeResult.total + mealResult.taxable + retroactiveMonthly;
+  const ssBase = baseSalary + overtimeResult.total + mealResult.taxable + retroactiveMonthly + (inputs.bonusTotal || 0);
   const ssAmount = Math.max(0, ssBase * SS_EMPLOYEE_RATE);
 
   // 6. Base tributável para IRS = Base + HExtra + SA tributável + Retroativos mensalizados - SS
-  const irsBase = baseSalary + overtimeResult.total + mealResult.taxable + retroactiveMonthly;
+  const irsBase = baseSalary + overtimeResult.total + mealResult.taxable + retroactiveMonthly + (inputs.bonusTotal || 0);
   const irsResult = calculateIRS(
     irsBase,
     inputs.maritalStatus,
@@ -375,6 +377,7 @@ export function calculateNetSalary(inputs: SalaryInputs): SalaryResult {
       overtimeTotal: overtimeResult.total,
       overtimeDetails: overtimeResult.details,
       retroactiveMonthly,
+      bonusTotal: inputs.bonusTotal || 0,
       totalGross,
     },
     deductions: {

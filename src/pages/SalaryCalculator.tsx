@@ -196,6 +196,7 @@ export default function SalaryCalculator() {
   const [hasRetroactive, setHasRetroactive] = useState(false);
   const [retroTotal, setRetroTotal] = useState('');
   const [retroMonths, setRetroMonths] = useState('1');
+  const [bonusTotal, setBonusTotal] = useState('');
 
   // ── Derived Calculation (pure, no side effects) ──
   const result = useMemo(() => {
@@ -212,12 +213,13 @@ export default function SalaryCalculator() {
       hasRetroactive,
       retroactiveTotal: Number(retroTotal) || 0,
       retroactiveMonths: Math.max(1, Number(retroMonths) || 1),
+      bonusTotal: Number(bonusTotal) || 0,
     };
     return calculateNetSalary(inputs);
   }, [
     baseSalary, maritalStatus, dependents, disability, rnh,
     mealPerDay, mealDays, mealPayType,
-    overtimeEntries, hasRetroactive, retroTotal, retroMonths,
+    overtimeEntries, hasRetroactive, retroTotal, retroMonths, bonusTotal,
   ]);
 
   // ── Overtime Handlers ──
@@ -543,6 +545,28 @@ export default function SalaryCalculator() {
                   </Button>
                 </div>
 
+                {/* Prêmio / Bônus */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Prêmio / Bônus
+                    <InfoTooltip>
+                      Preencha caso tenha recebido um prémio em dinheiro no mês (sujeito a SS e IRS na totalidade).
+                    </InfoTooltip>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      min="0"
+                      step="10"
+                      value={bonusTotal}
+                      onChange={(e) => setBonusTotal(e.target.value)}
+                      className="h-11 pl-8 text-sm font-semibold rounded-xl bg-muted/30 border-none animate-in fade-in slide-in-from-top-1 duration-200"
+                      placeholder="Valor"
+                    />
+                    <Euro className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
+                  </div>
+                </div>
+
                 {/* Retroativos */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/20">
@@ -658,6 +682,13 @@ export default function SalaryCalculator() {
                   <PaystubRow
                     label="Retroativos (mensal.)"
                     value={result.earnings.retroactiveMonthly}
+                    accent="text-foreground"
+                  />
+                )}
+                {result.earnings.bonusTotal > 0 && (
+                  <PaystubRow
+                    label="Prêmio / Bônus"
+                    value={result.earnings.bonusTotal}
                     accent="text-foreground"
                   />
                 )}
