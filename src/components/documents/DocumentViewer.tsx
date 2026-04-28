@@ -59,15 +59,6 @@ export function DocumentViewer({ open, onOpenChange, doc }: DocumentViewerProps)
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [loadingUrl, setLoadingUrl] = useState(false);
 
-  useEffect(() => {
-    if (open && doc?.file_url) {
-      generateSignedUrl();
-    } else {
-      setSignedUrl(null);
-      setImageLoading(true);
-    }
-  }, [open, doc?.file_url, generateSignedUrl]);
-
   const generateSignedUrl = useCallback(async () => {
     if (!doc?.file_url) return;
 
@@ -96,6 +87,15 @@ export function DocumentViewer({ open, onOpenChange, doc }: DocumentViewerProps)
       setLoadingUrl(false);
     }
   }, [doc?.file_url]);
+
+  useEffect(() => {
+    if (open && doc?.file_url) {
+      generateSignedUrl();
+    } else {
+      setSignedUrl(null);
+      setImageLoading(true);
+    }
+  }, [open, doc?.file_url, generateSignedUrl]);
 
   if (!doc) return null;
 
