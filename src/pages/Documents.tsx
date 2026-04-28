@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { Component, ReactNode, useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,38 @@ import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
+
+class LocalErrorBoundary extends Component<{ children: ReactNode, onErrorCaught?: (error: any) => void }, { hasError: boolean, error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any) {
+    if (this.props.onErrorCaught) this.props.onErrorCaught(error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Dialog open={true}>
+          <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl p-6">
+            <DialogHeader><DialogTitle>Erro Local Identificado</DialogTitle></DialogHeader>
+            <div className="p-4 bg-red-100 text-red-800 rounded-md break-words text-sm font-mono overflow-auto max-h-60">
+              {String(this.state.error)}
+            </div>
+            <Button onClick={() => window.location.reload()}>Recarregar</Button>
+          </DialogContent>
+        </Dialog>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const defaultCategories = [
   { id: 'immigration' as const, icon: FileText, label: 'docs.category.immigration', color: 'bg-primary/15 text-primary' },
@@ -266,7 +298,14 @@ export default function Documents() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {viewingDoc && <DocumentViewer doc={viewingDoc} open={!!viewingDoc} onOpenChange={(open) => !open && setViewingDoc(null)} />}
+      {viewingDoc && (
+        <LocalErrorBoundary onErrorCaught={(err) => {
+          console.error("LocalErrorBoundary caught:", err);
+          toast.error("Erro interno ao abrir documento.");
+        }}>
+          <DocumentViewer doc={viewingDoc} open={!!viewingDoc} onOpenChange={(open) => !open && setViewingDoc(null)} />
+        </LocalErrorBoundary>
+      )}
     </MobileLayout>
   );
 }
