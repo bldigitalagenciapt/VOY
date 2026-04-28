@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, X, FileText, Image, FileSpreadsheet, File, Loader2 } from 'lucide-react';
+import { Download, X, FileText, Image as ImageIcon, FileSpreadsheet, File as FileIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -18,14 +18,14 @@ interface DocumentViewerProps {
 }
 
 const getFileIcon = (fileType: string | null) => {
-  if (!fileType || typeof fileType !== 'string') return File;
+  if (!fileType || typeof fileType !== 'string') return FileIcon;
 
   if (fileType.includes('pdf')) return FileText;
-  if (fileType.includes('image')) return Image;
+  if (fileType.includes('image')) return ImageIcon;
   if (fileType.includes('sheet') || fileType.includes('excel') || fileType.includes('xlsx') || fileType.includes('xls')) return FileSpreadsheet;
   if (fileType.includes('word') || fileType.includes('doc')) return FileText;
 
-  return File;
+  return FileIcon;
 };
 
 const getFileTypeName = (fileType: string | null) => {

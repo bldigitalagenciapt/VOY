@@ -2,7 +2,7 @@ import React, { Component, ReactNode, useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
-import { Plus, FileText, Briefcase, Heart, Home as HomeIcon, Camera, Upload, File, MoreVertical, Eye, Download, Pencil, Trash2, Loader2, X, Image, FileSpreadsheet, Search, Bell } from 'lucide-react';
+import { Plus, FileText, Briefcase, Heart, Home as HomeIcon, Camera, Upload, File as FileIcon, MoreVertical, Eye, Download, Pencil, Trash2, Loader2, X, Image as ImageIcon, FileSpreadsheet, Search, Bell } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -63,12 +63,12 @@ const defaultCategories = [
 const getFileTypeInfo = (fileType: string | null) => {
   if (!fileType) return { icon: FileText, label: 'Documento' };
   if (fileType.includes('pdf')) return { icon: FileText, label: 'PDF' };
-  if (fileType.includes('png')) return { icon: Image, label: 'PNG' };
-  if (fileType.includes('jpeg') || fileType.includes('jpg')) return { icon: Image, label: 'JPEG' };
-  if (fileType.includes('webp')) return { icon: Image, label: 'WEBP' };
+  if (fileType.includes('png')) return { icon: ImageIcon, label: 'PNG' };
+  if (fileType.includes('jpeg') || fileType.includes('jpg')) return { icon: ImageIcon, label: 'JPEG' };
+  if (fileType.includes('webp')) return { icon: ImageIcon, label: 'WEBP' };
   if (fileType.includes('sheet') || fileType.includes('xlsx') || fileType.includes('xls')) return { icon: FileSpreadsheet, label: 'Excel' };
   if (fileType.includes('word') || fileType.includes('doc')) return { icon: FileText, label: 'Word' };
-  return { icon: File, label: 'Arquivo' };
+  return { icon: FileIcon, label: 'Arquivo' };
 };
 
 export default function Documents() {
