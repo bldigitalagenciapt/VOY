@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Download, X, FileText, Image, FileSpreadsheet, File, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -18,7 +18,7 @@ interface DocumentViewerProps {
 }
 
 const getFileIcon = (fileType: string | null) => {
-  if (!fileType) return File;
+  if (!fileType || typeof fileType !== 'string') return File;
 
   if (fileType.includes('pdf')) return FileText;
   if (fileType.includes('image')) return Image;
@@ -29,7 +29,7 @@ const getFileIcon = (fileType: string | null) => {
 };
 
 const getFileTypeName = (fileType: string | null) => {
-  if (!fileType) return 'Documento';
+  if (!fileType || typeof fileType !== 'string') return 'Documento';
 
   if (fileType.includes('pdf')) return 'PDF';
   if (fileType.includes('png')) return 'PNG';
@@ -44,12 +44,12 @@ const getFileTypeName = (fileType: string | null) => {
 };
 
 const isImage = (fileType: string | null) => {
-  if (!fileType) return false;
+  if (!fileType || typeof fileType !== 'string') return false;
   return fileType.includes('image') || fileType.includes('png') || fileType.includes('jpeg') || fileType.includes('jpg') || fileType.includes('webp');
 };
 
 const isPdf = (fileType: string | null) => {
-  if (!fileType) return false;
+  if (!fileType || typeof fileType !== 'string') return false;
   return fileType.includes('pdf');
 };
 
@@ -137,7 +137,7 @@ export function DocumentViewer({ open, onOpenChange, doc }: DocumentViewerProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[calc(100vw-1rem)] max-h-[90vh] rounded-2xl p-0 overflow-hidden">
+      <DialogContent aria-describedby={undefined} className="max-w-[calc(100vw-1rem)] max-h-[90vh] rounded-2xl p-0 overflow-hidden">
         <DialogHeader className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -145,7 +145,8 @@ export function DocumentViewer({ open, onOpenChange, doc }: DocumentViewerProps)
                 <Icon className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <DialogTitle className="text-left truncate">{doc.name}</DialogTitle>
+                <DialogTitle className="text-left truncate">{doc.name || 'Documento'}</DialogTitle>
+                <DialogDescription className="hidden">{doc.name || 'Documento'}</DialogDescription>
                 <p className="text-sm text-muted-foreground">{fileTypeName}</p>
               </div>
             </div>
