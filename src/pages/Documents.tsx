@@ -378,7 +378,8 @@ export default function Documents() {
               <Label>{t('docs.form.category')}</Label>
               <div className="grid grid-cols-2 gap-2">
                 {allCategories.map((cat) => {
-                  const Icon = cat.icon;
+                  const Icon = cat.icon || FileText;
+                  const color = cat.color || 'bg-muted text-muted-foreground';
                   return (
                     <button
                       key={cat.id}
@@ -391,10 +392,10 @@ export default function Documents() {
                       )}
                       type="button"
                     >
-                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', cat.color)}>
+                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', color)}>
                         <Icon className="w-4 h-4" />
                       </div>
-                      <span className="text-sm font-medium text-left">{t(cat.label)}</span>
+                      <span className="text-sm font-medium text-left">{cat.label ? t(cat.label) : ''}</span>
                     </button>
                   );
                 })}
