@@ -154,6 +154,16 @@ export default function Documents() {
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      if (!documentName) {
+        setDocumentName(file.name.split('.')[0]);
+      }
+    }
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -162,7 +172,8 @@ export default function Documents() {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
       'application/vnd.ms-excel': ['.xls']
     },
-    multiple: false
+    multiple: false,
+    noClick: true
   });
 
   const allCategories = [...defaultCategories, ...(customCategories || [])];
@@ -174,8 +185,22 @@ export default function Documents() {
 
   return (
     <MobileLayout>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
       <div className="px-5 py-6 pb-24 safe-area-top">
-        <input {...getInputProps()} />
         <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
           <h1 className="text-2xl font-bold text-foreground text-center md:text-left">{t('docs.title')}</h1>
           <Button onClick={() => setShowAddDialog(true)} size="sm" className="w-full md:w-auto rounded-xl gap-2 h-12 md:h-9">
@@ -270,16 +295,127 @@ export default function Documents() {
       </div>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl p-6">
-          <DialogHeader><DialogTitle>{t('docs.dialog.add')}</DialogTitle></DialogHeader>
-          <div className="space-y-4 pt-4">
+        <DialogContent className="max-w-[calc(100vw-2rem)] max-h-[85vh] flex flex-col p-0 gap-0 rounded-2xl">
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle>{t('docs.dialog.add')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto p-6 pt-2 space-y-6">
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-muted hover:bg-muted/80 transition-colors"
+                type="button"
+              >
+                <Camera className="w-6 h-6 text-primary" />
+                <span className="text-xs font-medium">{t('docs.upload.photo')}</span>
+              </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-muted hover:bg-muted/80 transition-colors"
+                type="button"
+              >
+                <Upload className="w-6 h-6 text-primary" />
+                <span className="text-xs font-medium">{t('docs.upload.file')}</span>
+              </button>
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-muted hover:bg-muted/80 transition-colors"
+                type="button"
+              >
+                <FileIcon className="w-6 h-6 text-primary" />
+                <span className="text-xs font-medium">{t('docs.upload.scan')}</span>
+              </button>
+            </div>
+
+            <div
+              {...getRootProps()}
+              className={cn(
+                "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors",
+                isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"
+              )}
+            >
+              <input {...getInputProps()} />
+              {isDragActive ? (
+                <p className="text-sm font-medium text-primary">Solte o arquivo aqui...</p>
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <Upload className="w-8 h-8" />
+                  <p className="text-sm">{t('docs.upload.drop')}</p>
+                </div>
+              )}
+            </div>
+
+            {selectedFile && (
+              <div className="flex items-center gap-3 p-3 bg-success/10 rounded-xl border border-success/20">
+                <FileText className="w-5 h-5 text-success" />
+                <span className="text-sm font-medium flex-1 truncate">{selectedFile.name}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedFile(null);
+                  }}
+                  className="p-1 hover:bg-muted rounded"
+                  type="button"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>{t('docs.form.name')}</Label>
-              <Input value={documentName} onChange={(e) => setDocumentName(e.target.value)} placeholder={t('docs.form.name')} />
+              <Input value={documentName} onChange={(e) => setDocumentName(e.target.value)} placeholder={t('docs.form.name')} className="h-12 rounded-xl" />
             </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <Button variant="ghost" onClick={() => setShowAddDialog(false)}>{t('cancel')}</Button>
-              <Button onClick={handleAddDocument} disabled={saving || !documentName}>{saving ? <Loader2 className="animate-spin" /> : t('save')}</Button>
+
+            <div className="space-y-2">
+              <Label>{t('docs.form.category')}</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {allCategories.map((cat) => {
+                  const Icon = cat.icon;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={cn(
+                        'flex items-center gap-3 p-3 rounded-xl border-2 transition-all',
+                        selectedCategory === cat.id
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary ring-offset-1'
+                          : 'border-border hover:border-primary/50'
+                      )}
+                      type="button"
+                    >
+                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', cat.color)}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-medium text-left">{t(cat.label)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2 pb-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAddDialog(false);
+                  setDocumentName('');
+                  setSelectedFile(null);
+                }}
+                className="flex-1 h-12 rounded-xl"
+                disabled={saving}
+                type="button"
+              >
+                {t('cancel')}
+              </Button>
+              <Button
+                onClick={handleAddDocument}
+                disabled={!documentName || saving}
+                className="flex-1 h-12 rounded-xl"
+                type="submit"
+              >
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : t('save')}
+              </Button>
             </div>
           </div>
         </DialogContent>
