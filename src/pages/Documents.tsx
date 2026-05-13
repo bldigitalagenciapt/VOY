@@ -94,6 +94,13 @@ export default function Documents() {
   const [viewingDoc, setViewingDoc] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  useEffect(() => {
+    if (location.state && (location.state as any).openAddDialog) {
+      setShowAddDialog(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   const getExpiryStatus = (date: string | null) => {
     if (!date) return null;
     const today = new Date();
